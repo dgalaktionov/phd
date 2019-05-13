@@ -125,16 +125,35 @@
 	PARINET and Koide.
 	
 	\section{Previous concepts}
-	Hu-Tucker, GIS interfaces, a very long etc... I am going to develop this more when I have more content on my proposals.
+	I am going to develop this more when I have more content on my proposals.
+	
+	\subsection{Summed Area Tables}
+	The Summed Area Tables were first introduced in computer graphics \cite{crow1984summed} to speed up the mipmapping process.
+	
+	\subsection{Bitvectors}
+	Rank and select.
+	
+	\subsection{Compressed Suffix Array (CSA)}
+	Explaining ST and SA along the way.
+	
+	\subsection{Wavelet Tree and Wavelet Matrix}
+	WM will be less confusing than in my previous paper...
+	
+	\subsection{Hu-Tucker coding}
+	Which is like Huffman but preserving lexical order.
+	
+	\subsection{GIS interfaces}
+	Because I have a web interface with leaflet after all.
+	
 	
 	\section{Contributions}
 	As explained in Section~\ref{sec:pd}, there there are taxis and then there are buses. Their nature is different because of networks, so they must be treated differently. In the following sections we are going to propose representations for them both and then an interface for the buses case.
 	
 	\subsection{Representations for public transportation over streets}
-	Old ass CTR with a WM or WT for times, and we tried different approaches to compress those times. It is not very useful for buses and metro because of the crazy redundancy.
+	Old ass CTR \cite{brisaboa2018compact} with a WM or WT for times, and we tried different approaches to compress those times. It is not very useful for buses and metro because of the crazy redundancy.
 	
 	\subsubsection{Description}
-	We have a CSA (with a twist) and then we align sampled times.
+	We have a CSA (with a twist) and then we align sampled times. We did introduce a Hu-Tucker WT tho...
 	
 	\subsubsection{Algorithms}
 	We have X to Y and even Top K queries that are not that hard to describe.
