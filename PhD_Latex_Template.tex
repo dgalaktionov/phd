@@ -1,0 +1,177 @@
+%
+% This is a template for writing a Master Thesis with Latex within the Faculty of Computer Science of the University of Vienna.
+%
+% It uses a class that provides commands to create a title page 
+% The title page was created by Christoph Loitzenbauer based on the
+% title page provided in Word by the University  which can be found here 
+% https://informatik.univie.ac.at/studium/hilfe-fuer-studierende/wegweiser-masterstudium/approbation-der-masterarbeit/ 
+% Please pay attention to the guidelines that can be found there!
+%
+
+
+
+% A '%' character causes TeX to ignore all remaining text on the line,
+% and is used for comments like this one.
+
+
+\documentclass{UniVieCS_PhD} %imports some packages and commands for creating the title page
+
+\usepackage[british]{babel}
+%\usepackage[ngerman, british]{babel} %if changed to \usepackage[ngerman]{babel} "Table of contents" changes to "Inhaltsverzeichnis", "abstract" becomes "Zusammenfassung" and "references" is translated to "Literatur".
+
+% -- Metadata 
+% during compliation the MSc_Latex_Template.xml file is created
+% it contains the metadata
+
+\usepackage{filecontents}
+\begin{filecontents*}{\jobname.xmpdata}
+
+% -- Add, remove and change your metadata here
+% a list of the supported fields can be found at http://texdoc.net/texmf-dist/doc/latex/pdfx/pdfx.pdf#subsection.2.3
+
+\Title{Trust me I'm a Doctor}
+\Author{Daniil Galaktionov}
+\Copyright{Copyright \copyright\ 2019 "Daniil Galaktionov"}
+\Keywords{Doctoral Thesis\sep
+          Computer Science\sep
+          Universidade de A Coru\~na}
+\Subject{This is where you put the abstract.}
+\Org{Universidade de A Coru\~na}
+\end{filecontents*}
+
+
+% --CHANGE THE TITLEPAGE HERE
+
+% There are some commands also for multiple lines. If something exceeds more than a line use the multi line commands. In the worst case adjust the spaces within the class.
+
+\Title{Trust me I'm a Doctor}
+%\Title{I wish I had a PhD}
+% A title exceeding one line can be created using the \TitleTwo or \TitleThree command
+%\TitleTwo{I wish I \\ had a PhD}   
+%\TitleThree{I wish I \\ had a PhD\\ now}
+
+\Who{ Daniil Galaktionov}
+%\Who{ FirstName LastName MSc}
+% A name exceeding one line can be created using the \WhoTwo command
+%\WhoTwo{ FirstName \\ LastName MSc}
+
+%\Degree{Master of Science}
+\Year{2019}
+\ProgrammeCode{126489}
+\ProgrammeName{Computer Science}
+\Supervisor{Dr. Antonio Fari\~na Mart\'inez}
+%\CoSupervisor{0} %Uncomment if there is no Co Supervisor
+%\CoSupervisor{Professor Co}
+%\SupervisorTwo{Second Row} % Here you can change the row under the supervisor
+%\CoSupervisorTwo{Second Row} % Here you can change the row under the cosupervisor
+
+
+%
+%
+% Making the the work PDF/A compatible:
+%
+% 
+% "Für die Ablieferung Ihrer Abschlussarbeit in elektronischer Form sind als einziges Dateiformat PDF-Dokumente in der von Adobe spezifizierten Version PDF/A-1 bzw. PDF/A-2 erlaubt."
+% https://hopla.univie.ac.at/erstellen_von_pdf.pdf
+%
+% Check the readme.tex!
+
+
+
+\begin{document}
+    \Titlepage %Creates the titlepage
+    \clearpage
+	
+	\pagebreak
+
+	\tableofcontents %Creates the table of contents
+	
+	\pagebreak
+	
+	\begin{abstract}
+		In this work we present some nice data structures for trips over transportation networks. And then we implemented an end-to-end query platform with a GIS user interface. What else do you want?
+	\end{abstract}
+	
+	\section{Introduction}
+	\subsection{Motivation}
+	With the increasing [data and methods] of public transportation, efficiently managing these vast collections of data become a technological challenge that has been approached from multiple domains and perspectives.
+	
+	Cite some applications where something cool and efficient could be found useful: transportation companies, advertising...
+	
+	\subsection{Problem definition}
+	\label{sec:pd}
+	We identified two kinds of public transportation systems: the one with taxis and the one with buses. Refer to this whenever needed.
+	
+	In this context of massive collection of data related to user transportation habits, this work tackles two main goals:
+	
+	\begin{itemize}
+	    \item Design a representation based on compact data structures. This has started to be studied only recently.
+	    \item Develop a GIS interface that will facilitate the exploitation of this information.
+	\end{itemize}
+	
+	Therefore, we present an end-to-end platform for this shit.
+	
+	\section{Related works}
+	\subsection{Data mining}
+	A couple of papers I have to copy from here and there to show that you can use smart cards, GPS or even cell network to track users. GPS is particularly useful in taxis.
+	
+	\subsection{Trajectory indexing}
+	We can have that on networks or "free" spaces.
+	
+	\subsubsection{Free trajectory indexing}
+	R-Tree perversion and Adrian's work.
+	
+	\subsubsection{Network constrained trajectory indexing}
+	PARINET and Koide.
+	
+	\section{Previous concepts}
+	Hu-Tucker, GIS interfaces, a very long etc... I am going to develop this more when I have more content on my proposals.
+	
+	\section{Contributions}
+	As explained in Section~\ref{sec:pd}, there there are taxis and then there are buses. Their nature is different because of networks, so they must be treated differently. In the following sections we are going to propose representations for them both and then an interface for the buses case.
+	
+	\subsection{Representations for public transportation over streets}
+	Old ass CTR with a WM or WT for times, and we tried different approaches to compress those times. It is not very useful for buses and metro because of the crazy redundancy.
+	
+	\subsubsection{Description}
+	We have a CSA (with a twist) and then we align sampled times.
+	
+	\subsubsection{Algorithms}
+	We have X to Y and even Top K queries that are not that hard to describe.
+	
+	\subsubsection{Experiments}
+	We may have not compared it to anything but we sure do have tons of results!
+	
+	\subsection{Representations for public transportation over networks}
+	Here we speak about TTCTR and XCTR, where we have a network description and index journeys instead of explicit times.
+	
+	\subsubsection{Description}
+	A network representation, then CSA for stops. In TTCTR we encode lines in these stops, while in XCTR we make the twist from before (I think) and then separate lines into a WM. Whatever the case, we then have an aligned WM of journeys. Oh and T-Matrices as a DW-like structure.
+	
+	\subsubsection{Algorithms}
+	A bit complex for both TTCTR and XCTR. Maybe copy the complexity table from the paper that explains why TTCTR sucks for some queries and we needed to develop XCTR.
+	
+	\subsubsection{Experiments}
+	Here we compare one to the other. Maybe include query times for postgresql, maybe later.
+	
+	\subsection{GIS interface for public transportation over networks}
+	The tool we have developed that can interact with the previously described structures. We retell what we explained about GIS in previous concepts, and explain that this is different because it is built around our representations.
+	
+	\subsubsection{Analysis}
+	From a functional perspective and then a technological one.
+	
+	\subsubsection{API}
+	A nice and easy way to make queries and return data.
+	
+	\subsubsection{Interface}
+	With a lot of screencaps that are going to take like 10 pages! Maybe even an evaluation section (which would require me to make it actually work well!).
+	
+	\section{ Conclusions and future developments}
+	2-3 pages to speak about lessons learned and where is this all going.
+	
+	\pagebreak
+	
+	\bibliographystyle{acm}
+	\bibliography{PhD_Latex_Template}
+	
+\end{document}
