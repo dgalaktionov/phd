@@ -94,9 +94,13 @@
 	
 	\section{Introduction}
 	\subsection{Motivation}
-	With the increasing [data and methods] of public transportation, efficiently managing these vast collections of data become a technological challenge that has been approached from multiple domains and perspectives.
+	In the context of public transportation networks, the last several years have seen numerous advances in wireless technologies, sensor networks (especially those related to RFID) and ubiquitous computing, leading to a widespread adoption of passenger tracking technology by public transportation services, making the collection of large amounts of data about the travel habits of these passengers\footnote{Alternatively called ``users'' in the context of transportation agencies} easier than ever before.
+	This in turn has opened the door for the exploitation of this kind of information to study the demand (usage) of a network, as opposed to the well-known techniques to analyze the offer (routes, timetables, etc...). 
+	To enable these new kinds of demand studies, it is imperative to develop mechanisms to efficiently persist and manage these vast (and always increasing) collections of data. When we also take into account that efficient query patterns need to be supported for this data to be ``useful'', the solution clearly constitutes an emerging technological challenge, that is being approached from several different domains, and hundreds of ad-hoc solutions have been implemented by all the \textit{Smart Cities} around the globe.
 	
 	Cite some applications where something cool and efficient could be found useful: transportation companies, advertising...
+	
+	One key observation from all the works referenced above is that a mere collection of trajectories or time-stamped points over a two-dimensional space of latitude and longitude would not be rich enough to perform these studies. They are therefore required to work with a representation that allows for some degree of \textit{semantic} information. At the very least, that information must include references to network elements (stops, lines or streets), and sometimes even some (anonymized) user identifier. Therefore, we require a representation that differs from the traditional spatial indexes and databases, as it must support efficient access methods based on network elements.
 	
 	\subsection{Problem definition}
 	\label{sec:pd}
@@ -113,7 +117,7 @@
 	
 	\section{Related works}
 	\subsection{Data mining}
-	A couple of papers I have to copy from here and there to show that you can use smart cards, GPS or even cell network to track users. GPS is particularly useful in taxis.
+	A couple of papers I have to copy from here and there to show that you can use smart cards, GPS or even cell network to track users. GPS is particularly useful in taxis. Cite that cool crowdsourcing approach with buses.
 	
 	\subsection{Trajectory indexing}
 	We can have that on networks or "free" spaces.
