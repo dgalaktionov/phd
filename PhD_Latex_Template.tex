@@ -89,7 +89,7 @@
 	\pagebreak
 	
 	\begin{abstract}
-		In this work we present some nice data structures for trips over transportation networks. And then we implemented an end-to-end query platform with a GIS user interface. What else do you want?
+		In this work we present some nice data structures for trajectories over transportation networks. And then we implemented an end-to-end query platform with a GIS user interface. What else do you want?
 	\end{abstract}
 	
 	\section{Introduction}
@@ -104,22 +104,26 @@
 	
 	\subsection{Problem definition}
 	\label{sec:pd}
-	We identified two kinds of public transportation systems: the one with taxis and the one with buses. Refer to this whenever needed.
-	
-	In this context of massive collection of data related to user transportation habits, this work tackles two main goals:
-	
+	Considering the underlying network, we have identified two distinguishable contexts for public transportation systems:
 	\begin{itemize}
-	    \item Design a representation based on compact data structures. This has started to be studied only recently.
-	    \item Develop a GIS interface that will facilitate the exploitation of this information.
+	    \item \textbf{Road-based networks}: a trajectory can start anywhere and follow any arbitrary path along a defined road network, at any time. Trajectories of taxis or bicycles\footnote{Rented bicycles are a public transportation method commonly managed and incentivized by city administrations} fall into this category. For these systems, queries of interest may involve points of interest around which these trajectories could end, or road segments that could be part of a path.
+	    \item \textbf{Route-based networks}: the trajectories must start at predefined points (usually stops or stations) at set times that are defined by the vehicles that make a stop at those points. These vehicles follow a predefined route along these points, forming routes. Therefore, a trajectory follows a path along a graph of routes, which is usually very different from a road network, and users that travel in the same vehicle would produce identical parts of trajectories. This holds for bus and metro systems, along with most of other urban transportation systems. It is expected that for a collection of trajectories from a route-based network some of the queries of interest may revolve around the main network elements, which are routes and stops.
 	\end{itemize}
 	
-	Therefore, we present an end-to-end platform for this shit.
+	[Here goes an image to show road-based vs route-based.]
+	
+	As these two contexts lead to different ways of structuring and querying the information, it is natural to expect at least two different representations, one for each context. For this reason, in this work we propose the use of compact data structures to design novel representations that are able to handle massive collections of data related to the user transportation habit. We intend to cover both contexts, as well as offer a fair trade-off for different query needs, while at the same time ensuring that our proposals can be implemented in a real world scenario, for which we evaluate the performance of our representations with realistic query cases over datasets composed of real data\footnote{When needed, the real data was augmented or mixed with synthetic information}.
+	
+	Furthermore, as a proof of the practicability of our approach, we intend to develop a user interface that would enable the exploitation of this information by researchers, transportation companies, city administrations and any other kind of end users. This interface must, at the very least, allow visualizing the network elements on a map, also granting the ability to make queries over these elements in an intuitive and responsive way, while respecting the usual quality principles of any user-oriented software of this kind.
+	
+	In conclusion, we present an end-to-end platform around representations based on compact data structures to process, store, query and visualize mined public transportation usage data. To our knowledge, this is the first work to accomplish building such integrated platform, although other works exist that contemplate the use of compact data structures for trajectories or moving objects (see Section~\ref{sec:ti}).
 	
 	\section{Related works}
 	\subsection{Data mining}
 	A couple of papers I have to copy from here and there to show that you can use smart cards, GPS or even cell network to track users. GPS is particularly useful in taxis. Cite that cool crowdsourcing approach with buses.
 	
 	\subsection{Trajectory indexing}
+	\label{sec:ti}
 	We can have that on networks or "free" spaces.
 	
 	\subsubsection{Free trajectory indexing}
@@ -189,7 +193,7 @@
 	\subsubsection{Interface}
 	With a lot of screencaps that are going to take like 10 pages! Maybe even an evaluation section (which would require me to make it actually work well!).
 	
-	\section{ Conclusions and future developments}
+	\section{ Conclusions and future works}
 	2-3 pages to speak about lessons learned and where is this all going.
 	
 	\pagebreak
