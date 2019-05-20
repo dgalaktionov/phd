@@ -1,0 +1,216 @@
+% Packages --------------------------------------------------------------------
+
+\usepackage{booktabs,multirow,multicol,array,colortbl,makecell,tabularx} % tablas
+
+
+\usepackage[width=127mm,height=191mm,includehead,hcentering,vcentering]{geometry}
+\usepackage{graphicx,subfigure}				% Include graphics
+\usepackage{caption}	% Customize captions
+\usepackage[T1]{fontenc} 			% Extended character set
+\usepackage{lmodern, microtype}		% Load vector fonts; better text formatting
+\usepackage{amsmath,amssymb,amsfonts,amsthm}	% Math support, example environment
+\usepackage{fancyhdr} 				% Headers
+\usepackage{xspace}	  				% Create macros with appropriate extra space after
+\usepackage{lipsum}					% Fill sections
+\usepackage{fixltx2e}				% Make math macros robust: \( \) \[ \]
+
+
+
+\usepackage[usenames,dvipsnames]{xcolor}	% Colors
+
+\usepackage[chapter]{algorithm}
+\usepackage{algorithmicx, algpseudocode}
+\usepackage{float}
+
+\usepackage{textcomp, gensymb}	% Common symbols (mu, degree)
+
+%Debug packages
+% \usepackage{refcheck}	% Show labels in output pdf. 
+						% Note: local refcheck.sty has been modified to solve a bug in handling bibitems 
+						% Note 2: since cleveref refcheck is unused
+
+
+
+
+\usepackage{tikz}
+
+\usepackage[breaklinks]{hyperref} % Hyperlinks in refs. Must be loaded at the end (except cleverref)
+\usepackage{hypdvips}
+% \usepackage[nameinlink]{cleveref}
+\usepackage{cleveref}
+
+% \usepackage{theorem}					% Theorems?
+% \theoremstyle{plain}
+% \newtheorem{definition}{Definition}
+
+% \usepackage{lscape} 					% Set elements to landscape (e.g large figures, tables)
+% \usepackage{setspace}					% ??
+% \usepackage{rotating}
+% \usepackage[tight]{subfigure}
+% \usepackage{dcolumn}
+% \usepackage[noline,linesnumbered,algochapter]{algorithm2e}
+% \providecommand{\DontPrintSemicolon}{\dontprintsemicolon}
+% \usepackage{algcompatible}
+% \usepackage{sectsty}
+%\usepackage[none]{hyphenat}
+% \usepackage[tworuled,noline,linesnumbered,algochapter]{algorithm2e}
+
+
+% FIXME: review in further versions
+\hyphenpenalty=5000
+\tolerance=1000
+\widowpenalty=300
+\clubpenalty=300
+\emergencystretch=3em
+
+\hfuzz=3em
+
+\usepackage{etoolbox}
+\apptocmd{\sloppy}{\hbadness 10000\relax}{}{}	% Avoid ''underfull hbox'' warnings in bibliography
+
+
+% Separacion entre un parrafo y el siguiente
+% \addtolength{\smallskipamount}{-7.60pt}
+% \addtolength{\parskip}{.5\baselineskip}%{.5\baselineskip}
+
+% \setlength{\smallskipamount}{-7.60pt}
+% \setlength{\parskip}{\smallskipamount}
+
+% Fuente de las subsubsecciones
+%\subsubsectionfont{\bf}
+
+\setcounter{tocdepth}{4} \setcounter{secnumdepth}{4}
+
+% Fuentes de los pies de figura
+\renewcommand{\captionlabelfont}{\bfseries}
+\setlength{\captionmargin}{\parindent}
+
+\renewcommand{\arraystretch}{1.2}	% Adjust vertical margins in tables
+
+%Comandos
+
+\newcounter{example}[chapter]
+\def\theexample{\thechapter.\arabic{example}}
+\newenvironment{example}{\par\noindent\textbf{Example \refstepcounter{example}\theexample:}}{}
+
+% I need subsubsubsections, but not in the index
+\newcommand{\subsubsubsection}[1]{\vspace{2mm}\par\noindent\textbf{#1}}
+
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+\newcommand{\Input}{\Require}
+\newcommand{\Output}{\Ensure}
+\newcommand{\false}{\textbf{false}}
+\newcommand{\red}[1]{{\color{red} #1 }}
+\newcommand{\blue}[1]{{\color{blue} #1 }}
+\newcommand{\cyan}[1]{{\color{cyan} #1 }}
+\newcommand{\green}[1]{{\color{green} #1 }}
+\newcommand{\todo}[1]{\blue{#1}}
+\newcommand{\rewrite}[1]{\cyan{#1}}
+\newcommand{\fixme}[1]{{\Large \red{#1}}}
+
+\newcommand*{\irank}[0]{\emph{rank}\xspace}
+\newcommand*{\iselect}[0]{\emph{select}\xspace}
+\newcommand*{\iaccess}[0]{\emph{access}\xspace}
+
+\DeclareMathOperator\rank{rank}
+\DeclareMathOperator\select{select}
+\DeclareMathOperator\access{access}
+
+\renewcommand*{\k}[0]{\ensuremath{K}\xspace}
+\newcommand*{\kk}[0]{\ensuremath{\k^2}\xspace}
+\newcommand*{\kkk}[0]{\ensuremath{\k^3}\xspace}
+\newcommand*{\KK}[0]{\ensuremath{\K^2}\xspace}
+\newcommand*{\Ktree}[0]{\ensuremath{\k^2}-tree\xspace}
+\newcommand*{\ktree}[0]{\ensuremath{\k^2}-tree\xspace}
+\newcommand*{\ktrees}[0]{\ensuremath{\k^2}-trees\xspace}
+\newcommand*{\Ktrees}[0]{\ensuremath{\k^2}-trees\xspace}
+\newcommand*{\koct}[0]{\ensuremath{\k^3}-tree\xspace}
+\newcommand*{\Koct}[0]{\ensuremath{\k^3}-tree\xspace}
+\newcommand*{\kntree}[0]{\ensuremath{\k^n}-tree\xspace}
+\newcommand*{\Kntree}[0]{\ensuremath{\k^n}-tree\xspace}
+\newcommand{\kones}[0]{\ensuremath{\k^2}-tree1\xspace}
+\newcommand{\koness}[0]{\ensuremath{\k^2}-tree1s\xspace}
+\newcommand{\Kones}[0]{\kones}
+\newcommand{\kdouble}[0]{\ensuremath{\k^2}-tree1\ensuremath{^{\mathrm{2bits-naive}}}\xspace}
+\newcommand{\ksus}[0]{\ensuremath{\k^2}-tree1\ensuremath{^{\mathrm{2bits}}}\xspace}
+\newcommand{\kdf}[0]{\ensuremath{\k^2}-tree1\ensuremath{^{\mathrm{df}}}\xspace}
+\newcommand{\klevel}[0]{\ensuremath{\k^2}-tree1\ensuremath{^{\mathrm{1-5 bits}}}\xspace}
+\newcommand{\Kdouble}[0]{\kdouble}
+\newcommand{\Ksus}[0]{\ksus}
+\newcommand{\Kdf}[0]{\kdf}
+\newcommand{\Klevel}[0]{\klevel}
+\newcommand{\btree}[0]{B-tree\xspace}
+\newcommand{\btrees}[0]{B-trees\xspace}
+\newcommand{\bplus}[0]{B\ensuremath{^+}-tree\xspace}
+\newcommand{\bpluss}[0]{B\ensuremath{^+}-trees\xspace}
+\newcommand{\dktree}[0]{d\ktree}
+\newcommand{\dktrees}[0]{d\ktrees}
+\newcommand{\Dktree}[0]{D\ktree}
+\newcommand{\Dktrees}[0]{D\dtrees}
+\newcommand{\iktree}{I\ktree}
+\newcommand{\diktree}{diff-I\ktree}
+\newcommand{\mktree}{M\ktree}
+
+\newcommand{\kkind}{M\kones}
+\newcommand{\kkacum}{AM\kones}
+\newcommand{\ikones}{I\kones}
+\newcommand{\koctindex}{\koct}
+
+\newcommand{\diffk}[0]{diffK}
+\newcommand{\ediffk}[0]{enh-diffK}
+\newcommand{\Diffk}[0]{DiffK}
+\newcommand{\Ediffk}[0]{Enh-diffK}
+
+\newcommand{\ktreap}[0]{\ensuremath{\k^2}-treap\xspace}
+\newcommand{\ktreaps}[0]{\ensuremath{\k^2}-treaps\xspace}
+
+\newcommand{\ZERO}[0]{0\xspace}
+\newcommand{\ZEROS}[0]{0's\xspace}
+\newcommand{\ONE}[0]{1\xspace}
+\newcommand{\ONES}[0]{1s\xspace}
+
+\newcommand{\dash}[0]{\text{--}}
+
+\newcommand{\kt}[0]{\ensuremath{k}\xspace}
+
+\newcommand{\tdktree}[0]{tt\ktree}
+
+
+\crefname{algorithm}{Algorithm}{Algorithms}
+\crefname{example}{Example}{Examples}
+\crefname{part}{Part}{Parts}
+\crefname{table}{Table}{Tables}
+
+% \normalfont
+% \DeclareFontShape{T1}{lmr}{bx}{sc} { <-> ssub * cmr/bx/sc }{}
+
+\normalfont
+\DeclareFontShape{T1}{lmr}{bx}{sc} { <-> ssub * cmr/bx/sc }{}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%% Sandbox
+% \DeclareSymbolFont{sfoperators}{OT1}{cmss}{m}{n}
+% \DeclareSymbolFontAlphabet{\mathsf}{sfoperators}
+% 
+% \makeatletter
+% % \def\operator@font{\mathgroup\symsfoperators}
+% \def\select@font{\mathgroup\symsfoperators}
+% \makeatother
+% 
+% \makeatletter
+% \def\rank@font{\sf}
+% \def\select@font{\bf}
+% \makeatother
+
+% \newcommand{\rank}[0]{\ensuremath{\mathrm{rank}}\xspace}
+% \newcommand{\select}[0]{\ensuremath{\mathrm{select}}\xspace}
+% \newcommand{\irank}[0]{\emph{rank}\xspace}
+% \newcommand{\iselect}[0]{\emph{select}\xspace}
+% \def\rank{\ensuremath{\mathsf{rank}}}
+% \def\select{\ensuremath{\mathsf{select}}}
+% \DeclareMathOperator\rank{rank}
+% \DeclareMathOperator\select{select}
+
+%%%%%%%%%%%%%% End sandbox
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

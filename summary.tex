@@ -1,0 +1,49 @@
+
+\chapter{Conclusions and future work}
+\label{sec:summary:conclusion-future-work}
+
+
+
+\section{Main contributions}
+	In recent years, the amount of digital information stored and processed by computer systems has grown constantly. This is due to important advances in sensors and computing power, while Internet makes the data available to many persons or organizations. In addition, the {\em Big Data} phenomenon has extended analytical techniques such as data mining or OLAP systems, where huge amounts of data are exploited to obtain new data and knowledge. Therefore, designing new techniques to process and access huge amounts of information is a major challenge in many different areas.
+
+	There are several lines of research that try to improve the processing of large amounts of data, such as the design of new hardware or the parallel processing. A newly emerging research area is the compact representation of data. We will focus on this, also called \textit{design of compact data structures}, which allows the execution of complex operations directly on compressed data. 
+	%Compact data structures combine in a unique data structure a compressed representation of the data and the structures to access such data. The target is to be able to manage data directly in compressed form, and in this way, to keep data always compressed, even in main memory. With this, we obtain two benefits: we can manage larger datasets in main memory and we take advantage of a better usage of the memory hierarchy.	This allows the operations to be even faster than their representation in plain.
+	Compact data structures combine in a unique data structure a compressed representation of a dataset and the access methods that allow us to retrieve any given datum, without the need of decompressing the dataset from the beginning. The idea is to keep data always compressed, even in main memory. The benefits are obvious, in addition to the typical savings in disk space and bandwidth, we can process larger datasets, and moreover, this processing can be more efficient thanks to a better usage of the memory hierarchy. In many cases, compact data structures, in addition to a compressed representation, provide some sort of self-indexation, which allows us to answer queries even faster than performing that query over the plain representation and within the same compressed space.
+	
+	In this thesis we are focused on the compact representation of large and complex datasets. Concretely, we are interested in three main areas;  the representation of multidimensional data, where the domain of each dimension is organized hierarchically, the management of spatial data, and the efficient execution of complex operations over scientific data.
+	
+	This section summarizes the main contributions of this thesis:
+	\begin{enumerate}
+		\item We presented the $k^n$-treap, a straightforward extension of the $k^2$-treap to manage multiple dimensions. 
+		\item We designed a new representation of multidimensional data. This structure can be seen as an extension of the $k^n$-treap which eliminates its strict regular partitioning of the hypercube, by allowing a new flexible division that depends on the domain hierarchies. It is particularly attractive to represent OLAP data cubes compactly and efficiently answer meaningful aggregate queries. This structure was initially designed to support aggregate sums, but it is easy to extend our results to other kinds of aggregations, such as the average  or the maximum, or combine several of them. We also studied its applicability and its drawbacks in  several scenarios, showing a			
+		superior time performance than a generic multidimensional structure.	
+
+		\item We introduced the $k^2$-raster, which is a new compact data structure designed to store raster data. This spatial data model is commonly used to represent attributes of the space (temperatures, pressure, elevation measures, etc.) in geographical information systems. As it is common in compact data structures, our new technique is not only able to store and directly access compressed data, but also indexes its content, thereby accelerating the execution of queries. We have also included two variants: the $hybrid$ $k^2$-raster and the $heuristic$ $k^2$-raster. The $hybrid$ $k^2$-raster  allows us to modify how the matrix is partitioned ateach level of tree. The other variant, the $heuristic$ $k^2$-raster   is an improved version  that obtains better compression and even faster query times. 
+		
+		Our experiments show that our methods improve previous approaches in all aspects, especially when the number of different values is large, which is critical when applying over real datasets.
+
+		\item We proposed a new framework for  running a spatial join between a raster dataset  and a vector dataset. It allows us to specify a range constraint on the values of the raster to refine queries. Our spatial join retrieves all elements of a vector dataset and the cells of the  raster with a value in the queried range, which overlap each other. 
+		
+		In our experiments, we show that our approach obtains important savings in both running time and memory consumption.		
+
+		\item We developed a new compact representation of huge sets of functional data or trajectories of continuous time stochastic processes, called \textit{Compact representation of Brownian Motion} (CBM). In this thesis, we focus on trajectories of Brownian Motion, but our contribution is able to represent any continuous time stochastic process. CBM includes mechanisms to improve the computation time of empirical moments, for example, the empirical autocovariance function. 
+		%Moreover, each trajectory is compressed separately to provide partial decompression. In addition, an integer encoding method can be selected from a set of the most current integer compressor to encoding the sequence of difference.	
+
+		\item We presented a new memory-efficient algorithm to compute the sample autocovariance function, where each trajectory is only used once. The major benefit of this algorithm is that it does not keep the whole dataset in memory, thus reducing the memory consumption considerably. The application of this method is not limited  to CBM and the trajectories of Brownian motion, it can also be used to computate the autocovariance of any type of trajectories of continuous time stochastic processes.
+		
+		Finally, we presented a set of experiments that showed that our approach obtains better  space/time trade-offs than the state of the art.
+	\end{enumerate}
+
+\section{Future work}
+In this section, we introduce some interesting future plans. We will present the most important ones for our contributions:
+
+	\begin{itemize}
+		\item The CMHD and the $k^n$-treap have been tested with several synthetic datasets. We plan to extend these experiments with real collections. We also plan to compare our contribution with an established OLAP database management system.
+		\item In this thesis, the $k^2$-raster was designed for two-dimensional datasets. We plan to extend the structure for datasets with higher dimensionality, for example    spatio-temporal datasets. In addition, we believe that our structure can be adapted to other type of environments, such as distributed environments or the semantic web. 
+		
+		In the case of the semantic web,  there is a standard, called GeoSPARQL, for running queries on spatial data. However, current tools for this standard have  drawbacks, either they do not implement all the functionality or the query performance is very poor.
+		% We believe that our solution can be integrated in this field to solve the problems presented by the current structures
+		\item  In the framework for the spatial join, the choice of  the R-tree to index the vector dataset  was because it is the standard for this type of data. A new  research line to improve our framework is to substitute the R-tree by modern compact data structures. Another interesting proposal is to increase the power of the framework by adding new operations.
+		\item We plan to add new interesting statistics to expand CBM to include other types of computations, apart from autocovariance. In addition, more experiments with other continuous time stochastic processes can be tested.
+	\end{itemize}

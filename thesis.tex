@@ -1,99 +1,29 @@
-%
-% This is a template for writing a Master Thesis with Latex within the Faculty of Computer Science of the University of Vienna.
-%
-% It uses a class that provides commands to create a title page 
-% The title page was created by Christoph Loitzenbauer based on the
-% title page provided in Word by the University  which can be found here 
-% https://informatik.univie.ac.at/studium/hilfe-fuer-studierende/wegweiser-masterstudium/approbation-der-masterarbeit/ 
-% Please pay attention to the guidelines that can be found there!
-%
+%###
+% \RequirePackage[l2tabu, orthodox]{nag}
+\documentclass[a4paper,10pt,twoside]{book}
+% \usepackage[width=127mm,height=191mm,includehead,hcentering,vcentering]{geometry}
 
+% \includeonly{_init,basic-concepts,raster}
+% \includeonly{__init,k3tree}
 
-
-% A '%' character causes TeX to ignore all remaining text on the line,
-% and is used for comments like this one.
-
-
-\documentclass{UniVieCS_PhD} %imports some packages and commands for creating the title page
-
-\usepackage[british]{babel}
-%\usepackage[ngerman, british]{babel} %if changed to \usepackage[ngerman]{babel} "Table of contents" changes to "Inhaltsverzeichnis", "abstract" becomes "Zusammenfassung" and "references" is translated to "Literatur".
-
-% -- Metadata 
-% during compliation the MSc_Latex_Template.xml file is created
-% it contains the metadata
-
-\usepackage{filecontents}
-\begin{filecontents*}{\jobname.xmpdata}
-
-% -- Add, remove and change your metadata here
-% a list of the supported fields can be found at http://texdoc.net/texmf-dist/doc/latex/pdfx/pdfx.pdf#subsection.2.3
-
-\Title{Trust me I'm a Doctor}
-\Author{Daniil Galaktionov}
-\Copyright{Copyright \copyright\ 2019 "Daniil Galaktionov"}
-\Keywords{Doctoral Thesis\sep
-          Computer Science\sep
-          Universidade de A Coru\~na}
-\Subject{This is where you put the abstract.}
-\Org{Universidade de A Coru\~na}
-\end{filecontents*}
-
-
-% --CHANGE THE TITLEPAGE HERE
-
-% There are some commands also for multiple lines. If something exceeds more than a line use the multi line commands. In the worst case adjust the spaces within the class.
-
-\Title{Trust me I'm a Doctor}
-%\Title{I wish I had a PhD}
-% A title exceeding one line can be created using the \TitleTwo or \TitleThree command
-%\TitleTwo{I wish I \\ had a PhD}   
-%\TitleThree{I wish I \\ had a PhD\\ now}
-
-\Who{ Daniil Galaktionov}
-%\Who{ FirstName LastName MSc}
-% A name exceeding one line can be created using the \WhoTwo command
-%\WhoTwo{ FirstName \\ LastName MSc}
-
-%\Degree{Master of Science}
-\Year{2019}
-\ProgrammeCode{126489}
-\ProgrammeName{Computer Science}
-\Supervisor{Dr. Antonio Fari\~na Mart\'inez}
-%\CoSupervisor{0} %Uncomment if there is no Co Supervisor
-%\CoSupervisor{Professor Co}
-%\SupervisorTwo{Second Row} % Here you can change the row under the supervisor
-%\CoSupervisorTwo{Second Row} % Here you can change the row under the cosupervisor
-
-
-%
-%
-% Making the the work PDF/A compatible:
-%
-% 
-% "Für die Ablieferung Ihrer Abschlussarbeit in elektronischer Form sind als einziges Dateiformat PDF-Dokumente in der von Adobe spezifizierten Version PDF/A-1 bzw. PDF/A-2 erlaubt."
-% https://hopla.univie.ac.at/erstellen_von_pdf.pdf
-%
-% Check the readme.tex!
-
-
+\input{___header}
 
 \begin{document}
-    \Titlepage %Creates the titlepage
-    \clearpage
-	
-	\pagebreak
 
-	\tableofcontents %Creates the table of contents
-	
-	\pagebreak
-	
-	\begin{abstract}
-		In this work we present some nice data structures for trajectories over transportation networks. And then we implemented an end-to-end query platform with a GIS user interface. What else do you want?
-	\end{abstract}
-	
-	\section{Introduction}
-	\subsection{Motivation}
+\pagenumbering{roman}
+\pagestyle{fancy}\fancyfoot{}\fancyhead{}
+\fancyhead[LO]{\slshape\nouppercase{\rightmark}}
+\fancyhead[RE]{\slshape\nouppercase{\leftmark}}
+\fancyhead[RO,LE]{\slshape \thepage}
+
+\frontmatter
+
+\include{_init}
+
+\mainmatter
+
+\chapter{Introduction}
+	\section{Motivation}
 	In the context of public transportation networks, the last several years have seen numerous advances in wireless technologies, sensor networks (especially those related to RFID) and ubiquitous computing, leading to a widespread adoption of passenger tracking technology by public transportation services, making the collection of large amounts of data about the travel habits of these passengers\footnote{Alternatively called ``users'' in the context of transportation agencies} easier than ever before.
 	This in turn has opened the door for the exploitation of this kind of information to study the demand (usage) of a network, as opposed to the well-known techniques to analyze the offer (routes, timetables, etc...). 
 	To enable these new kinds of demand studies, it is imperative to develop mechanisms to efficiently persist and manage these vast (and always increasing) collections of data. When we also take into account that efficient query patterns need to be supported for this data to be ``useful'', the solution clearly constitutes an emerging technological challenge, that is being approached from several different domains, and hundreds of ad-hoc solutions have been implemented by all the \textit{Smart Cities} around the globe.
@@ -102,103 +32,108 @@
 	
 	One key observation from all the works referenced above is that a mere collection of trajectories or time-stamped points over a two-dimensional space of latitude and longitude would not be rich enough to perform these studies. They are therefore required to work with a representation that allows for some degree of \textit{semantic} information. At the very least, that information must include references to network elements (stops, lines or streets), and sometimes even some (anonymized) user identifier. Therefore, we require a representation that differs from the traditional spatial indexes and databases, as it must support efficient access methods based on network elements.
 	
-	\subsection{Problem definition}
+	\section{Problem definition}
 	\label{sec:pd}
 	Considering the underlying network, we have identified two distinguishable contexts for public transportation systems:
 	\begin{itemize}
 	    \item \textbf{Road-based networks}: a trajectory can start anywhere and follow any arbitrary path along a defined road network, at any time. Trajectories of taxis or bicycles\footnote{Rented bicycles are a public transportation method commonly managed and incentivized by city administrations} fall into this category. For these systems, queries of interest may involve points of interest around which these trajectories could end, or road segments that could be part of a path.
-	    \item \textbf{Route-based networks}: the trajectories must start at predefined points (usually stops or stations) at set times that are defined by the vehicles that make a stop at those points. These vehicles follow a predefined route along these points, forming routes. Therefore, a trajectory follows a path along a graph of routes, which is usually very different from a road network, and users that travel in the same vehicle would produce identical parts of trajectories. This holds for bus and metro systems, along with most of other urban transportation systems. It is expected that for a collection of trajectories from a route-based network some of the queries of interest may revolve around the main network elements, which are routes and stops.
+	    \item \textbf{Route-based networks}: the trajectories must start at predefined points (usually stops or stations) at set times that are defined by the vehicles that make a stop at those points. These vehicles follow a predefined paths along these points, forming routes. Therefore, a trajectory follows a path along a graph of routes, which is usually very different from a road network, and users that travel in the same vehicle would produce identical parts of trajectories. This holds for bus and metro systems, along with most of other urban transportation systems. It is expected that for a collection of trajectories from a route-based network some of the queries of interest may revolve around the main network elements, which are routes and stops.
 	\end{itemize}
 	
 	[Here goes an image to show road-based vs route-based.]
 	
-	As these two contexts lead to different ways of structuring and querying the information, it is natural to expect at least two different representations, one for each context. For this reason, in this work we propose the use of compact data structures to design novel representations that are able to handle massive collections of data related to the user transportation habit. We intend to cover both contexts, as well as offer a fair trade-off for different query needs, while at the same time ensuring that our proposals can be implemented in a real world scenario, for which we evaluate the performance of our representations with realistic query cases over datasets composed of real data\footnote{When needed, the real data was augmented or mixed with synthetic information}.
+	As these two contexts lead to different ways of structuring and querying the information, it is natural to expect at least two different representations, one for each context. For this reason, in this work we propose the use of compact data structures to design novel representations that are able to handle massive collections of data related to user transportation habits. We intend to cover both contexts, as well as offer a fair trade-off for different query needs, while at the same time ensuring that our proposals can be implemented in a real world scenario, for which we evaluate the performance of our representations with realistic query cases over real datasets\footnote{When needed, the real data was augmented or mixed with synthetic information}.
 	
-	Furthermore, as a proof of the practicability of our approach, we intend to develop a user interface that would enable the exploitation of this information by researchers, transportation companies, city administrations and any other kind of end users. This interface must, at the very least, allow visualizing the network elements on a map, also granting the ability to make queries over these elements in an intuitive and responsive way, while respecting the usual quality principles of any user-oriented software of this kind.
+	Furthermore, as a proof of the practicability of our approach, we intend to develop a user interface that could enable the exploitation of this information by researchers, transportation companies, city administrations and any other kind of end users. This interface must, at the very least, allow visualizing the network elements on a map, also granting the ability to make queries over these elements in an intuitive and responsive way, while respecting the usual quality principles of any user-oriented software of this kind.
 	
 	In conclusion, we present an end-to-end platform around representations based on compact data structures to process, store, query and visualize mined public transportation usage data. To our knowledge, this is the first work to accomplish building such integrated platform, although other works exist that contemplate the use of compact data structures for trajectories or moving objects (see Section~\ref{sec:ti}).
 	
-	\section{Related works}
-	\subsection{Data mining}
+\chapter{Related works}
+	\section{Data mining}
 	A couple of papers I have to copy from here and there to show that you can use smart cards, GPS or even cell network to track users. GPS is particularly useful in taxis. Cite that cool crowdsourcing approach with buses.
 	
-	\subsection{Trajectory indexing}
+	\section{Trajectory indexing}
 	\label{sec:ti}
 	We can have that on networks or "free" spaces.
 	
-	\subsubsection{Free trajectory indexing}
+	\subsection{Free trajectory indexing}
 	R-Tree perversion and Adrian's work.
 	
-	\subsubsection{Network constrained trajectory indexing}
+	\subsection{Network constrained trajectory indexing}
 	PARINET and Koide.
 	
-	\section{Previous concepts}
+\chapter{Previous concepts}
 	I am going to develop this more when I have more content on my proposals.
 	
-	\subsection{Summed Area Tables}
+	\section{Summed Area Tables}
 	The Summed Area Tables were first introduced in computer graphics \cite{crow1984summed} to speed up the mipmapping process.
 	
-	\subsection{Bitvectors}
+	\section{Bitvectors}
 	Rank and select.
 	
-	\subsection{Compressed Suffix Array (CSA)}
+	\section{Compressed Suffix Array (CSA)}
 	Explaining ST and SA along the way.
 	
-	\subsection{Wavelet Tree and Wavelet Matrix}
+	\section{Wavelet Tree and Wavelet Matrix}
 	WM will be less confusing than in my previous paper...
 	
-	\subsection{Hu-Tucker coding}
+	\section{Hu-Tucker coding}
 	Which is like Huffman but preserving lexical order.
 	
-	\subsection{GIS interfaces}
+	\section{GIS interfaces}
 	Because I have a web interface with leaflet after all.
 	
 	
-	\section{Contributions}
+\chapter{Contributions}
 	As explained in Section~\ref{sec:pd}, there there are taxis and then there are buses. Their nature is different because of networks, so they must be treated differently. In the following sections we are going to propose representations for them both and then an interface for the buses case.
 	
-	\subsection{Representations for public transportation over streets}
+	\section{Representations for public transportation over streets}
 	Old ass CTR \cite{brisaboa2018compact} with a WM or WT for times, and we tried different approaches to compress those times. It is not very useful for buses and metro because of the crazy redundancy.
 	
-	\subsubsection{Description}
+	\subsection{Description}
 	We have a CSA (with a twist) and then we align sampled times. We did introduce a Hu-Tucker WT tho...
 	
-	\subsubsection{Algorithms}
+	\subsection{Algorithms}
 	We have X to Y and even Top K queries that are not that hard to describe.
 	
-	\subsubsection{Experiments}
+	\subsection{Experiments}
 	We may have not compared it to anything but we sure do have tons of results!
 	
-	\subsection{Representations for public transportation over networks}
+	\section{Representations for public transportation over networks}
 	Here we speak about TTCTR and XCTR, where we have a network description and index journeys instead of explicit times.
 	
-	\subsubsection{Description}
+	\subsection{Description}
 	A network representation, then CSA for stops. In TTCTR we encode lines in these stops, while in XCTR we make the twist from before (I think) and then separate lines into a WM. Whatever the case, we then have an aligned WM of journeys. Oh and T-Matrices as a DW-like structure.
 	
-	\subsubsection{Algorithms}
+	\subsection{Algorithms}
 	A bit complex for both TTCTR and XCTR. Maybe copy the complexity table from the paper that explains why TTCTR sucks for some queries and we needed to develop XCTR.
 	
-	\subsubsection{Experiments}
+	\subsection{Experiments}
 	Here we compare one to the other. Maybe include query times for postgresql, maybe later.
 	
-	\subsection{GIS interface for public transportation over networks}
+	\section{GIS interface for public transportation over networks}
 	The tool we have developed that can interact with the previously described structures. We retell what we explained about GIS in previous concepts, and explain that this is different because it is built around our representations.
 	
-	\subsubsection{Analysis}
+	\subsection{Analysis}
 	From a functional perspective and then a technological one.
 	
-	\subsubsection{API}
+	\subsection{API}
 	A nice and easy way to make queries and return data.
 	
-	\subsubsection{Interface}
+	\subsection{Interface}
 	With a lot of screencaps that are going to take like 10 pages! Maybe even an evaluation section (which would require me to make it actually work well!).
 	
-	\section{ Conclusions and future works}
+\chapter{ Conclusions and future works}
 	2-3 pages to speak about lessons learned and where is this all going.
-	
-	\pagebreak
-	
-	\bibliographystyle{acm}
-	\bibliography{PhD_Latex_Template}
-	
+
+% \nocite{*}
+% \bibliographystyle{apalike}
+\bibliographystyle{alpha}
+\addcontentsline{toc}{chapter}{\bibname}
+\bibliography{thesis}
+
+\vfill \pagebreak \thispagestyle{empty} \mbox{}
+\vfill \pagebreak \mbox{} \thispagestyle{empty}
+
 \end{document}
+%###
