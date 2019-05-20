@@ -36,17 +36,34 @@
 	\label{sec:pd}
 	Considering the underlying network, we have identified two distinguishable contexts for public transportation systems:
 	\begin{itemize}
-	    \item \textbf{Road-based networks}: a trajectory can start anywhere and follow any arbitrary path along a defined road network, at any time. Trajectories of taxis or bicycles\footnote{Rented bicycles are a public transportation method commonly managed and incentivized by city administrations} fall into this category. For these systems, queries of interest may involve points of interest around which these trajectories could end, or road segments that could be part of a path.
-	    \item \textbf{Route-based networks}: the trajectories must start at predefined points (usually stops or stations) at set times that are defined by the vehicles that make a stop at those points. These vehicles follow a predefined paths along these points, forming routes. Therefore, a trajectory follows a path along a graph of routes, which is usually very different from a road network, and users that travel in the same vehicle would produce identical parts of trajectories. This holds for bus and metro systems, along with most of other urban transportation systems. It is expected that for a collection of trajectories from a route-based network some of the queries of interest may revolve around the main network elements, which are routes and stops.
+	    \item \textbf{Road-based networks}: a trajectory can start anywhere, at any time, and follow any arbitrary path along a defined road network.
+	    %, which can have two alternative graph representations: assign a vertex for each intersection and edges for road segments that connect these intersections, or alternatively, a vertex for each road segment with no intersections and edges that connect navigable road segments.
+	    Trajectories of taxis or bicycles\footnote{Rented bicycles are a public transportation method commonly managed and incentivized by city administrations} fall into this category. For these systems, queries of interest may involve points of interest around which these trajectories could end, or road segments that could be part of a path.
+	    \item \textbf{Route-based networks}: the trajectories must start at predefined points (usually stops or stations) at set times that are defined by the vehicles that make a stop at those points. These vehicles follow a predefined paths along these points, forming routes. Therefore, a trajectory follows a path along a graph of stops as vertexes, where an edge exists if there is a route that connects two stops. This graph can be hold very little relation to a road network, and users that travel in the same vehicle would produce identical parts of trajectories. This holds for bus and metro systems, along with most of other urban transportation systems. It is expected that for a collection of trajectories from a route-based network some of the queries of interest may revolve around the main network elements, which are routes and stops.
 	\end{itemize}
 	
-	[Here goes an image to show road-based vs route-based.]
+	\begin{figure*}[t]
+		\begin{center}
+			\begin{tabular}{cc}
+				\includegraphics[width=0.4\textwidth]{figures/road-network.png} &
+				\includegraphics[width=0.4\textwidth]{figures/mtl-metro-cut.png} \\
+			\end{tabular}
+		\end{center}
+		\caption{Example of a typical urban road-based network\footnotemark (left) and a subway route-based network\footnotemark (right).}
+		\label{fig:networks}
+	\end{figure*}
+	
+	\footnotetext[3]{Source: \cite{boeing2017osmnx}}
+	\footnotetext{Source: \url{http://www.stm.info/fr/infos/reseaux/metro}}
 	
 	As these two contexts lead to different ways of structuring and querying the information, it is natural to expect at least two different representations, one for each context. For this reason, in this work we propose the use of compact data structures to design novel representations that are able to handle massive collections of data related to user transportation habits. We intend to cover both contexts, as well as offer a fair trade-off for different query needs, while at the same time ensuring that our proposals can be implemented in a real world scenario, for which we evaluate the performance of our representations with realistic query cases over real datasets\footnote{When needed, the real data was augmented or mixed with synthetic information}.
 	
 	Furthermore, as a proof of the practicability of our approach, we intend to develop a user interface that could enable the exploitation of this information by researchers, transportation companies, city administrations and any other kind of end users. This interface must, at the very least, allow visualizing the network elements on a map, also granting the ability to make queries over these elements in an intuitive and responsive way, while respecting the usual quality principles of any user-oriented software of this kind.
 	
 	In conclusion, we present an end-to-end platform around representations based on compact data structures to process, store, query and visualize mined public transportation usage data. To our knowledge, this is the first work to accomplish building such integrated platform, although other works exist that contemplate the use of compact data structures for trajectories or moving objects (see Section~\ref{sec:ti}).
+	
+	\section{Outline}
+	This work is structured as follows...
 	
 \chapter{Related works}
 	\section{Data mining}
