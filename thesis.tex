@@ -61,18 +61,21 @@
 	
 	In conclusion, we present an end-to-end platform around representations based on compact data structures to process, store, query and visualize mined public transportation usage data. To our knowledge, this is the first work to accomplish building such integrated platform, although other works exist that contemplate the use of compact data structures for trajectories or moving objects (see Section~\ref{sec:ti}).
 	
+	\section{Contributions}
+	Move some of the things from the previous section here and detail more explicitly WTF have we done.
+	
 	\section{Outline}
 	This work is structured as follows...
 	
 \chapter{Related works}
 	\section{Data mining}
 	Currently there are several known techniques that would allow to collect data regarding users' trips over a public transportation network. Numerous works exist where those trajectories are mined from the transactions of smart cards \cite{bhaskar2015passenger,wang2014aggregated}. This can be complemented with information derived from GPS devices, as shown in \cite{ma2014development}. Alternatively, reliable trajectories may be extracted relying on positioning obtained from cellular networks, as proven by \cite{liu2017exploring}.
+	
+	In order to make significant conclusions about the travel patterns, it is essential to be able to collect a large enough collection of trips to be representative enough of the overall usage within a time span. For this problem, crowd-sourcing can be a viable approach to record the trajectories of public transportation users, as done in \cite{zimmerman2011field}, where the users were rewarded with real information on the bus location, estimation of arrival time and fullness in exchange of recording the GPS trace on their own bus trips.
 
     Because smart card methods usually provide only information about boarding stops, there are works that study the challenge of inferring alighting stops from passengers \cite{wang2011review}. In addition, the authors of \cite{tao2014exploring} have specifically tackled the challenge of reconstructing full trajectories, accounting for trip-chaining, by using data obtained from smart cards. Furthermore, in \cite{alsger2016validating} it is also proven that not only the alighting stops, but also the (last) destination stop of a trip can be estimated from boarding data gathered by a smart card, within a reasonable accuracy.
     
     This summarized review proves that, although we were not able to access real data from a public transportation company for this work, such curated information about users' trips can indeed be obtained and used for our proposed representations.
-    
-	[GPS is particularly useful in taxis. Cite that cool crowdsourcing approach with buses.]
 	
 	\section{Models of trajectory and types of queries}
     There is a large amount of work on designing data models for moving objects~\cite{DBLP:conf/ssdbm/WolfsonXCJ98,DBLP:conf/icde/SistlaWCD97,DBLP:journals/tods/GutingBEJLSV00,DBLP:conf/chorochronos/GutingBEJLNSV03,DBLP:journals/geoinformatica/Spaccapietra01,DBLP:conf/sigmod/ForlizziGNS00,DBLP:journals/geoinformatica/ErwigGSV99,DBLP:books/mk/GutingS2005}. Basically, a moving object data model represents the continuous change of the location of an object over time, this way defining a trajectory.
@@ -95,7 +98,7 @@
     Another common approach is to compliment the R-Tree with another similar structure, as has been done for the {\em MV3R-tree}~\cite{DBLP:conf/vldb/PapadiasT01},
     where an Historical {\em R-Tree}~\cite{nascimento1998towards} to partition on the temporal dimension.
     
-    The observation that, even for free trajectories, temporal dimension is generally more selective than spatial dimensions was heavily exploited in the subsequent works, such as {\em SETI} from \cite{chakka2003indexing}, where the space is partitioned statically and the time is indexed with a one dimensional R-Tree.
+    Generally, even for very large collections of trajectories, the spatial dimensions are more bounded than the temporal dimension, which can grow indefinitely. For this reason, even for free trajectories, temporal dimension is generally more selective than spatial dimensions. This observation was heavily exploited in the subsequent works, such as {\em SETI} from \cite{chakka2003indexing}, where the space is partitioned statically, while trajectories are indexed by their temporal dimension using a one dimensional R-Tree, allowing it to grow dynamically.
     
     Recently a framework based on Apache Spark was developed called {\em UlTraMan}~ \cite{ding2018ultraman}, that supports different kinds of partitioning schemes for large collections of trajectories to answer range, kNN or aggregation queries, allowing to repartition the dataset to maximize the query time efficiency for a given query type. Although UlTraMan has been tested over network constrained trajectories, it does not appear to be exploiting network information in any way, hence its inclusion in this category.
     
@@ -119,17 +122,17 @@
 	\section{Summed Area Tables}
 	The Summed Area Tables were first introduced in computer graphics \cite{crow1984summed} to speed up the mipmapping process.
 	
+	\section{Entropy coding}
+	Introduce Huffman, more importantly, Hu-Tucker, which is like Huffman but preserving lexical order.
+	
 	\section{Bitvectors}
 	Rank and select.
-	
-	\section{Compressed Suffix Array (CSA)}
-	Explaining ST and SA along the way.
 	
 	\section{Wavelet Tree and Wavelet Matrix}
 	WM will be less confusing than in my previous paper...
 	
-	\section{Hu-Tucker coding}
-	Which is like Huffman but preserving lexical order.
+	\section{Compressed Suffix Array (CSA)}
+	Explaining ST and SA along the way.
 	
 	\section{GIS interfaces}
 	Because I have a web interface with leaflet after all.
@@ -143,6 +146,9 @@
 	
 	\subsection{Description}
 	We have a CSA (with a twist) and then we align sampled times. We did introduce a Hu-Tucker WT tho...
+	
+	\subsubsection{The Hu-Tucker Wavelet Tree}
+	A small self-contained part for HT WT.
 	
 	\subsection{Algorithms}
 	We have X to Y and even Top K queries that are not that hard to describe.
@@ -175,7 +181,7 @@
 	With a lot of screencaps that are going to take like 10 pages! Maybe even an evaluation section (which would require me to make it actually work well!).
 	
 \chapter{ Conclusions and future works}
-	2-3 pages to speak about lessons learned and where is this all going.
+	2-3 pages to speak about lessons learned and where is this all going. Speak about field tests with people from Caminos...
 
 % \nocite{*}
 % \bibliographystyle{apalike}
