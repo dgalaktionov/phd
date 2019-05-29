@@ -7,7 +7,7 @@
 % \includeonly{__init,k3tree}
 
 \input{___header}
-\input{_acronyms.tex}
+\makeglossaries
 
 \begin{document}
 
@@ -19,6 +19,7 @@
 
 \frontmatter
 
+\input{_acronyms.tex}
 \include{_init}
 
 \mainmatter
@@ -62,7 +63,7 @@
 	\section{Contributions}
 	As the two contexts from Section~\ref{sec:pd}~lead to different ways of structuring and querying the information, it is natural to expect at least two different representations, one for each context. For this reason, in this work we have applied some of compact data structures to design novel representations that are able to handle massive collections of data related to user transportation habits. Our proposed representation cover both contexts, as well as offer a fair trade-off for different query needs, while at the same time ensuring that our proposals can be implemented in a real world scenario, for which we evaluate the performance of our representations with realistic query cases over real datasets\footnote{When needed, the real data was augmented or mixed with synthetic information}.
 	
-	Furthermore, as a proof of the practicability of our approach, we have developed a user interface that is based on our representations, and allows a user to perform queries through a GIS web interface. Unlike traditional GIS interfaces, ours is focused on offering convenient methods to query past user trajectories by network elements instead of purely spatial relationships, and achieves far superior performance when compared to systems backed by traditional database systems.
+	Furthermore, as a proof of the practicability of our approach, we have developed a user interface that is based on our representations, and allows a user to perform queries through a \gls{gis} web interface. Unlike traditional \gls{gis} interfaces, ours is focused on offering convenient methods to query past user trajectories by network elements instead of purely spatial relationships, and achieves far superior performance when compared to systems backed by traditional database systems.
 	
 	In conclusion, we present an end-to-end platform around representations based on compact data structures to process, store, query and visualize mined public transportation usage data. To our knowledge, this is the first work to accomplish building such integrated platform, although other works exist that contemplate the use of compact data structures for trajectories or moving objects (see Section~\ref{sec:ti}).
 	
@@ -132,55 +133,103 @@
 	Rank and select.
 	
 	\section{Wavelet Tree and Wavelet Matrix}
-	WM will be less confusing than in my previous paper...
+	\label{sec:wt}
+	\gls{wm} will be less confusing than in my previous paper...
 	
-	\section{Compressed Suffix Array (CSA)}
+	\subsection{Hu-Tucker Wavelet Tree}
+	Another way of compressing a $\wt$ is to use a prefix-free variable-length encoding for the symbols. 
+For example,  Huffman~\cite{huffman1952method} code can be used to build a
+Huffman-Shaped $\wt$~\cite{ferragina2009compressed}, where the tree is not balanced
+anymore. The size reduces to $n(H_0(S)+1)+ o(n(H_0(S)+1)) +  O(\sigma \log n)$,\footnote{$O(\sigma \log n)$ term 
+includes both the tree pointers and the size of the Huffman model.}   and average time becomes
+$O(H_0(S))$ for $rank$, $access$, and $select$  (worst-case time is still $O(\log\sigma)$ 
+\cite{Barbay:2013:CPA:2562345.2562626}). By using compressed
+bitvectors \cite{{CNO15}} space can be reduced even further to $nH_0(S) +o(n(H_0(S)+1)) +  O(\sigma \log n)$.
+Unfortunately, the Huffman codes given to
+adjacent symbols are no longer contiguous, and it is not possible to give a $O(\log\sigma)$ bound for
+$count(i,j,\alpha,\beta)$ anymore, even if the code is canonical. Hu-Tucker codes~\cite{hu1971optimal}
+can be used instead.\footnote{Hu-Tucker ~\cite{hu1971optimal}
+	 is an optimal prefix code that preserves the order of the input vocabulary.
+	This means that the lexicographic order of the output variable-length binary codes is the same as the order of the input symbols.}
+Compression degrades slightly with respect to using Huffman coding,\footnote{Being $L_h$ and $L_{ht}$ the average codeword 
+	length of Huffman coding and Hu-Tucker codes respectively, it holds: $H_0 \leq L_h \leq H_0+1$ and $H_0 \leq L_{ht} \leq H_0+2$
+	(see \cite{Cover:2006:EIT:1146355} (pages 122-123), or \cite{HORIBE1977148, GilbertandMore1959}).} but the
+codes for adjacent symbols are lexicographically contiguous. This permits to solve $count$ efficiently. 
+%The size of a Hu-Tucker-shaped $\wt$ ($\wtht$) can be bounded to $n(H_0(S)+2) + o(n(H_0(S)+2)) +  O(\sigma \log n)$ and can be reduced
+%to  $n(H_0(S)+1) + o(n(H_0(S)+2)) +  O(\sigma \log n)$ using compressed bitvectors as well.
+%\ART{Por que en negritas?}
+The size of a {Hu-Tucker-shaped $\wt$} ($\wtht$)  can be bounded to $n(H_0(S)+2) + o(n(H_0(S)+1)) +  O(\sigma \log n)$ and can be reduced
+to  $nH_0(S) + o(n(H_0(S)+1)) +  O(\sigma \log n)$ by using compressed bitvectors as well.
+	
+	\section{Compressed Suffix Array}
 	Explaining ST and SA along the way.
 	
 	\section{GIS interfaces}
 	Because I have a web interface with leaflet after all.
 	
 	
-\chapter{Contributions}
-	As explained in Section~\ref{sec:pd}, there there are taxis and then there are buses. Their nature is different because of networks, so they must be treated differently. In the following sections we are going to propose representations for them both and then an interface for the buses case.
+\part{Compact representations}
+	\chapter{Representations for public transportation over streets}
+	As explained in Section~\ref{sec:pd}, there there are taxis and then there are buses. Their nature is different because of networks, so they must be treated differently. Here we are going to speak about a repr that works better for taxis.
 	
-	\section{Representations for public transportation over streets}
 	Old ass CTR \cite{brisaboa2018compact} with a WM or WT for times, and we tried different approaches to compress those times. It is not very useful for buses and metro because of the crazy redundancy.
 	
-	\subsection{Description}
-	We have a CSA (with a twist) and then we align sampled times. We did introduce a Hu-Tucker WT tho...
+	\section{Description}
+	We have a CSA (with a twist) and then we align sampled times.
 	
-	\subsubsection{The Hu-Tucker Wavelet Tree}
-	A small self-contained part for HT WT.
-	
-	\subsection{Algorithms}
+	\section{Algorithms}
 	We have X to Y and even Top K queries that are not that hard to describe.
 	
-	\subsection{Experiments}
+	\subsection{Time intervals representations}
+	Bla bla speak about two alternatives here.
+	
+	\begin{figure}[htb]
+    	\begin{center}
+    		{\includegraphics[width=1.0\textwidth]{figures/wma.eps}}
+    		{\includegraphics[width=1.0\textwidth]{figures/wta.eps}}
+    	\end{center}
+    	\caption{Balanced \acrlong{wm} (top) and \acrlong{htwt} (bottom)}
+    	%for the times within $Icode^{\Psi}$ in Figure~\ref{fig:tcsa}.}
+    	\label{fig:wtwm}
+    \end{figure}
+
+	
+	Just as proven in Section~\ref{sec:wt} with \gls{wt}, both \gls{htwt} and \gls{wm} implement the $range_{a,b}(S,i,j)$ operation in $O(\log\sigma)$ time on average. This is easy to prove for \gls{htwt} as each node will contain entries from a lexicographically contiguous subrange from the alphabet $\Sigma$, making the same properties seen for \gls{wt} hold. The main difference is that Hu-Tucker codes will reshape the tree, making the leaves containing the least frequent symbols deeper than the leaves with the more frequent symbols, which may theoretically produce a tree of height $\sigma-1$\footnote{Imagine a vocabulary $\Sigma=\{s_1..s_\sigma\}$, where the probability of appearance of the symbol $s_i$ in the text $S$ turned out to be $2^{-i}$.}, which will obviously affect the worst-case performance, in exchange of a very large compression ratio.
+	
+	The complexity may initially seem harder to analyze for \gls{wm}, as its ``nodes'' are delimited implicitly: the symbols with a code starting in 0 will find their second bit in an implicit node delimited by the subrange $B_2[1..z]$ (for some $1 \leq z < n$), while the symbols with a code starting in 1 will correspond to $B_2[z+1..n]$. Generalizing this idea, we can assert that symbols with the same \textit{context} of $\alpha$ starting bits in their codes will find their next $\alpha+1$ bit in some subrange $B_{\alpha+1}[i..j]$ with $1 \leq i \leq j \leq n$. Therefore, the same properties from \gls{wt} can be exploited for a $range_{a,b}(S,i,j)$ operation in \gls{wm} as well, allowing us to solve it in $O(\log\sigma)$ worst-case time.
+	
+    While it is possible to build \gls{wm} using canonical Huffman codes, it is unfortunately impossible guarantee the $O(\log\sigma)$ bound on $range_{a,b}(S,i,j)$ on such \gls{wm}, as the symbols lose their original lexicographic proximity, meaning that symbols which would appear on the same node of \gls{wt} due to the common most significant bits in their original codes, would get different Huffman codes based on their frequency of appearance in the text, ending up in separate nodes. On the other hand, to our best knowledge, there is no practical way of building \gls{wm} with Hu-Tucker codes.
+	
+	\section{Experiments}
 	We may have not compared it to anything but we sure do have tons of results!
 	
-	\section{Representations for public transportation over networks}
+	\chapter{Representations for public transportation over networks}
+	This is about a representation that was designed for buses.
+	
 	Here we speak about TTCTR and XCTR, where we have a network description and index journeys instead of explicit times.
 	
-	\subsection{Description}
+	\section{Description}
 	A network representation, then CSA for stops. In TTCTR we encode lines in these stops, while in XCTR we make the twist from before (I think) and then separate lines into a WM. Whatever the case, we then have an aligned WM of journeys. Oh and T-Matrices as a DW-like structure.
 	
-	\subsection{Algorithms}
+	\section{Algorithms}
 	A bit complex for both TTCTR and XCTR. Maybe copy the complexity table from the paper that explains why TTCTR sucks for some queries and we needed to develop XCTR.
 	
-	\subsection{Experiments}
+	\section{Experiments}
 	Here we compare one to the other. Maybe include query times for postgresql, maybe later.
 	
-	\section{GIS interface for public transportation over networks}
-	The tool we have developed that can interact with the previously described structures. We retell what we explained about GIS in previous concepts, and explain that this is different because it is built around our representations.
+\part{GIS interface}
+	\chapter{GIS interface for public transportation over networks}
+	This is an interface that can handle both cases and structures (in theory).
 	
-	\subsection{Analysis}
+	The tool we have developed that can interact with the previously described structures. We retell what we explained about \gls{gis} in previous concepts, and explain that this is different because it is built around our representations.
+	
+	\section{Architecture}
 	From a functional perspective and then a technological one.
 	
-	\subsection{API}
+	\section{API}
 	A nice and easy way to make queries and return data.
 	
-	\subsection{Interface}
+	\section{User Interface}
 	With a lot of screencaps that are going to take like 10 pages! Maybe even an evaluation section (which would require me to make it actually work well!).
 	
 \chapter{ Conclusions and future works}
