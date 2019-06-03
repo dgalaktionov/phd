@@ -169,13 +169,29 @@ to  $nH_0(S) + o(n(H_0(S)+1)) +  O(\sigma \log n)$ by using compressed bitvector
 	
 	
 \part{Compact representations}
-	\chapter{Representations for public transportation over streets}
+	\chapter{Representations for public transportation over road-based networks}
 	As explained in Section~\ref{sec:pd}, there there are taxis and then there are buses. Their nature is different because of networks, so they must be treated differently. Here we are going to speak about a repr that works better for taxis.
 	
 	Old ass CTR \cite{brisaboa2018compact} with a WM or WT for times, and we tried different approaches to compress those times. It is not very useful for buses and metro because of the crazy redundancy.
 	
 	\section{Description}
-	We have a CSA (with a twist) and then we align sampled times.
+	Given a transportation network, whether it is formed by road-based or route-based, we work with a representation of the network that is based on a directed graph. For a road-based network, a \textbf{node} represents a road segment delimited by intersections, where two nodes are connected by an edge if it is possible (i.e. legally allowed). This allows to accurately describe a trajectory by sequentially listing the road segments that were traversed, while minimizing the redundancy.
+	
+	In the other hand, for route-based networks we define the nodes as stops or stations, making two of them connected if there exists a line or route that stops at each, consecutively. We can represent user trajectories following the same strategy as for road-based networks, although that will lead us to redundant representations in most cases. On subway and bus networks it is common to find stops that belong to only one route, and therefore must be either the end of a trajectory or be followed by the only possible next node. Furthermore, a more minimalist representation of a trajectory with the starting, ending and route switching nodes alone would be sufficient to reconstruct the original trajectory. Such representation will be contemplated later in Chapter~\ref{sec:newctr}, while on \gls{ctr} we maintain a common representation strategy for both kinds of networks. Because listing every node traversed introduces redundancy on route-based networks, we state that \gls{ctr} is more adequate for road-based networks.
+	
+	[speak about queries of interest for road-based]
+	
+	[trip description with $s$ and $t$]
+	
+    To support these queries, we need to represent the spatial and temporal components of our collection of user trips $\mathcal{T}$, where each trip is formed by every node traversed. We use a \gls{csa} to represent the spatial component of our dataset of trips within \gls{ctr}. However, we must perform some preprocessing on $\mathcal{T}$ before building a \gls{csa} on it. Initially, we sort the trips by their first node ($s_1$), then by the last node ($s_{l_i}$), then by the starting time ($t_1$), and finally, by its second node ($s_2$), third node ($s_3$), and successive nodes. Note that the start time ($t_1$) of the trip does not belong to the spatial component, but it is nevertheless used for the sorting\footnote{This initial sorting of the trips will allow us to answer some useful queries very efficiently  (i.e., count trips starting at node $X$ and ending at node $Y$).}.
+	
+	\begin{figure}[h!]
+      \begin{center}
+      {\includegraphics[width=1.00\textwidth]{figures/csttr.eps}}
+      \end{center}
+      \caption{Structures involved in the creation of a \acrshort{ctr}}
+      \label{fig:tcsa}
+    \end{figure}
 	
 	\section{Algorithms}
 	We have X to Y and even Top K queries that are not that hard to describe.
@@ -203,7 +219,8 @@ to  $nH_0(S) + o(n(H_0(S)+1)) +  O(\sigma \log n)$ by using compressed bitvector
 	\section{Experiments}
 	We may have not compared it to anything but we sure do have tons of results!
 	
-	\chapter{Representations for public transportation over networks}
+	\chapter{Representations for public transportation over route-based networks}
+	\label{sec:newctr}
 	This is about a representation that was designed for buses.
 	
 	Here we speak about TTCTR and XCTR, where we have a network description and index journeys instead of explicit times.
