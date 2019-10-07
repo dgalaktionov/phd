@@ -12,7 +12,7 @@
 \usepackage{fancyhdr} 				% Headers
 \usepackage{xspace}	  				% Create macros with appropriate extra space after
 \usepackage{lipsum}					% Fill sections
-\usepackage{fixltx2e}				% Make math macros robust: \( \) \[ \]
+%\usepackage{fixltx2e}				% Make math macros robust: \( \) \[ \]
 \usepackage{afterpage}              % Manual control over footnotes
 
 
@@ -35,8 +35,8 @@
 
 \usepackage{tikz}
 
-\usepackage[breaklinks,colorlinks]{hyperref} % Hyperlinks in refs. Must be loaded at the end (except cleverref)
-\usepackage{hypdvips}
+\usepackage[breaklinks,colorlinks,driverfallback=dvipdfm]{hyperref} % Hyperlinks in refs. Must be loaded at the end (except cleverref)
+\usepackage{hypdvips} % comment to remove error in pdflatex
 % \usepackage[nameinlink]{cleveref}
 \usepackage{cleveref}
 \usepackage[nomain,acronym]{glossaries}    % Acronyms

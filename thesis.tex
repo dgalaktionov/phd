@@ -38,10 +38,10 @@
 	\label{sec:pd}
 	Considering the underlying network, we have identified two distinguishable contexts for public transportation systems:
 	\begin{itemize}
-	    \item \textbf{Road-based networks}: a trajectory can start anywhere, at any time, and follow any arbitrary path along a defined road network.
+	    \item \textbf{Networks based on urban streets}: within these networks, a trajectory can start anywhere, at any time, and follow any arbitrary path of segments along a defined road network.
 	    %, which can have two alternative graph representations: assign a vertex for each intersection and edges for road segments that connect these intersections, or alternatively, a vertex for each road segment with no intersections and edges that connect navigable road segments.
 	    Trajectories of taxis or bicycles\footnote{Rented bicycles are a public transportation method commonly managed and incentivized by city administrations} fall into this category. For these systems, queries of interest may involve points of interest around which these trajectories could end, or road segments that could be part of a path.
-	    \item \textbf{Route-based networks}: the trajectories must start at predefined points (usually stops or stations) at set times that are defined by the vehicles that make a stop at those points. These vehicles follow a predefined paths along these points, forming routes. Therefore, a trajectory follows a path along a graph of stops as vertexes, where an edge exists if there is a route that connects two stops. This graph can be hold very little relation to a road network, and users that travel in the same vehicle would produce identical parts of trajectories. This holds for bus and metro systems, along with most of other urban transportation systems. It is expected that for a collection of trajectories from a route-based network some of the queries of interest may revolve around the main network elements, which are routes and stops.
+	    \item \textbf{Public transportation networks}: the trajectories must start at predefined points (usually stops or stations) at set times that are defined by the vehicles that make a stop at those points. These vehicles follow a predefined paths along these points, forming routes. Therefore, a trajectory follows a path along a graph of stops as vertexes, where an edge exists if there is a route that connects two stops. This graph can be hold very little relation to a road network, and users that travel in the same vehicle would produce identical parts of trajectories. This holds for bus and metro systems, along with most of other urban transportation systems. It is expected that for a collection of trajectories from a route-based network some of the queries of interest may revolve around the main network elements, which are routes and stops.
 	\end{itemize}
 	
 	\begin{figure*}[t]
@@ -51,7 +51,7 @@
 				\includegraphics[width=0.4\textwidth]{figures/mtl-metro-cut.png} \\
 			\end{tabular}
 		\end{center}
-		\caption{Example of a typical urban road-based network (left) and a subway route-based network (right).}
+		\caption{Example of a typical urban street network (left) and a subway network (right).}
 		\caption*{\small Sources: \cite{boeing2017osmnx} (left), \url{http://www.stm.info/fr/infos/reseaux/metro} (right)}
 		\label{fig:networks}
 	\end{figure*}
@@ -71,20 +71,20 @@
 	This work is structured as follows...
 	
 \chapter{Related works}
-	\section{Data mining}\marginpar{trajectory data mining}
+	\section{Trajectory extraction}
 	\label{sec:dm}
-	Currently there are several known techniques that would allow to collect data regarding users' trips over a public transportation network. Numerous works exist where those trajectories are mined from the transactions of smart cards \cite{bhaskar2015passenger,wang2014aggregated}. This can be complemented with information derived from GPS devices, as shown in \cite{ma2014development}. Alternatively, reliable trajectories may be extracted relying on positioning obtained from cellular networks, as proven by \cite{liu2017exploring}.
+	In order to make significant conclusions about the travel patterns, it is essential to be able to collect a large enough collection of trips to be representative enough of the overall usage within a time span. For this problem, crowd-sourcing can be a viable approach to record the trajectories of public transportation users, as done in \cite{zimmerman2011field}, where the users were rewarded with real information on the bus location, estimation of arrival time and fullness in exchange of recording the GPS trace on their own bus trips.
 	
-	In order to make significant conclusions about the travel patterns, it is essential to be able to collect a large enough collection of trips to be representative enough of the overall usage within a time span. For this problem, crowd-sourcing can be a viable approach to record the trajectories of public transportation users, as done in \cite{zimmerman2011field}, where the users were rewarded with real information on the bus location, estimation of arrival time and fullness in exchange of recording the GPS trace on their own bus trips.\marginpar{tiene que ir antes}
+	Currently there are several known techniques that would allow to collect data regarding users' trips over a public transportation network. Numerous works exist where those trajectories are mined from the transactions of smart cards \cite{bhaskar2015passenger,wang2014aggregated}. This can be complemented with information derived from GPS devices, as shown in \cite{ma2014development}. Alternatively, reliable trajectories may be extracted relying on positioning obtained from cellular networks, as proven by \cite{liu2017exploring}.
 
-    Because smart card methods usually provide only information about boarding stops, there are works that study the challenge of inferring alighting stops from passengers \cite{wang2011review}. In addition, the authors of \cite{tao2014exploring} have specifically tackled the challenge of reconstructing full trajectories, accounting for trip-chaining, by using data obtained from smart cards. Furthermore, in \cite{alsger2016validating} it is also proven that not only the alighting stops, but also the (last) destination stop of a trip can be estimated from boarding data gathered by a smart card, within a reasonable accuracy.\marginpar{pero nadie es capaz de trabajar sobre la verdadera mineria: consultas mas avanzadas!}
+    Because smart card methods usually provide only information about boarding stops, there are works that study the challenge of inferring alighting stops from passengers \cite{wang2011review}. In addition, the authors of \cite{tao2014exploring} have specifically tackled the challenge of reconstructing full trajectories, accounting for trip-chaining, by using data obtained from smart cards. Furthermore, in \cite{alsger2016validating} it is also proven that not only the alighting stops, but also the (last) destination stop of a trip can be estimated from boarding data gathered by a smart card, within a reasonable accuracy.
     
-    This summarized review proves that, although we were not able to access real data from a public transportation company for this work, such curated information about users' trips can indeed be obtained and used for our proposed representations.
+    However, there is little research on methods for exploitation of this extracted information, in order to analyze and improve the efficiency of a transportation network, which constitutes the scope of our work. This summarized review proves that, although we were not able to access real data from a public transportation company for this work, such curated information about users' trips can indeed be obtained and used for our proposed representations.
 	
 	\section{Models of trajectory and types of queries}
     There is a large amount of work on designing data models for moving objects~\cite{DBLP:conf/ssdbm/WolfsonXCJ98,DBLP:conf/icde/SistlaWCD97,DBLP:journals/tods/GutingBEJLSV00,DBLP:conf/chorochronos/GutingBEJLNSV03,DBLP:journals/geoinformatica/Spaccapietra01,DBLP:conf/sigmod/ForlizziGNS00,DBLP:journals/geoinformatica/ErwigGSV99,DBLP:books/mk/GutingS2005}. Basically, a moving object data model represents the continuous change of the location of an object over time, this way defining a trajectory.
     
-    Moving object can be seen as a big data problem, where solutions may typically differ in the representation of location, contextual or environmental information where the movement takes place, the time dimension, which can be continuous or discrete, and the level of abstraction or granularity on which the trajectories are described~\cite{DBLP:journals/sigspatial/DamianiIGV15}. A common classification of trajectories distinguishes free from network-based trajectories.  \textit{Free trajectories} or Euclidean trajectories are a sequence of GPS points represented by an ad-hoc data type of moving points~\cite{DBLP:conf/ssdbm/WolfsonXCJ98,DBLP:conf/icde/SistlaWCD97,DBLP:journals/tods/GutingBEJLSV00}. \textit{Network constrained} trajectories are a temporal ordered sequence of locations on networks. This trajectory model includes a data type for representing  networks and  for representing the relative location of static and moving  points on the network~\cite{DBLP:journals/vldb/GutingAD06}. When we want to represent trajectories over a road-based network, it is often useful to deal with \textit{network-matched trajectories}, as this will allow to represent large collections trajectories more efficiently. The process of obtaining these network-matched trajectories from GPS points is called \textit{map-matching} \cite{brakatsoulas2005map}. This process can also be done online, as recently shown in~\cite{DBLP:journals/tits/Ding0GL15}, where all the processing is done in the server, eliminating the need of any map or network representation at the moving object side.
+    Moving object can be seen as a big data problem, where solutions may typically differ in the representation of location, contextual or environmental information where the movement takes place, the time dimension, which can be continuous or discrete, and the level of abstraction or granularity on which the trajectories are described~\cite{DBLP:journals/sigspatial/DamianiIGV15}. A common classification of trajectories distinguishes free from network-based trajectories.  \textit{Free trajectories} or Euclidean trajectories are a sequence of GPS points represented by an ad-hoc data type of moving points~\cite{DBLP:conf/ssdbm/WolfsonXCJ98,DBLP:conf/icde/SistlaWCD97,DBLP:journals/tods/GutingBEJLSV00}. \textit{Network constrained} trajectories are a temporal ordered sequence of locations on networks. This trajectory model includes a data type for representing  networks and  for representing the relative location of static and moving  points on the network~\cite{DBLP:journals/vldb/GutingAD06}. When we want to represent trajectories over an urban street network, it is often useful to deal with \textit{network-matched trajectories}, as this will allow to represent large collections trajectories more efficiently. The process of obtaining these network-matched trajectories from GPS points is called \textit{map-matching} \cite{brakatsoulas2005map}. This process can also be done online, as recently shown in~\cite{DBLP:journals/tits/Ding0GL15}, where all the processing is done in the server, eliminating the need of any map or network representation at the moving object side.
     
     The definition of trajectories at an abstract level must be materialized in an internal representation with access methods for query processing. An early and broad classification of spatial-temporal queries for \textit{historical positions} of moving objects \cite{DBLP:conf/vldb/PfoserJT00} identifies coordinate- and trajectory-based queries. Coordinate-based queries include the well-known  {\it time-slice}, {\it time-interval} and \textit{nearest-neighbor queries}. Examples are \textit{find objects or trajectories in a region at a  particular time instant or during some time interval}. Another important example of coordinate-based queries is \textit{find the k-closest objects with respect to a given point at a given time instant}. Trajectory-based queries  involve topology of trajectories (e.g., overlap and disjoint) and information (e.g., speed, area, and heading) that can be derived from the combination of time and space. An example of such queries would be  \textit{find objects or trajectories that satisfy a spatial predicate (eg., leave or enter a region)  at a particular time instant or time interval}. There also exist combined queries addressing information of particular objects: \textit{Where was object X at a particular time instant or time interval}. In all previous queries, the results are individual trajectories that satisfy the query constraints.
     
@@ -120,7 +120,9 @@
     
     A recent compact data structure named {\em CiNCT} has been proposed in \cite{koide2018cinct}, where trajectories are encoded into a string, that is used to build an FM-index \cite{DBLP:conf/focs/FerraginaM00} with a Huffman-shaped Wavelet Tree \cite{ferragina2009compressed}. To further save space, the string is constructed with relative movement labels instead of absolute edges, with an auxiliary structure that represents a network graph built from the input trajectories themselves. While this structure excels at pattern-matching and path extraction in vehicular networks (such as the streets of a city), it cannot be applied to our problems in public transportation networks.
 	
-\chapter{Previous concepts} \marginpar{Meter previous concepts en parte I (e. compactas) y II (GIS), segun corresponda}
+	
+\part{Compact representations}
+\chapter{Previous concepts}
 	I am going to develop this more when I have more content on my proposals.
 	
 	\section{Summed Area Tables}
@@ -137,9 +139,9 @@
 	\gls{wm} will be less confusing than in my previous paper...
 	
 	\subsection{Hu-Tucker Wavelet Tree}
-	Another way of compressing a $\wt$ is to use a prefix-free variable-length encoding for the symbols. 
+	Another way of compressing a \gls{wt} is to use a prefix-free variable-length encoding for the symbols. 
 For example,  Huffman~\cite{huffman1952method} code can be used to build a
-Huffman-Shaped $\wt$~\cite{ferragina2009compressed}, where the tree is not balanced
+Huffman-Shaped \gls{wt}~\cite{ferragina2009compressed}, where the tree is not balanced
 anymore. The size reduces to $n(H_0(S)+1)+ o(n(H_0(S)+1)) +  O(\sigma \log n)$,\footnote{$O(\sigma \log n)$ term 
 includes both the tree pointers and the size of the Huffman model.}   and average time becomes
 $O(H_0(S))$ for $rank$, $access$, and $select$  (worst-case time is still $O(\log\sigma)$ 
@@ -158,18 +160,13 @@ codes for adjacent symbols are lexicographically contiguous. This permits to sol
 %The size of a Hu-Tucker-shaped $\wt$ ($\wtht$) can be bounded to $n(H_0(S)+2) + o(n(H_0(S)+2)) +  O(\sigma \log n)$ and can be reduced
 %to  $n(H_0(S)+1) + o(n(H_0(S)+2)) +  O(\sigma \log n)$ using compressed bitvectors as well.
 %\ART{Por que en negritas?}
-The size of a {Hu-Tucker-shaped $\wt$} ($\wtht$)  can be bounded to $n(H_0(S)+2) + o(n(H_0(S)+1)) +  O(\sigma \log n)$ and can be reduced
+The size of a \gls{htwt}  can be bounded to $n(H_0(S)+2) + o(n(H_0(S)+1)) +  O(\sigma \log n)$ and can be reduced
 to  $nH_0(S) + o(n(H_0(S)+1)) +  O(\sigma \log n)$ by using compressed bitvectors as well.
 	
 	\section{Compressed Suffix Array}
 	Explaining ST and SA along the way.
-	
-	\section{GIS interfaces}
-	Because I have a web interface with leaflet after all.
-	
-	
-\part{Compact representations}
-	\chapter{Representations of trips over city streets}
+
+	\chapter{Representations of trips over urban streets}
 	As explained in Section~\ref{sec:pd}, there there are taxis and then there are buses. Their nature is different because of networks, so they must be treated differently. Here we are going to speak about a repr that works better for taxis.
 	
 	Old ass CTR \cite{brisaboa2018compact} with a WM or WT for times, and we tried different approaches to compress those times. It is not very useful for buses and metro because of the crazy redundancy.
@@ -178,11 +175,11 @@ to  $nH_0(S) + o(n(H_0(S)+1)) +  O(\sigma \log n)$ by using compressed bitvector
 	Bla bla sobre problema de taxis y como se puede aplicar a otros ambitos. Nos da igual en que parte del tramo de la calle finaliza el viaje, solo nos interesa el grafo. Cada viaje es como un texto...
 	
 	\section{Structures}
-	Given a transportation network, whether it is formed by road-based or route-based, we work with a representation of the network that is based on a directed graph. For a road-based network, a \textbf{node} represents a road segment delimited by intersections, where two nodes are connected by an edge if it is possible (i.e. legally allowed). This allows to accurately describe a trajectory by sequentially listing the road segments that were traversed, while minimizing the redundancy.
+	Given a transportation network, whether it is based on urban strets or public transportation, we work with a representation of the network that is based on a directed graph. For an urban street network, a \textbf{node} represents a road segment delimited by intersections, where two nodes are connected by an edge if it is possible (i.e. legally allowed). This allows to accurately describe a trajectory by sequentially listing the road segments that were traversed, while minimizing the redundancy.
 	
-	In the other hand, for route-based networks we define the nodes as stops or stations, making two of them connected if there exists a line or route that stops at each, consecutively. We can represent user trajectories following the same strategy as for road-based networks, although that will lead us to redundant representations in most cases. On subway and bus networks it is common to find stops that belong to only one route, and therefore must be either the end of a trajectory or be followed by the only possible next node. Furthermore, a more minimalist representation of a trajectory with the starting, ending and route switching nodes alone would be sufficient to reconstruct the original trajectory. Such representation will be contemplated later in Chapter~\ref{sec:newctr}, while on \gls{ctr} we maintain a common representation strategy for both kinds of networks. Because listing every node traversed introduces redundancy on route-based networks, we state that \gls{ctr} is more adequate for road-based networks.
+	In the other hand, for public transportation networks we define the nodes as stops or stations, making two of them connected if there exists a line or route that stops at each, consecutively. We can represent user trajectories following the same strategy as for urban street networks, although that will lead us to redundant representations in most cases. On subway and bus networks it is common to find stops that belong to only one route, and therefore must be either the end of a trajectory or be followed by the only possible next node. Furthermore, a more minimalist representation of a trajectory with the starting, ending and route switching nodes alone would be sufficient to reconstruct the original trajectory. Such representation will be contemplated later in Chapter~\ref{sec:newctr}, while on \gls{ctr} we maintain a common representation strategy for both kinds of networks. Because listing every node traversed introduces redundancy on public transportation networks, we state that \gls{ctr} is more adequate for urban street networks.
 	
-	[speak about queries of interest for road-based]
+	[speak about queries of interest for urban street netowkrs]
 	
 	[trip description with $s$ and $t$]
 	
@@ -222,8 +219,8 @@ to  $nH_0(S) + o(n(H_0(S)+1)) +  O(\sigma \log n)$ by using compressed bitvector
 	\section{Experiments}
 	We may have not compared it to anything but we sure do have tons of results!
 	
-	\chapter{Representations of trips over public transportation networks}
-	\label{sec:newctr}
+\chapter{Representations of trips over public transportation networks}
+\label{sec:newctr}
 	This is about a representation that was designed for buses.
 	
 	Here we speak about TTCTR and XCTR, where we have a network description and index journeys instead of explicit times.
@@ -238,6 +235,12 @@ to  $nH_0(S) + o(n(H_0(S)+1)) +  O(\sigma \log n)$ by using compressed bitvector
 	Here we compare one to the other. Maybe include query times for postgresql, maybe later.
 	
 \part{GIS interface}
+\chapter{Previous concepts}
+    In order to develop a usable interface, we must rely on a map based representation that works with geographic information. Therefore, in this chapter we shall introduce the basic concepts of \gls{gis} in order to provide a context for this part of our contribution.
+
+    \section{GIS interfaces}
+	Because I have a web interface with leaflet after all.
+
 	\chapter{GIS interface for public transportation over networks}
 	This is an interface that can handle both cases and structures (in theory).
 	
