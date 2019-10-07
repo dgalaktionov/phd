@@ -71,13 +71,13 @@
 	This work is structured as follows...
 	
 \chapter{Related works}
-	\section{Data mining}
+	\section{Data mining}\marginpar{trajectory data mining}
 	\label{sec:dm}
 	Currently there are several known techniques that would allow to collect data regarding users' trips over a public transportation network. Numerous works exist where those trajectories are mined from the transactions of smart cards \cite{bhaskar2015passenger,wang2014aggregated}. This can be complemented with information derived from GPS devices, as shown in \cite{ma2014development}. Alternatively, reliable trajectories may be extracted relying on positioning obtained from cellular networks, as proven by \cite{liu2017exploring}.
 	
-	In order to make significant conclusions about the travel patterns, it is essential to be able to collect a large enough collection of trips to be representative enough of the overall usage within a time span. For this problem, crowd-sourcing can be a viable approach to record the trajectories of public transportation users, as done in \cite{zimmerman2011field}, where the users were rewarded with real information on the bus location, estimation of arrival time and fullness in exchange of recording the GPS trace on their own bus trips.
+	In order to make significant conclusions about the travel patterns, it is essential to be able to collect a large enough collection of trips to be representative enough of the overall usage within a time span. For this problem, crowd-sourcing can be a viable approach to record the trajectories of public transportation users, as done in \cite{zimmerman2011field}, where the users were rewarded with real information on the bus location, estimation of arrival time and fullness in exchange of recording the GPS trace on their own bus trips.\marginpar{tiene que ir antes}
 
-    Because smart card methods usually provide only information about boarding stops, there are works that study the challenge of inferring alighting stops from passengers \cite{wang2011review}. In addition, the authors of \cite{tao2014exploring} have specifically tackled the challenge of reconstructing full trajectories, accounting for trip-chaining, by using data obtained from smart cards. Furthermore, in \cite{alsger2016validating} it is also proven that not only the alighting stops, but also the (last) destination stop of a trip can be estimated from boarding data gathered by a smart card, within a reasonable accuracy.
+    Because smart card methods usually provide only information about boarding stops, there are works that study the challenge of inferring alighting stops from passengers \cite{wang2011review}. In addition, the authors of \cite{tao2014exploring} have specifically tackled the challenge of reconstructing full trajectories, accounting for trip-chaining, by using data obtained from smart cards. Furthermore, in \cite{alsger2016validating} it is also proven that not only the alighting stops, but also the (last) destination stop of a trip can be estimated from boarding data gathered by a smart card, within a reasonable accuracy.\marginpar{pero nadie es capaz de trabajar sobre la verdadera mineria: consultas mas avanzadas!}
     
     This summarized review proves that, although we were not able to access real data from a public transportation company for this work, such curated information about users' trips can indeed be obtained and used for our proposed representations.
 	
@@ -120,7 +120,7 @@
     
     A recent compact data structure named {\em CiNCT} has been proposed in \cite{koide2018cinct}, where trajectories are encoded into a string, that is used to build an FM-index \cite{DBLP:conf/focs/FerraginaM00} with a Huffman-shaped Wavelet Tree \cite{ferragina2009compressed}. To further save space, the string is constructed with relative movement labels instead of absolute edges, with an auxiliary structure that represents a network graph built from the input trajectories themselves. While this structure excels at pattern-matching and path extraction in vehicular networks (such as the streets of a city), it cannot be applied to our problems in public transportation networks.
 	
-\chapter{Previous concepts}
+\chapter{Previous concepts} \marginpar{Meter previous concepts en parte I (e. compactas) y II (GIS), segun corresponda}
 	I am going to develop this more when I have more content on my proposals.
 	
 	\section{Summed Area Tables}
@@ -169,12 +169,15 @@ to  $nH_0(S) + o(n(H_0(S)+1)) +  O(\sigma \log n)$ by using compressed bitvector
 	
 	
 \part{Compact representations}
-	\chapter{Representations for public transportation over road-based networks}
+	\chapter{Representations of trips over city streets}
 	As explained in Section~\ref{sec:pd}, there there are taxis and then there are buses. Their nature is different because of networks, so they must be treated differently. Here we are going to speak about a repr that works better for taxis.
 	
 	Old ass CTR \cite{brisaboa2018compact} with a WM or WT for times, and we tried different approaches to compress those times. It is not very useful for buses and metro because of the crazy redundancy.
 	
 	\section{Description}
+	Bla bla sobre problema de taxis y como se puede aplicar a otros ambitos. Nos da igual en que parte del tramo de la calle finaliza el viaje, solo nos interesa el grafo. Cada viaje es como un texto...
+	
+	\section{Structures}
 	Given a transportation network, whether it is formed by road-based or route-based, we work with a representation of the network that is based on a directed graph. For a road-based network, a \textbf{node} represents a road segment delimited by intersections, where two nodes are connected by an edge if it is possible (i.e. legally allowed). This allows to accurately describe a trajectory by sequentially listing the road segments that were traversed, while minimizing the redundancy.
 	
 	In the other hand, for route-based networks we define the nodes as stops or stations, making two of them connected if there exists a line or route that stops at each, consecutively. We can represent user trajectories following the same strategy as for road-based networks, although that will lead us to redundant representations in most cases. On subway and bus networks it is common to find stops that belong to only one route, and therefore must be either the end of a trajectory or be followed by the only possible next node. Furthermore, a more minimalist representation of a trajectory with the starting, ending and route switching nodes alone would be sufficient to reconstruct the original trajectory. Such representation will be contemplated later in Chapter~\ref{sec:newctr}, while on \gls{ctr} we maintain a common representation strategy for both kinds of networks. Because listing every node traversed introduces redundancy on route-based networks, we state that \gls{ctr} is more adequate for road-based networks.
@@ -219,7 +222,7 @@ to  $nH_0(S) + o(n(H_0(S)+1)) +  O(\sigma \log n)$ by using compressed bitvector
 	\section{Experiments}
 	We may have not compared it to anything but we sure do have tons of results!
 	
-	\chapter{Representations for public transportation over route-based networks}
+	\chapter{Representations of trips over public transportation networks}
 	\label{sec:newctr}
 	This is about a representation that was designed for buses.
 	
@@ -239,6 +242,9 @@ to  $nH_0(S) + o(n(H_0(S)+1)) +  O(\sigma \log n)$ by using compressed bitvector
 	This is an interface that can handle both cases and structures (in theory).
 	
 	The tool we have developed that can interact with the previously described structures. We retell what we explained about \gls{gis} in previous concepts, and explain that this is different because it is built around our representations.
+	
+	\section{Motivation}
+	El objetivo final de esto es facilitar una herramienta que pueda ser usada por 
 	
 	\section{Architecture}
 	From a functional perspective and then a technological one.
