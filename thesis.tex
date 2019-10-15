@@ -175,73 +175,12 @@ to  $nH_0(S) + o(n(H_0(S)+1)) +  O(\sigma \log n)$ by using compressed bitvector
 	\section{Compressed Suffix Array}
 	Explaining ST and SA along the way.
 
-	\chapter{Our representation for trips over urban streets}
-	As explained in Section~\ref{sec:pd}, there there are taxis and then there are buses. Their nature is different because of networks, so they must be treated differently. Here we are going to speak about a repr that works better for taxis.
-	
-	Old ass CTR \cite{brisaboa2018compact} with a WM or WT for times, and we tried different approaches to compress those times. It is not very useful for buses and metro because of the crazy redundancy.
-	
-	\section{Description}
-	Bla bla sobre problema de taxis y como se puede aplicar a otros ambitos. Nos da igual en que parte del tramo de la calle finaliza el viaje, solo nos interesa el grafo. Cada viaje es como un texto...
-	
-	\section{Structures}
-	Given a transportation network, whether it is based on urban strets or public transportation, we work with a representation of the network that is based on a directed graph. For an urban street network, a \textbf{node} represents a road segment delimited by intersections, where two nodes are connected by an edge if it is possible (i.e. legally allowed). This allows to accurately describe a trajectory by sequentially listing the road segments that were traversed, while minimizing the redundancy.
-	
-	In the other hand, for public transportation networks we define the nodes as stops or stations, making two of them connected if there exists a line or route that stops at each, consecutively. We can represent user trajectories following the same strategy as for urban street networks, although that will lead us to redundant representations in most cases. On subway and bus networks it is common to find stops that belong to only one route, and therefore must be either the end of a trajectory or be followed by the only possible next node. Furthermore, a more minimalist representation of a trajectory with the starting, ending and route switching nodes alone would be sufficient to reconstruct the original trajectory. Such representation will be contemplated later in Chapter~\ref{sec:newctr}, while on \gls{ctr} we maintain a common representation strategy for both kinds of networks. Because listing every node traversed introduces redundancy on public transportation networks, we state that \gls{ctr} is more adequate for urban street networks.
-	
-	[speak about queries of interest for urban street netowkrs]
-	
-	[trip description with $s$ and $t$]
-	
-    To support these queries, we need to represent the spatial and temporal components of our collection of user trips $\mathcal{T}$, where each trip is formed by every node traversed. We use a \gls{csa} to represent the spatial component of our dataset of trips within \gls{ctr}. However, we must perform some preprocessing on $\mathcal{T}$ before building a \gls{csa} on it. Initially, we sort the trips by their first node ($s_1$), then by the last node ($s_{l_i}$), then by the starting time ($t_1$), and finally, by its second node ($s_2$), third node ($s_3$), and successive nodes. Note that the start time ($t_1$) of the trip does not belong to the spatial component, but it is nevertheless used for the sorting\footnote{This initial sorting of the trips will allow us to answer some useful queries very efficiently  (i.e., count trips starting at node $X$ and ending at node $Y$).}.
-	
-	\begin{figure}[h!]
-      \begin{center}
-      {\includegraphics[width=1.00\textwidth]{figures/csttr.eps}}
-      \end{center}
-      \caption{Structures involved in the creation of a \acrshort{ctr}}
-      \label{fig:tcsa}
-    \end{figure}
-	
-	\section{Algorithms}
-	We have X to Y and even Top K queries that are not that hard to describe.
-	
-	\subsection{Time intervals representations}
-	Bla bla speak about two alternatives here.
-	
-	\begin{figure}[htb]
-    	\begin{center}
-    		{\includegraphics[width=1.0\textwidth]{figures/wma.eps}}
-    		{\includegraphics[width=1.0\textwidth]{figures/wta.eps}}
-    	\end{center}
-    	\caption{Balanced \acrlong{wm} (top) and \acrlong{htwt} (bottom)}
-    	%for the times within $Icode^{\Psi}$ in Figure~\ref{fig:tcsa}.}
-    	\label{fig:wtwm}
-    \end{figure}
-
-	
-	Just as proven in Section~\ref{sec:wt} with \gls{wt}, both \gls{htwt} and \gls{wm} implement the $range_{a,b}(S,i,j)$ operation in $O(\log\sigma)$ time on average. This is easy to prove for \gls{htwt} as each node will contain entries from a lexicographically contiguous subrange from the alphabet $\Sigma$, making the same properties seen for \gls{wt} hold. The main difference is that Hu-Tucker codes will reshape the tree, making the leaves containing the least frequent symbols deeper than the leaves with the more frequent symbols, which may theoretically produce a tree of height $\sigma-1$\footnote{Imagine a vocabulary $\Sigma=\{s_1..s_\sigma\}$, where the probability of appearance of the symbol $s_i$ in the text $S$ turned out to be $2^{-i}$.}, which will obviously affect the worst-case performance, in exchange of a very large compression ratio.
-	
-	The complexity may initially seem harder to analyze for \gls{wm}, as its ``nodes'' are delimited implicitly: the symbols with a code starting in 0 will find their second bit in an implicit node delimited by the subrange $B_2[1..z]$ (for some $1 \leq z < n$), while the symbols with a code starting in 1 will correspond to $B_2[z+1..n]$. Generalizing this idea, we can assert that symbols with the same \textit{context} of $\alpha$ starting bits in their codes will find their next $\alpha+1$ bit in some subrange $B_{\alpha+1}[i..j]$ with $1 \leq i \leq j \leq n$. Therefore, the same properties from \gls{wt} can be exploited for a $range_{a,b}(S,i,j)$ operation in \gls{wm} as well, allowing us to solve it in $O(\log\sigma)$ worst-case time.
-	
-    While it is possible to build \gls{wm} using canonical Huffman codes, it is unfortunately impossible guarantee the $O(\log\sigma)$ bound on $range_{a,b}(S,i,j)$ on such \gls{wm}, as the symbols lose their original lexicographic proximity, meaning that symbols which would appear on the same node of \gls{wt} due to the common most significant bits in their original codes, would get different Huffman codes based on their frequency of appearance in the text, ending up in separate nodes. On the other hand, to our best knowledge, there is no practical way of building \gls{wm} with Hu-Tucker codes.
-	
-	\section{Experiments}
-	We may have not compared it to anything but we sure do have tons of results!
+\chapter{Our representation for trips over urban streets}
+\input{1-ctr.tex}
 	
 \chapter{Our representation for trips over public transportation networks}
 \label{sec:newctr}
-	This is about a representation that was designed for buses.
-	
-	Here we speak about TTCTR and XCTR, where we have a network description and index journeys instead of explicit times.
-	
-	\section{Description}
-	A network representation, then CSA for stops. In TTCTR we encode lines in these stops, while in XCTR we make the twist from before (I think) and then separate lines into a WM. Whatever the case, we then have an aligned WM of journeys. Oh and T-Matrices as a DW-like structure.
-	
-	\section{Algorithms}
-	A bit complex for both TTCTR and XCTR. Maybe copy the complexity table from the paper that explains why TTCTR sucks for some queries and we needed to develop XCTR.
-	
-	\section{Experiments}
-	Here we compare one to the other. Maybe include query times for postgresql, maybe later.
+\input{2-xctr.tex}
 	
 \part{GIS interface}
 \chapter{Previous concepts}
@@ -250,22 +189,8 @@ to  $nH_0(S) + o(n(H_0(S)+1)) +  O(\sigma \log n)$ by using compressed bitvector
     \section{GIS interfaces}
 	Because I have a web interface with leaflet after all.
 
-	\chapter{GIS interface for public transportation over networks}
-	This is an interface that can handle both cases and structures (in theory).
-	
-	The tool we have developed that can interact with the previously described structures. We retell what we explained about \gls{gis} in previous concepts, and explain that this is different because it is built around our representations.
-	
-	\section{Motivation}
-	El objetivo final de esto es facilitar una herramienta que pueda ser usada por 
-	
-	\section{Architecture}
-	From a functional perspective and then a technological one.
-	
-	\section{API}
-	A nice and easy way to make queries and return data.
-	
-	\section{User Interface}
-	With a lot of screencaps that are going to take like 10 pages! Maybe even an evaluation section (which would require me to make it actually work well!).
+\chapter{GIS interface for public transportation over networks}
+\input{3-gis.tex}
 	
 \chapter{ Conclusions and future works}
 	2-3 pages to speak about lessons learned and where is this all going. Speak about field tests with people from Caminos...
