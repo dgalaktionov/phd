@@ -70,7 +70,6 @@
 \usepackage{etoolbox}
 \apptocmd{\sloppy}{\hbadness 10000\relax}{}{}	% Avoid ''underfull hbox'' warnings in bibliography
 
-
 % Separacion entre un parrafo y el siguiente
 % \addtolength{\smallskipamount}{-7.60pt}
 % \addtolength{\parskip}{.5\baselineskip}%{.5\baselineskip}
@@ -114,69 +113,30 @@
 \newcommand*{\irank}[0]{\emph{rank}\xspace}
 \newcommand*{\iselect}[0]{\emph{select}\xspace}
 \newcommand*{\iaccess}[0]{\emph{access}\xspace}
+\newcommand*{\irange}[0]{\emph{range}\xspace}
 
 \DeclareMathOperator\rank{rank}
 \DeclareMathOperator\select{select}
 \DeclareMathOperator\access{access}
+\DeclareMathOperator\range{range}
 
-\renewcommand*{\k}[0]{\ensuremath{K}\xspace}
-\newcommand*{\kk}[0]{\ensuremath{\k^2}\xspace}
-\newcommand*{\kkk}[0]{\ensuremath{\k^3}\xspace}
-\newcommand*{\KK}[0]{\ensuremath{\K^2}\xspace}
-\newcommand*{\Ktree}[0]{\ensuremath{\k^2}-tree\xspace}
-\newcommand*{\ktree}[0]{\ensuremath{\k^2}-tree\xspace}
-\newcommand*{\ktrees}[0]{\ensuremath{\k^2}-trees\xspace}
-\newcommand*{\Ktrees}[0]{\ensuremath{\k^2}-trees\xspace}
-\newcommand*{\koct}[0]{\ensuremath{\k^3}-tree\xspace}
-\newcommand*{\Koct}[0]{\ensuremath{\k^3}-tree\xspace}
-\newcommand*{\kntree}[0]{\ensuremath{\k^n}-tree\xspace}
-\newcommand*{\Kntree}[0]{\ensuremath{\k^n}-tree\xspace}
-\newcommand{\kones}[0]{\ensuremath{\k^2}-tree1\xspace}
-\newcommand{\koness}[0]{\ensuremath{\k^2}-tree1s\xspace}
-\newcommand{\Kones}[0]{\kones}
-\newcommand{\kdouble}[0]{\ensuremath{\k^2}-tree1\ensuremath{^{\mathrm{2bits-naive}}}\xspace}
-\newcommand{\ksus}[0]{\ensuremath{\k^2}-tree1\ensuremath{^{\mathrm{2bits}}}\xspace}
-\newcommand{\kdf}[0]{\ensuremath{\k^2}-tree1\ensuremath{^{\mathrm{df}}}\xspace}
-\newcommand{\klevel}[0]{\ensuremath{\k^2}-tree1\ensuremath{^{\mathrm{1-5 bits}}}\xspace}
-\newcommand{\Kdouble}[0]{\kdouble}
-\newcommand{\Ksus}[0]{\ksus}
-\newcommand{\Kdf}[0]{\kdf}
-\newcommand{\Klevel}[0]{\klevel}
-\newcommand{\btree}[0]{B-tree\xspace}
-\newcommand{\btrees}[0]{B-trees\xspace}
-\newcommand{\bplus}[0]{B\ensuremath{^+}-tree\xspace}
-\newcommand{\bpluss}[0]{B\ensuremath{^+}-trees\xspace}
-\newcommand{\dktree}[0]{d\ktree}
-\newcommand{\dktrees}[0]{d\ktrees}
-\newcommand{\Dktree}[0]{D\ktree}
-\newcommand{\Dktrees}[0]{D\dtrees}
-\newcommand{\iktree}{I\ktree}
-\newcommand{\diktree}{diff-I\ktree}
-\newcommand{\mktree}{M\ktree}
-
-\newcommand{\kkind}{M\kones}
-\newcommand{\kkacum}{AM\kones}
-\newcommand{\ikones}{I\kones}
-\newcommand{\koctindex}{\koct}
-
-\newcommand{\diffk}[0]{diffK}
-\newcommand{\ediffk}[0]{enh-diffK}
-\newcommand{\Diffk}[0]{DiffK}
-\newcommand{\Ediffk}[0]{Enh-diffK}
-
-\newcommand{\ktreap}[0]{\ensuremath{\k^2}-treap\xspace}
-\newcommand{\ktreaps}[0]{\ensuremath{\k^2}-treaps\xspace}
-
-\newcommand{\ZERO}[0]{0\xspace}
-\newcommand{\ZEROS}[0]{0's\xspace}
-\newcommand{\ONE}[0]{1\xspace}
-\newcommand{\ONES}[0]{1s\xspace}
-
-\newcommand{\dash}[0]{\text{--}}
-
-\newcommand{\kt}[0]{\ensuremath{k}\xspace}
-
-\newcommand{\tdktree}[0]{tt\ktree}
+\newcommand{\boardX}{\texttt{board\_X}}
+\newcommand{\alightX}{\texttt{alight\_X}}
+\newcommand{\useL}{\texttt{use\_L}}
+\newcommand{\boardT}{\texttt{board\_T}}
+\newcommand{\alightT}{\texttt{board\_T}}
+\newcommand{\loadX}{\texttt{load\_X}}
+\newcommand{\startX}{\texttt{start\_X}}
+\renewcommand{\endX}{\texttt{end\_X}}
+\newcommand{\switchX}{\texttt{switch\_X}}
+\newcommand{\XtoY}{\texttt{from\_X\_to\_Y}}
+\newcommand{\startL}{\texttt{start\_L}}
+\renewcommand{\endL}{\texttt{end\_L}}
+\newcommand{\startT}{\texttt{start\_T}}
+\renewcommand{\endT}{\texttt{end\_T}}
+\newcommand{\loadT}{\texttt{load\_T}}
+\newcommand{\tripT}{\texttt{trip\_T}}
+\newcommand{\topK}{\texttt{top\_K}}
 
 
 \crefname{algorithm}{Algorithm}{Algorithms}
@@ -189,30 +149,3 @@
 
 \normalfont
 \DeclareFontShape{T1}{lmr}{bx}{sc} { <-> ssub * cmr/bx/sc }{}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%% Sandbox
-% \DeclareSymbolFont{sfoperators}{OT1}{cmss}{m}{n}
-% \DeclareSymbolFontAlphabet{\mathsf}{sfoperators}
-% 
-% \makeatletter
-% % \def\operator@font{\mathgroup\symsfoperators}
-% \def\select@font{\mathgroup\symsfoperators}
-% \makeatother
-% 
-% \makeatletter
-% \def\rank@font{\sf}
-% \def\select@font{\bf}
-% \makeatother
-
-% \newcommand{\rank}[0]{\ensuremath{\mathrm{rank}}\xspace}
-% \newcommand{\select}[0]{\ensuremath{\mathrm{select}}\xspace}
-% \newcommand{\irank}[0]{\emph{rank}\xspace}
-% \newcommand{\iselect}[0]{\emph{select}\xspace}
-% \def\rank{\ensuremath{\mathsf{rank}}}
-% \def\select{\ensuremath{\mathsf{select}}}
-% \DeclareMathOperator\rank{rank}
-% \DeclareMathOperator\select{select}
-
-%%%%%%%%%%%%%% End sandbox
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

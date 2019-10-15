@@ -11,6 +11,7 @@
 
 \begin{document}
 
+\epstopdfsetup{outdir=./compile/}
 \pagenumbering{roman}
 \pagestyle{fancy}\fancyfoot{}\fancyhead{}
 \fancyhead[LO]{\slshape\nouppercase{\rightmark}}
@@ -28,7 +29,11 @@
 	\section{Motivation}
 	In the context of public transportation networks, the last several years have seen numerous advances in wireless technologies, sensor networks (especially those related to RFID) and ubiquitous computing, leading to a widespread adoption of passenger tracking technology by public transportation services, making the collection of large amounts of data about the travel habits of these passengers\footnote{Alternatively called ``users'' in the context of transportation agencies} easier than ever before.
 	This in turn has opened the door for the exploitation of this kind of information to study the demand (usage) of a network, as opposed to the well-known techniques to analyze the offer (routes, timetables, etc...). 
+	For these applications, it is not the data about individual trajectories but measures of the use of the network what matters for traffic monitoring and road planning tasks. Examples of useful measures are  accessibility and centrality indicators, referred to how easy  is to reach locations or how important certain stops are within a network~\cite{Morency2007193, El-Geneidy2011, Wang2015335}. All these measures are based on some kind of counting queries that determine the number of \textit{distinct} trips that occur within a spatial and/or temporal window.
 	To enable these new kinds of demand studies, it is imperative to develop mechanisms to efficiently persist and manage these vast (and always increasing) collections of data. When we also take into account that efficient query patterns need to be supported for this data to be ``useful'', the solution clearly constitutes an emerging technological challenge, that is being approached from several different domains, and hundreds of ad-hoc solutions have been implemented by all the \textit{Smart Cities} around the globe.
+	
+	%In  transportation systems, new technologies such as automatic fare collection (e.g., smartcards) and automatic passenger counting have made possible to generate a huge amount of highly detailed,
+	%real-time data useful to define measures that characterize  a transportation network. This data is particularly useful because it actually consists of real trips, combining  implicitly the service offered by a public transportation system with  the demand for the system. When having this data,  it is not the data about individual trajectories but measures of the use of the network what matters for traffic monitoring and road planning tasks. Examples of useful measures are  accessibility and centrality indicators, referred to how easy  is to reach locations or how important certain stops are within a network~\cite{Morency2007193, El-Geneidy2011, Wang2015335}. All these measures are based on some kind of counting queries that determine the number of \textit{distinct} trips that occur within a spatial and/or temporal window.   
 	
 	A practical representation for this information that supports efficient indexing would have numerous possible applications. In \cite{tu2018spatial} we can see how it is possible to combine GPS trajectories with \gls{afc} data to recreate complete trajectories and study the ridership by area. Alternatively, in \cite{weng2018mining} the complete trajectories are inferred from the \gls{afc} data, to later analyze behaviour patterns and preferences of the travelers with the goal of improving the efficiency of the network. Another application that is enabled by such analysis is the targeted advertising \cite{zhang2017targeted}, as the interests of a user can be profiled by their travel patterns. Other works focus on analyzing the usage of individual stops or stations, such as \cite{ceapa2012avoiding}, where the authors determine that congestion times in the metro network of London are predictable and occur in narrow time intervals. Armed with such information, an user may choose a different travel pattern to avoid the crowd and enhance their overall experience. When we consider about public transportation over a road network, we can find works centered around studying taxi ridership. One notable example is \cite{yuan2013t}, that discusses a two-way taxi recommendation system, where taxi drivers are pointed to the most profitable parking spaces while passengers are directed to the street segments with a high probability of finding a vacant taxi.
 	
@@ -176,7 +181,7 @@ to  $nH_0(S) + o(n(H_0(S)+1)) +  O(\sigma \log n)$ by using compressed bitvector
 	Explaining ST and SA along the way.
 
 \chapter{Our representation for trips over urban streets}
-\input{1-ctr.tex}
+\input{1-ctr}
 	
 \chapter{Our representation for trips over public transportation networks}
 \label{sec:newctr}
