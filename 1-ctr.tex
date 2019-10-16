@@ -1,3 +1,4 @@
+\chapter{Our representation for trips over urban streets}
 	As explained in Section~\ref{sec:pd}, we have identified two contexts for public transportation systems according to their networks, which can be based on urban streets or public transportation. While the proposed structure in this chapter is capable of operating within both contexts, it will not take public transportation elements (routes and vehicles) into account and lead to a more redundant representation than the one later proposed in Chapter~\ref{sec:newctr}, that is more adequate for public transportation networks.
 	
 	The work in this chapter proposes a new structure named \gls{ctr} that answers  counting-based queries and uses compact self-indexed data structures to represent the large amount of trips in a compact space.
@@ -23,8 +24,17 @@
     Given a transportation network, whether it is based on urban strets or public transportation, we work with a representation of the network that is based on a directed graph. For an urban street network, a \textbf{node} represents a road segment delimited by intersections, where two nodes are connected by an edge if it is possible (i.e. legally allowed). This allows to accurately describe a trajectory by sequentially listing the road segments that were traversed, while minimizing the redundancy.
 
 	In the other hand, for public transportation networks we define the nodes as stops or stations, making two of them connected if there exists a line or route that stops at each, consecutively. We can represent user trajectories following the same strategy as for urban street networks, although that will lead us to redundant representations in most cases. On subway and bus networks it is common to find stops that belong to only one route, and therefore must be either the end of a trajectory or be followed by the only possible next node. Furthermore, a more minimalist representation of a trajectory with the starting, ending and route switching nodes alone would be sufficient to reconstruct the original trajectory. Such representation will be contemplated later in Chapter~\ref{sec:newctr}, while on \gls{ctr} we maintain a common representation strategy for both kinds of networks. Because listing every node traversed introduces redundancy on public transportation networks, we state that \gls{ctr} is more adequate for urban street networks.
+	
+	\begin{figure}[ht]
+		\begin{center}
+			{\includegraphics[width=0.6\textwidth]{figures/street_er.png}}
+		\end{center}
+		\caption{An ER diagram representing the model for user trips for \acrshort{ctr}}
+		\label{fig:street_er}
+	\end{figure}
     
-    %We model our transportation network as a directed graph where the vertices (from now on called \textbf{nodes}) $s_i \in S$ are either street segments of a street network or stops in a public transportation network.
+    The Figure~\ref{fig:street_er} contains an entity-relationship diagram of our network model, where nodes and connections define a directed graph, over which user trips can be conformed by sequentially visiting the nodes. The order in which these nodes are visited is implicitly defined by the time, meaning that it is necessary to somehow represent that time for the visited nodes of each trip.
+    It is easy to see how this model could introduce redundancy in the public transportation context, where several passengers may be sharing the same bus at the same time.
 	
 	To make the
 	use of the \gls{csa} possible, we define a trip or trajectory of a moving object
@@ -132,7 +142,7 @@
 	\begin{figure}[ht]
 		%\vspace{-0.4cm}
 		\begin{center}
-			{\includegraphics[width=1\textwidth]{figures/network.eps}}  %% probar se funciona en local
+			{\includegraphics[width=1\textwidth]{figures/network.eps}}
 		\end{center}
 		\vspace{-0.2cm}
 		\caption{A set of trips over a network with 10 nodes.}
@@ -252,7 +262,7 @@
 	  \begin{center}
 	  {\includegraphics[width=1.00\textwidth]{figures/csttr.eps}}
 	  \end{center}
-	  \caption{Structures involved in the creation of a \acrlong{ctr}}
+	  \caption{Structures involved in the creation of a \acrshort{ctr}}
 	  \label{fig:tcsa}
 	\end{figure}
 
@@ -1075,7 +1085,7 @@
 		\cline{2-9}
 	  \end{tabular}
 	%\vspace{-5mm}
-	\caption{Overall compression of \acrlong{ctr} including different configurations for both the spatial and temporal components.  }
+	\caption{Overall compression of \acrshort{ctr} including different configurations for both the spatial and temporal components.  }
 	\label{table:ctr_spaces}
 	\vspace{-4mm}
 	\end{center}
@@ -1514,7 +1524,7 @@
 			\end{center}
 		\end{center}
 		\vspace{-0.5cm}
-		\caption{Pure temporal queries for Madrid. \acrlong{ctr} uses either a \acrlong{htwt} (left) or a \acrlong{wm} (right). 
+		\caption{Pure temporal queries for Madrid. \acrshort{ctr} uses either a \acrlong{htwt} (left) or a \acrlong{wm} (right). 
 			Time granularity is $5$ minutes (top) or $30$ minutes (bottom).}
 		\label{fig:madridst_topk}
 		\vspace{-0.3cm}
@@ -1533,7 +1543,7 @@
 				{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/porto_t30mwm.eps}}
 		\end{center}
 		\vspace{-0.5cm}
-		\caption{Pure temporal queries for Porto. \acrlong{ctr} uses either a \acrlong{htwt} (left) or a \acrlong{wm} (right). 
+		\caption{Pure temporal queries for Porto. \acrshort{ctr} uses either a \acrlong{htwt} (left) or a \acrlong{wm} (right). 
 			Time granularity is $5$ minutes (top) or $30$ minutes (bottom).}
 		\label{fig:portost_topk}
 		%\vspace{-0.6cm}
@@ -1597,7 +1607,7 @@
 			
 		\end{center}
 		\vspace{-0.3cm}
-		\caption{Spatio-temporal queries for Madrid. \acrlong{ctr} uses either a \acrlong{htwt} (left) or a \acrlong{wm} (right). 
+		\caption{Spatio-temporal queries for Madrid. \acrshort{ctr} uses either a \acrlong{htwt} (left) or a \acrlong{wm} (right). 
 			Time granularity is $5$ minutes (top) or $30$ minutes (bottom). 
 		}
 		\label{fig:madridst}
@@ -1619,7 +1629,7 @@
 			
 		\end{center}
 		\vspace{-0.3cm}
-		\caption{Spatio-temporal queries for Porto. \acrlong{ctr} uses a fixed $t_{\Psi}=32$ for \acrlong{csa}, 
+		\caption{Spatio-temporal queries for Porto. \acrshort{ctr} uses a fixed $t_{\Psi}=32$ for \acrlong{csa}, 
 			and either a \acrlong{htwt} (left) or a \acrlong{wm} (right). 
 			Time granularity is $5$ minutes (top) or $30$ minutes (bottom). 
 		}
@@ -1675,7 +1685,7 @@
 			
 		\end{center}
 		\vspace{-0.3cm}
-		\caption{Spatio-temporal {\Stk\ and \Stks} queries for Madrid. \acrlong{ctr} uses either a \glsacrlong (left) or a \acrlong{wm} (right). 
+		\caption{Spatio-temporal {\Stk\ and \Stks} queries for Madrid. \acrshort{ctr} uses either a \glsacrlong (left) or a \acrlong{wm} (right). 
 			Time granularity is $5$ minutes (top) or $30$ minutes (bottom). 
 		}
 		\label{fig:madridst.tk}
@@ -1694,7 +1704,7 @@
 			
 		\end{center}
 		\vspace{-0.3cm}
-		\caption{Spatio-temporal {\Stk\ and \Stks} queries for Porto. \acrlong{ctr} uses a fixed $t_{\Psi}=32$ for \acrlong{csa}, 
+		\caption{Spatio-temporal {\Stk\ and \Stks} queries for Porto. \acrshort{ctr} uses a fixed $t_{\Psi}=32$ for \acrlong{csa}, 
 			and either a \acrlong{htwt} (left) or a \acrlong{wm} (right). 
 			Time granularity is $5$ minutes (top) or $30$ minutes (bottom). 
 		}
