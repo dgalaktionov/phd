@@ -21,6 +21,7 @@
 	exploiting trajectories represented in a self-indexed way.
 
 \section{Description}
+\label{sec:ctr_desc}
     Given a transportation network, whether it is based on urban strets or public transportation, we work with a representation of the network that is based on a directed graph. For an urban street network, a \textbf{node} represents a road segment delimited by intersections, where two nodes are connected by an edge if it is possible (i.e. legally allowed). This allows to accurately describe a trajectory by sequentially listing the road segments that were traversed, while minimizing the redundancy.
 
 	In the other hand, for public transportation networks we define the nodes as stops or stations, making two of them connected if there exists a line or route that stops at each, consecutively. We can represent user trajectories following the same strategy as for urban street networks, although that will lead us to redundant representations in most cases. On subway and bus networks it is common to find stops that belong to only one route, and therefore must be either the end of a trajectory or be followed by the only possible next node. Furthermore, a more minimalist representation of a trajectory with the starting, ending and route switching nodes alone would be sufficient to reconstruct the original trajectory. Such representation will be contemplated later in Chapter~\ref{sec:newctr}, while on \gls{ctr} we maintain a common representation strategy for both kinds of networks. Because listing every node traversed introduces redundancy on public transportation networks, we state that \gls{ctr} is more adequate for urban street networks.
@@ -45,7 +46,7 @@
 	these strings (trips), with some adaptations for this
 	specific application. In addition, we discretize the time in periods of fixed
 	duration (i.e. timeline split into 5-minute intervals) and each time
-	segment is identified by an integer $t_i \in T$. In this way, it is possible
+	segment is identified by an integer $t_i \in I$. In this way, it is possible
 	to store the times when trips reach each node by associating the
 	corresponding $t_i$ with each node in each trip. The sequence of
 	times for all the nodes within a trip is self-indexed with a \gls{wt}
@@ -102,22 +103,21 @@
 	\end{itemize}
 
 \section{Structures}
-	[trip description with $s$ and $t$]
+\label{sec:ctr_str}
+	To support the queries seen in Section~\ref{sec:ctr_desc}, we need to represent the spatial and temporal components of our collection of user trips that is coherent with the network model described. Therefore, we will proceed to detail how each trip is described, before we show how that description is implemented in our compact data structures.
 
-	To support these queries, we need to represent the spatial and temporal components of our collection of user trips $\mathcal{T}$, where each trip is formed by every node traversed. We use a \gls{csa} to represent the spatial component of our dataset of trips within \gls{ctr}. However, we must perform some preprocessing on $\mathcal{T}$ before building a \gls{csa} on it. Initially, we sort the trips by their first node ($s_1$), then by the last node ($s_{l_i}$), then by the starting time ($t_1$), and finally, by its second node ($s_2$), third node ($s_3$), and successive nodes. Note that the start time ($t_1$) of the trip does not belong to the spatial component, but it is nevertheless used for the sorting\footnote{This initial sorting of the trips will allow us to answer some useful queries very efficiently  (i.e., count trips starting at node $X$ and ending at node $Y$).}.
-
-	If we consider a network $\mathcal{N}$ with $\sigma_s$ nodes, 
-	%and we assume time is discretized into  $\sigma_t$ time instants, 
+	If we consider a network $\mathcal{N}$ with a set of nodes $S$, 
 	we can see a dataset of trips $\mathcal{T}$ over $\mathcal{N}$ as 
-	a set of $z$ trips, where for each trip $\mathcal{T}_i$, we represent a list with the $l_i$ 
+	a set of trips, where for each trip $\mathcal{T}_i \in \mathcal{T}$, we represent a list with the 
+	$n_i$
 	temporary-ordered nodes it traverses and the corresponding timestamps: 
-	$\mathcal{T}= \{ \langle (s^i_1, s^i_2, \dots,  s^i_{l_i}),(t^i_1, t^i_2, \dots,  t^i_{l_i}) \rangle\}$, $i\in[1,z]$, 
-	$s^i_j \in [1,\sigma_s]$, and $t^i_{x} \leq t^i_y, \forall x < y$. 
-	Note that every node in the network can be identified with an integer ID ($s^i_1$) and that, if we are interested in
-	analyzing the usage patterns of the network, we will probably be interested in discretizing time into 
+	$\mathcal{T}= \{ \langle (s^i_1, s^i_2, \dots,  s^i_{n_i}),(t^i_1, t^i_2, \dots,  t^i_{n_i}) \rangle\}$, $i\in[1,|\mathcal{T}|]$, 
+	$s^i_j \in S$, and $t^i_{x} \leq t^i_y, \forall x < y$. 
+	Note that every node in the network can be identified with an integer ID $S_i \in S$ and that, if we are interested in
+	analyzing the usage patterns of the network, we will also be interested in discretizing time into 
 	time intervals (i.e. 5-min, 30-min intervals). Therefore,
-	we will have $\sigma_t$ different time intervals that can also be identified with an
-	integer ID ($t^i_j \in [0,\sigma_t)$).
+	we will have $|I|$ different time intervals that can also be identified with an
+	integer ID ($t^i_j \in I$).
 
 	The size of the time interval is a parameter for the time-discretizing process
 	that can be adjusted to fit the required precision in each domain.
@@ -125,9 +125,9 @@
 	transportation network where we could have data including five years of trips, one
 	possibility would be to divide that five-years period into
 	10-minute intervals hence obtaining a
-	vocabulary of roughly $\sigma_t=5\times 365 \times 24 \times 60/10 = 262,800$ different intervals. 
+	vocabulary of $|I|=5\times 365 \times 24 \times 60/10 = 262,800$ different intervals. 
 	Other possibility would
-	be to use cyclically annual 10-minute periods resulting in $\sigma_t=262,800 / 5 = 52,560$. 
+	be to use cyclically annual 10-minute periods resulting in $|I|=262,800 / 5 = 52,560$. 
 	However,  in public transportation networks, queries such
 	as \textit{``Number of trips using the stop X on May 10 between 9:15 and 10:00''} may be not 
 	as useful as queries such as \textit{``Number of trips using stop X on Sundays between 9:15 and
@@ -138,26 +138,21 @@
 	For this reason, \gls{ctr} can adapt how the
 	time component is encoded depending on the queries that the system must answer.
 
-
 	\begin{figure}[ht]
-		%\vspace{-0.4cm}
 		\begin{center}
 			{\includegraphics[width=1\textwidth]{figures/network.eps}}
 		\end{center}
-		\vspace{-0.2cm}
 		\caption{A set of trips over a network with 10 nodes.}
 		\label{fig:network}
-		%\vspace{-0.5cm}
 	\end{figure}
 
-
 	\begin{example} \label{exp:ctr}
-	Figure~\ref{fig:network} shows a network that contains $\sigma_s=10$ nodes 
-	numbered from $1$ to $10$. Over that network we have six trips ($z=6$),
+	Figure~\ref{fig:network} shows a network that contains $|S|=10$ nodes 
+	numbered from $1$ to $10$. Over that network we have six trips ($|\mathcal{T}|=6$),
 	and, for each of them, we indicate the sequence of nodes it traverses
 	and the time when the trip goes through those nodes. If we discretize time into
 	5-minute intervals, starting at 08:00h, and ending at 9:20h, we will have
-	have $\sigma_t=16$ different time intervals. Any timestamp within
+	have $|I|=16$ different time intervals. Any timestamp within
 	interval $\mathit{[08\!:\!00,08\!:\!05)}$ will
 	be assigned time-code $0$, those within $\mathit{[08\!:\!05,08\!:\!10)}$ code $1$, and so on until
 	times within $\mathit{[09\!:\!15,09\!:\!20)}$ that are given time-code $15$.  
@@ -183,18 +178,8 @@
 
 	\subsection{Spatial component using a CSA}
 	\label{sec:transnet_repr}
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	%As show in the previous section, the spatial component of each trip $\mathcal{T}_i, (1\leq i< z)$ consists
-	%in a sequence of integers (node IDs) $s^i_1, s^i_2, \dots,  s^i_{l_i}$. In addition recall that for 
-	%each node we keep the time $t^i_j, (1\leq j < l_i)$. 
-
-	We use a \gls{csa} to represent the spatial component of our dataset of trips within \gls{ctr}. Yet,
-	we perform some preprocessing on $\mathcal{T}$ before building a \gls{csa} on it. Initially, we 
-	sort the trips by their first node ($s^i_1$), then by the last node ($s^i_{l_i}$), then by the starting time
-	($t^i_1$), and finally, by its second node ($s^i_2$), third node ($s^i_3$), and successive nodes ($s^i_j, 3<j\leq l_i$). 
-	Note that the start time ($t^i_1$) of the trip does not belong to the spatial component, 
-	but it is nevertheless used for the sorting.\footnote{This initial sorting of the trips will allow us 
-	to answer some useful queries very efficiently  (i.e., count trips starting at $X$ and ending at $Y$).} 
+	We use a slightly adapted \gls{csa} to represent the spatial component of our dataset of trips within \gls{ctr}. 
+	However, we must perform some preprocessing on each trip  $\mathcal{T}_i \in \mathcal{T}$ before building a \gls{csa} on it. Initially, we sort the trips by their first node ($s^i_1$), then by the last node ($s^i_n$), then by the starting time ($t^i_1$), and finally, by its second node ($s^i_2$), third node ($s^i_3$), and successive nodes (i.e. the trips are sorted by the key $s_1,s_n,t_1,s_{2..n-1}$.  Note that the start time ($t^i_1$) of the trip does not belong to the spatial component, but it is nevertheless used for the sorting\footnote{This initial sorting of the trips will allow us to answer some useful queries very efficiently  (i.e., count trips starting at node $X$ and ending at node $Y$).}.
 
 	Following with Example~\ref{exp:ctr}, after sorting the trips in $\mathcal{T}$ with the criteria above, 
 	our sorted dataset $\mathcal{T}^s$ would look like: 
@@ -213,28 +198,35 @@
 	Similarly, the two trips containing nodes $ (\mathbf{1,2,3})$ are sorted by the starting times ($\mathit{0}$ and $\mathit{5}$).
 
 
-	In a second step, we enlarge all the trips $\mathcal{T}^s_i, 1\!\leq\!i\!<\!z$ with a fictitious terminator-node $\$_i$ whose
+	In a second step, we enlarge all the trips $\mathcal{T}^s_i \in \mathcal{T}^2$ with a fictitious terminator-node $\$_i$ whose
 	timestamp is set to that of the initial node of the trip. We choose terminators such that $\$_i \prec \$_j, \forall i<j$; 
 	that is the lexicographic value of $\$_i$ is smaller for smaller $i$ values. In addition, the lexicographic value
 	of any terminator must be lower than the ID of any node in a trip. Therefore, an enlarged trip $\mathcal{T}^s_i$
-	would become $\mathcal{T}'_i =  \langle (s^i_1, s^i_2, \dots,  s^i_{l_i}, 
-	\mathbf{\$_i}),(t^i_1, t^i_2, \dots,  t^i_{l_i}, \mathbf{t^i_1}) \rangle$. 
+	would become $\mathcal{T}'_i =  \langle (s^i_1, s^i_2, \dots,  s^i_{n_i}, 
+	\mathbf{\$_i}),(t^i_1, t^i_2, \dots,  t^i_{n_i}, \mathbf{t^i_1}) \rangle$. 
 
-	The next step involves concatenating the spatial component of all the enlarged trips and to add an 
-	extra trailing terminator $\$_0$ to create a sequence $S[1,n]$. $\$_0$ must be  lexicographically 
-	smaller than any other entry in $S$ (then it also holds $\$_0 \prec \$_i$ $\forall i \in [1,z]$). In the top part of
-	Figure~\ref{fig:tcsa}, we can see array $S$ for the running example, as well as the corresponding time-IDs that
-	are regarded in sequence $Icode$  ($I$ shows the original times).
+	The next step involves concatenating the codes $s^i_j$ and $\$_i$ of the spatial components of our trips and to add an 
+	extra trailing terminator $\$_0$ to create a sequence $Text[1,n]$\footnote{By definition, it must hold that $n = |\mathcal{T}| + 1 + \displaystyle\sum^{|\mathcal{T}|}_{i=1} n_i$.}. $\$_0$ must be  lexicographically 
+	smaller than any other entry in $S$ (then it also holds $\$_0 \prec \$_i$ $\forall i \in [1,|\mathcal{T}|]$). In the top part of
+	Figure~\ref{fig:tcsa}, we can see array $Text$ for the running example, as well as the corresponding time-IDs that
+	are regarded in sequence $Icode$  ($Time$ shows the original times).
+	
+	\begin{figure}[ht]
+	  \begin{center}
+	  {\includegraphics[width=1.00\textwidth]{figures/csttr.eps}}
+	  \end{center}
+	  \caption{Structures involved in the creation of a \acrshort{ctr}}
+	  \label{fig:tcsa}
+	\end{figure}
 
-	Finally, we build a \gls{csa} on top of $S$ to obtain a self-indexed representation of the spatial component in \gls{ctr}.
-	Figure~\ref{fig:tcsa} depicts the structures $\Psi$ and $D$ used by $\tcsa$ built over $S$. There is also a vocabulary
+	Finally, we build a \gls{csa} on top of $Text$ to obtain a self-indexed representation of the spatial component in \gls{ctr}.
+	Figure~\ref{fig:tcsa} depicts the structures $\Psi$ and $D$ used by the \gls{csa} built over $Text$. There is also a vocabulary
 	$V$ containing a $\$$ symbol and the different node IDs in lexicographic order.
 
 	Note that the use of different values $\$_i$ as terminators ensures that our sorting criteria are kept even if we follow the
-	standard suffix-sort procedure\footnote{Suffix $S[i,n]$ is compared with suffix $S[j,n]$.} 
+	standard suffix-sort procedure\footnote{Suffix $Text[i..n]$ is compared with suffix $Text[j..n]$.} 
 	required to build suffix array $A$ during the creation of \gls{csa}. Yet, when we finish that
-	process, we can replace all those $\$_i$ terminators  by a unique $\$$. This is the reason why 
-	there is only one $\$$ symbol in $V$. 
+	process, we can replace all those $\$_i$ terminators by a unique $\$$. This is the reason why there is only one $\$$ symbol in $V$. 
 	 
 	%while in $V$ there is only one single entry for all the $\$$. 
 	%The use of different values for $\$_i$ during the sorting explains why $A[22] = 18$ is placed before $A[23]= 26$. Note that
@@ -243,78 +235,38 @@
 	%the traditional definition of a {\em suffix}, these suffixes would be ``$7 \cdot \$_4 \cdot 3 \cdots $''
 	%and ``$7 \cdot \$_6 \cdot \$_0 \cdots $'' respectively,  and  $A[22] \prec A[23]$ would not hold.
 
-
 	Although they are not needed in \gls{ctr}, we show also suffix array $A$ and $\Psi$' for clarity reasons in Figure~\ref{fig:tcsa}. 
 	$\Psi'$  contains the first entries of $\Psi$ from a regular \gls{csa}, whereas we introduced a small variation
-	in \gls{ctr} for entries $\Psi[1,z+1]$.  %just to explain the difference of how we build $\Psi$. 
+	in \gls{ctr} for entries $\Psi[1..|\mathcal{T}|+1]$. Displaying both $\Psi$ and $\Psi'$ helps us to better illustrate our process to build $\Psi$. 
 	For example, $A[8]=1$ points to the first node of the first trip $S[1]$.
 	$\Psi[8]=10$ and $A[10]=2$ point to the second node.  $\Psi[10]=14$ and $A[14]=3$ point to the third node.
 	$\Psi[14]=2$ and $A[2]=4$ point to the ending $\$_1$ of the first trip. Therefore, in the standard 
 	\gls{csa}, $\Psi'[2]=9$ and $A[9]=5$  point to the first node of the second trip. 
 	However, in  \gls{ctr}, $\Psi[2]=8$ and $A[8]=1$ point
 	to the first node of the first trip. With this small change, subsequent applications of $\Psi$ will allow 
-	us to cyclically traverse the nodes of the trip instead of accessing the following entries of $S$.
-
-	%Finally, note that aligned with sequence $S$, we could keep the times associated with the nodes in each
-	%trip with the structures $I$ and $Icode$, which are explained in the following subsection. \marginpar{\tiny YA NO ES SUBSECTION}
-
-	\begin{figure}[h!]
-	  \begin{center}
-	  {\includegraphics[width=1.00\textwidth]{figures/csttr.eps}}
-	  \end{center}
-	  \caption{Structures involved in the creation of a \acrshort{ctr}}
-	  \label{fig:tcsa}
-	\end{figure}
-
-
-	%In  Figure~\ref{fig:tcsa}, $\Psi'$  contains
-	%the first entries of $\Psi$ from a regular \csa. For example, $A[8]=1$ points to the first stop of the first trip $S[1]$.
-	%$\Psi[8]=10$ and $A[10]=2$ point to the second stop.  $\Psi[10]=14$ and $A[14]=3$ point to the third stop.
-	%$\Psi[14]=2$ and $A[2]=4$ point to the ending $\$$ of the first trip. Therefore, $\Psi'[2]=9$ and $A[9]=5$ point
-	%to the first stop of the second trip. However, we managed to modify $\Psi$ so that $\Psi[2]=8$ and $A[8]=1$ point
-	%to the first stop of the first trip. Thus, subsequent applications of $\Psi$ will allow us to cyclically
-	%traverse the stops of each trip. This will be interesting at query time.
+	us to cyclically traverse the nodes of the trip instead of accessing the following entries of $Text$.
 
 	Another interesting property arises from the use of a cyclical $\Psi$ on trips, and from using trip terminators.
-	Since the first entries in $\Psi[2,z+1]$ correspond the $\$$ symbols that 
-	mark the end of each trip in $S$ (remember that $\Psi[1]$ corresponds the $\$_0$), we
-	can see that the $j^{th}$ node of the $i^{th}$ trip can
-	be obtained as $V[rank_1(D, \Psi^j[i+1])]$, (where $\Psi^3[x]= \Psi[\Psi[\Psi[x]]]$). This property
+	Since the first entries in $\Psi[2,|\mathcal{T}|+1]$ correspond the $\$$ symbols that 
+	mark the end of each trip in $Text$ (remember that $\Psi[1]$ corresponds the $\$_0$), we can see that the $j^{th}$ node of the $i^{th}$ trip can
+	be obtained as $V[\rank_1(D, \Psi^j[i+1])]$, (where $\Psi^3[x]= \Psi[\Psi[\Psi[x]]]$). This property
 	makes it very simple to find starting nodes for any trip.
 	For example, if we focus on the shaded area $\Psi[2,7]$, we can find the ending terminator $\$_4$ of the
 	fourth trip at the $5^{th}$ position (because the first $\$_0$
 	corresponds to the final $\$$ at $S[28]$). Therefore, its starting node can be found 
-	as $V[rank_1(D, \Psi[4+1])]$. Since $\Psi[5] = 12$ and $rank_1(D,12)= 3$, 
-	the starting node is $V[3]=\mathbf{2}$. For illustration purposes note that it would correspond to $S[A[12]]$.
+	as $V[\rank_1(D, \Psi[4+1])]$. Since $\Psi[5] = 12$ and $\rank_1(D,12)= 3$, 
+	the starting node is $V[3]=\mathbf{2}$. For illustration purposes note that it would correspond to $Text[A[12]]$.
 	By applying $\Psi$ again, the next node of that trip would be obtained by computing $\Psi[12] = 16$, 
-	$rank_1(D,16)=4$, and accessing $V[4]=\mathbf{3}$  (that is, we have obtained 
-	 $V[rank_1(D, \Psi[\Psi[4+1]])]=\mathbf{3}$, and so on. 
-
-
-	%In addition, note that in the shaded range $\Psi[1,7]$, the first entry is
-	%related to terminator $\$_0$, whereas the next six entries  correspond
-	%to the $\$$ symbols that mark the end of each trip in $S$. 
-	%%(sorted by the starting stop, then by the ending stop, then by their initial time, 
-	%%and finally by the second, third and following up stops).
-	%This property makes it very simple to find
-	%starting %and ending
-	%nodes. For example, the ending $\$_4$ of the
-	%$4^{th}$ trip is at the $5^{th}$ position (because the first $\$_0$
-	%corresponds to the final $\$$ at $S[28]$). Therefore, its starting
-	%node can be obtained by  $\Psi[5] = 12$ and $rank_1(D,12)= 3$;
-	%that is, the starting node is the $3^{th}$ entry in the vocabulary.
-	%The next node of that trip would be obtained by $\Psi[12] = 16$
-	%and $rank_1(D,16)=4$, and so on. 
-	%In practice, the $j^{th}$ node of the $i^{th}$ trip can
-	%be obtained as $rank_1(D, \Psi^j(i+1))$. \marginpar{\tiny verificar que formula este ok}
+	$\rank_1(D,16)=4$, and accessing $V[4]=\mathbf{3}$  (that is, we have obtained 
+	 $V[\rank_1(D, \Psi[\Psi[4+1]])]=\mathbf{3}$, and so on. 
 
 	Regarding the space requirements of the \gls{csa} in \gls{ctr}, we can expect to obtain a good compressibility
 	due to the structure of the network, and the fact that trips that start in a given node or simply
 	those going through that node will probably share the same sequence of ``next'' nodes. This will
-	lead us to obtaining many {\em runs} in $\Psi$~\cite{NM07}, and consequently, good compression.
+	lead us to obtaining many {\em runs} in $\Psi$~(\cite{NM07}), and consequently good compression.
 
-	\subsubsection{Implementation details} In our implementation of \gls{csa}, we used the 
-	$\icsa$\footnote{\url{http://vios.dc.fi.udc.es/indexing}} from \cite{FBNCPR12} briefly discussed 
+	\subsubsection{Implementation details} In our implementation of \gls{csa}, we used the
+	$iCSA$\footnote{\url{http://vios.dc.fi.udc.es/indexing}} from \cite{FBNCPR12} briefly discussed 
 	in Section~\ref{sec:csa}. Yet, we introduced some small modifications:
 
 	\begin{itemize}
@@ -323,23 +275,17 @@
 		In comparison with the  {\em qsufsort} algorithm\footnote{
 			http://www.larsson.dogma.net/research.html}
 		%\footnote{https://github.com/y-256/libdivsufsort/}
-		\cite{Larsson:2007:FSS:1314704.1314853} used in the original $\icsa$, it achieves a linear time construction 
+		\cite{Larsson:2007:FSS:1314704.1314853} used in the original $iCSA$, it achieves a linear time construction 
 		and a lower extra working space. 
 		
-		%\item The construction of the Suffix Array is done with 
-		%{\em SA-IS} algorithm\footnote{\url{ https://sites.google.com/site/yuta256/sais}} ~\cite{nong2011two}, 
-		% which achieves a linear time construction 
-		%and a low memory footprint during construction, when compared with algorithm {\em qsufsort}\footnote{
-		%http://www.larsson.dogma.net/research.html} \cite{Larsson:2007:FSS:1314704.1314853} used in \cite{FBNCPR12}.  \marginpar{\tiny Daniil cando mais rapido e canta menos memoria?}
-		%
-		\item In  $\icsa$, they used a plain representation for bitvector $D$ and additional structures to support
-		$rank_1$ in constant time using ($0.375\times n$ bits). With that structure, they could solve $select$ in $O(\log n)$ time (yet 
-		they did not actually needed solving $select$ in $\icsa$).
+		\item In  $iCSA$, a plain representation for bitvector $D$ was used, with additional structures to support
+		$\rank_1$ in constant time using ($0.375\times n$ bits). With that structure, they could solve $\select$ in $O(\log n)$ time (yet 
+		they did not actually needed solving $\select$ in $iCSA$).
 		In our \gls{csa}, we have used the {\em SDArray} from \cite{okanohara2007practical} to represent $D$. It provides a very 
-		good compression for sparse bitvectors, as well as constant-time $select$ operation.
-		%
+		good compression for sparse bitvectors, as well as constant-time $\select_1$ operation.
+		
 		\item In \cite{FBNCPR12}, $bsearch$ operation was implemented with a simple binary search over $\Psi$ rather than
-		using the  backward-search optimization proposed in the original \gls{csa} \cite{Sad03}. In our experiments, we used
+		using the backward-search optimization proposed in the original \gls{csa} \cite{Sad03}. In our experiments, we used
 		backward search since it led to a much lower performance degradation at query time when a sparse sampling of $\Psi$ 
 		was used.
 		
@@ -354,90 +300,23 @@
 	\subsection{Time intervals representations}
 	\label{sec:time_repr}
 
-	%%	%Assuming that we want to evaluate usage patterns of a network, one would probably be interest in handling a time-component that allows us to know when a moving object reaches each node along its trip. To do so, we discretize  time instants and assign an integer code to each time interval. The size of the interval depends on the needed precision. For example, in Figure~\ref{fig:tcsa} sequence $I$ contains the time interval associated with each node in a trip, and in $Icode$ we assign a numeric code according to the subway-trips scenario in Section~\ref{sec:experiments}.
-	%%	%%
-	%%	%For our practical applications, five minutes intervals give us enough precision when querying information about public transport networks. However, if we were analyzing trips over a different network, like  one composed by international flights,or  one  related to global maritime shipping, a different interval size would be necessary  to properly
-	%%	%fit the actual requirements of these scenarios.
-	%%	%%balance the precision with the size of the representation\footnote{Quiero destacar mejor lo flexible que es nuestra solución, pero no sé bien cómo hacerlo}.
-	%%	%
-	%%	%In a naive representation, we could store a different numeric code for every 5-minutes time interval from every day of the year, resulting in a vocabulary of roughly $365 \times 24 \times 60/5 = 105,120$ different codes. Even though that vocabulary size is perfectly assumable for our representation, querying \textit{``Number of trips using the node X on May 2 at 9:15''} does not seem to be ultimately useful. Instead, considering public transport networks, focusing on a pattern such as \textit{``Number of trips using node X on Sundays''}, where we consider only the seven days in a week would be enough to represent meaningful information. More types of days could be differentiated according to the patterns we are interested in, like seasons (natural or touristic) or holidays.
-	%%	%%\marginpar{Danil, evita doesn't, we're, can't --> does not, we are, cannot}
-	%%	%
-	%%	%Although we could simply store timestamps over an array of time codes ($Icode$) aligned with $S$, this representation would be inefficient to solve  temporal queries. Therefore, we represent these time codes in a Wavelet Matrix (\gls{wm})~\cite{CNO15}. We exploit the capability of  the \gls{wm} to count and report the occurrences of a continuous range of values. In \gls{ctr}, the \gls{wm} represents a sequence similar to $Icode$ from Figure~\ref{fig:tcsa}, but aligned to $\Psi$ entries. That is, for any instance of a node at the position $i$ in $\Psi$, its time stamp $t_i$ can be recovered by accessing the WM at the position $i$. %Note that the starting positions belonging to the $\$$ symbols have actual time values. Yet, as we show below, it is useful to store the starting times of each trip in those positions.
-	%%	%%
-	%%	%The starting positions belonging to the $\$$ symbols have no time by themselves, but it is useful to store the starting time instants of trips in these positions, as we show in the following section.
-	%%	%
-	%%	%Note that \gls{wm} may be replaced by a traditional Wavelet Tree, so that we could exploit the non-uniform distribution of frequencies for the time intervals. This may be useful when considering that the traffic in peak hours is assumed to be much heavier than after midnight. The time intervals could be thus mapped to a new variable-length code, where the most frequent intervals would be represented by less bits and, therefore, requiring less levels in a Wavelet Tree.
-	%%
-
-
-
-	%To exploit usage patterns of a network, we need to represent
-	%and query the time component of trips, which indicates when a moving object
-	%reaches each node along its trip. To represent this time component,
-	%we discretize time %instants
-	%and assign an integer code to
-	%each resulting time interval. The size of the time interval is a parameter
-	%that can be adjusted to fit the required precision in each domain.
-	%%
-	%%Another important aspect is
-	%%the granularity of the time period under consideration.
-	%For example, in a public
-	%transportation network, if we had data about five years of trips, a
-	%possibility would be to divide that five-years period into
-	%10-minutes intervals, or in cyclical annual periods resulting in a
-	%vocabulary of roughly $365 \times 24 \times 60/10 = 52,560$
-	%different codes. However,  in public transportation networks queries such
-	%as \textit{%``Number of trips using the stop X on May 10 between 9:15 and 10:00''} may be not as useful as queries such as
-	%\textit{``Number of trips using stop X on Sundays between 9:15 and
-	%10:00''}.
-	%% Therefore, it is more useful
-	%%to encode with the same codes the hours in working days on one hand and
-	%%hours in weekend in the other.
-	%For this reason, \gls{ctr} can adapt how the
-	%time component is encoded depending on the queries that the system must answer.
-
 	In this section we focus on the temporal component associated with each node of the enlarged trips $\mathcal{T}'_i$ 
-	in our dataset. Recall that in Figure~\ref{fig:tcsa}, sequence $I$ contains the time
-	associated with each node in a trip, and $Icode$ a possible encoding of times. 
-	In \gls{ctr} we focus on the values in $Icode$, yet, since $S$ is not kept anymore in \gls{ctr}, we 
-	reorganize the values in $Icode$ to keep them aligned with $\Psi$ rather than with $S$. Those
+	in our dataset, previously described in Section~\ref{sec:transnet_repr}. Recall that in Figure~\ref{fig:tcsa}, sequence $Time$ contains the discretized time intervals
+	associated with each visited node in a trip, and $Icode$ a possible encoding of times.
+	In \gls{ctr} we focus on the values in $Icode$, yet, since $Text$ is not kept anymore in \gls{ctr}, we 
+	reorganize the values in $Icode$ to keep them aligned with $\Psi$ rather than with $Text$. Those
 	values are represented within array $Icode^{\Psi}$ in Figure~\ref{fig:tcsa}. 
 	For example, we can see that $Icode^{\Psi}[4]$ corresponds with $Icode[A[4]]=10$, 
-	$Icode^{\Psi}[15]$ corresponds with $Icode[A[15]]=8$, and so on.
-	% are aligned with $\Psi$ rather than with $S$.%, and represented with a \gls{wm}.
+	$Icode^{\Psi}[15]$ corresponds with $Icode[A[15]]=8$, and so on. Conveniently, the first $|\mathcal{T}| + 1$ entries of $Icode^{\Psi}$ will contain the time interval codes for the start of each trip, as each $\$_i$ was originally aligned with a copy of the first time interval $t^i_1$ of each trip.
 
 	Aiming at having a compact representation of $Icode^{\Psi}$ while permitting fast 
 	access and resolution of range-based queries (that we could use to search for trips within 
-	a given time interval), we have considered two \gls{wt}-based alternatives from the ones 
-	presented in Section~\ref{sec:wt}:
-
-	\begin{figure}[htb]
-		\begin{center}
-			{\includegraphics[width=1.0\textwidth]{figures/wma.eps}}
-			{\includegraphics[width=1.0\textwidth]{figures/wta.eps}}
-		\end{center}
-		\caption{Balanced \acrlong{wm} (top) and \acrlong{htwt} (bottom)}
-		%for the times within $Icode^{\Psi}$ in Figure~\ref{fig:tcsa}.}
-		\label{fig:wtwm}
-	\end{figure}
-
-
-	Just as proven in Section~\ref{sec:wt} with \gls{wt}, both \gls{htwt} and \gls{wm} implement the $range_{a,b}(S,i,j)$ operation in $O(\log\sigma)$ time on average. This is easy to prove for \gls{htwt} as each node will contain entries from a lexicographically contiguous subrange from the alphabet $\Sigma$, making the same properties seen for \gls{wt} hold. The main difference is that Hu-Tucker codes will reshape the tree, making the leaves containing the least frequent symbols deeper than the leaves with the more frequent symbols, which may theoretically produce a tree of height $\sigma-1$\footnote{Imagine a vocabulary $\Sigma=\{s_1..s_\sigma\}$, where the probability of appearance of the symbol $s_i$ in the text $S$ turned out to be $2^{-i}$.}, which will obviously affect the worst-case performance, in exchange of a very large compression ratio.
-
-	The complexity may initially seem harder to analyze for \gls{wm}, as its ``nodes'' are delimited implicitly: the symbols with a code starting in 0 will find their second bit in an implicit node delimited by the subrange $B_2[1..z]$ (for some $1 \leq z < n$), while the symbols with a code starting in 1 will correspond to $B_2[z+1..n]$. Generalizing this idea, we can assert that symbols with the same \textit{context} of $\alpha$ starting bits in their codes will find their next $\alpha+1$ bit in some subrange $B_{\alpha+1}[i..j]$ with $1 \leq i \leq j \leq n$. Therefore, the same properties from \gls{wt} can be exploited for a $range_{a,b}(S,i,j)$ operation in \gls{wm} as well, allowing us to solve it in $O(\log\sigma)$ worst-case time.
-
-	While it is possible to build \gls{wm} using canonical Huffman codes, it is unfortunately impossible guarantee the $O(\log\sigma)$ bound on $range_{a,b}(S,i,j)$ on such \gls{wm}, as the symbols lose their original lexicographic proximity, meaning that symbols which would appear on the same node of \gls{wt} due to the common most significant bits in their original codes, would get different Huffman codes based on their frequency of appearance in the text, ending up in separate nodes. On the other hand, to our best knowledge, there is no practical way of building \gls{wm} with Hu-Tucker codes.
-
+	a given time interval), we have considered two \gls{wt}-based alternatives from the ones presented in Section~\ref{sec:wt}:
 
 	\begin{itemize}
 	  \item A Wavelet Tree ~\cite{WT03} using variable-length Hu-Tucker codes~\cite{hu1971optimal} (\gls{htwt}).
-	 % which is an optimal prefix code that preserves the order of the input vocabulary.
-	  %That means that the lexicographic order of the output variable-length binary codes is the same as the order of the input symbols.
-	  %Using this codification in a \gls{wt} allows us to have a variable number of levels in the tree for each symbol,
-	  %while preserving some interesting properties that will be explained further in this section.
 	  Recall this is the \gls{wt} variant that permits to compress the original symbols with variable-length codes and 
-	  still supports $count$ operation in $O(log(\sigma_t))$ time. Since Hu-Tucker coding assigns shorter codes
+	  still supports $\cnt(i,j,\alpha,\beta)$ operation in $O(log\sigma)$ time. Since Hu-Tucker coding assigns shorter codes
 	  to the most frequent symbols, the compression of our \gls{htwt} is highly dependent of the distribution
 	  of frequencies for the $Icode^{\Psi}$. Yet, if our 
 	  trips represent movements of single users in a transportation network, we could expect to observe two or more periods 
@@ -445,59 +324,52 @@
 	  for the symbols in $Icode^{\Psi}$, and consequently, we could expect to have better compression than if we used a 
 	  balanced \gls{wt}. The expected number of bits of our \gls{htwt} is $nH_0(Icode^{\Psi})$.
 
-	  \item A balanced Wavelet Matrix (\gls{wm})~\cite{CNO15}. As we showed in Section~\ref{sec:wt} the \gls{wm} is typically the most
+	  \item A balanced Wavelet Matrix (\gls{wm})~\cite{CNO15}. As we have shown in Section~\ref{sec:wt} the \gls{wm} is typically the most
 	  compact uncompressed variant of \gls{wt} and it is faster than a pointerless \gls{wt}. This is the reason why we chose
 	  a balanced \gls{wm} instead of a balanced \gls{wt} as this second alternative. Recall that, $Icode^{\Psi}$ contains $n$ symbols, 
-	  and each symbol can be encoded with $\log  \sigma_t$ bits, hence the 
-	  balanced \gls{wm} will be a matrix of $n  \log\sigma_t$ bits.
-	  
-	  %In this case, the symbols
-	  %in $Icode^{\Psi}$ are given a fixed-length binary code.
-	  %Recall that a \gls{wm} is a grid of $n \times m$ bits. In  our
-	  %case $n$ is the number of entries in the \gls{csa} and $m = \log  \sigma_t$ are the bits
-	  %needed to represent the different $\sigma_t$ codes for the time instants of interest.
-	  %This approach grants better compression for large alphabets when compared to the \gls{wt}, as the \gls{wm} does not need
-	  %to store any kind of pointers.
+	  and each symbol can be encoded with $\log  |I|$ bits, hence the 
+	  balanced \gls{wm} will be a matrix of $n  \log|I|$ bits.
 	\end{itemize}
+	
+	\begin{figure}[ht]
+		\begin{center}
+			{\includegraphics[width=1.0\textwidth]{figures/wma.eps}}
+			{\includegraphics[width=1.0\textwidth]{figures/wta.eps}}
+		\end{center}
+		\caption{Balanced \acrlong{wm} (top) and \acrlong{htwt} (bottom)}
+		\label{fig:wtwm}
+	\end{figure}
 
-	In Figure~\ref{fig:wm}, we show both the \gls{wm} and the \gls{htwt} built on top of $Icode^{\Psi}$ from Figure~\ref{fig:tcsa}.
-	The binary code-assignment to the source symbols in $[1,\sigma_t]$ and that obtained after applying Hu-Tucker encoding
+
+	In Figure~\ref{fig:wtwm}, we show both the \gls{wm} and the \gls{htwt} built on top of $Icode^{\Psi}$ from Figure~\ref{fig:tcsa}.
+	The binary code-assignment to the source symbols $t_i \in I$ and that obtained after applying Hu-Tucker encoding
 	algorithm~\cite{hu1971optimal} are also included in the figure.
+	
+	Since the most useful operation of these two structures for our application, by far, is the $\cnt(i,j,\alpha,\beta)$, we will proceed to explain in detail how the efficiency of that operation has influenced our choice of structures. Just as proven in Section~\ref{sec:wt} with \gls{wt}, both \gls{htwt} and \gls{wm} implement the $\cnt$ operation in $O(\log\sigma)$ time on average. This is easy to prove for \gls{htwt} as each node will contain entries from a lexicographically contiguous subrange from the alphabet $\Sigma$, making the same properties seen for \gls{wt} hold. The main difference is that Hu-Tucker codes will reshape the tree, making the leaves containing the least frequent symbols deeper than the leaves with the more frequent symbols, which may theoretically produce a tree of height $\sigma-1$\footnote{Imagine a vocabulary $\Sigma=\{s_1..s_\sigma\}$, where the probability of appearance of the symbol $s_i$ in the text $S$ turned out to be $2^{-i}$.}, which will obviously affect the worst-case performance, in exchange of a very large compression ratio.
 
-	\subsubsection{Implementation details} We include here details regarding how we tune our \gls{htwt} and \gls{wm}.
-	As we discussed in Section~\ref{sec:wt}, both \gls{htwt} and \gls{wm} are built over bitvectors that require
-	support for $rank$ and $select$ operations. In our implementations we included two alternative bitvector representations avaliable
+	The complexity may initially seem harder to analyze for \gls{wm}, as its ``nodes'' are delimited implicitly: the symbols with a code starting in 0 will find their second bit in an implicit node delimited by the subrange $B_2[1..z]$ (for some $1 \leq z < n$), while the symbols with a code starting in 1 will correspond to $B_2[z+1..n]$. Generalizing this idea, we can assert that symbols with the same \textit{context} of $\alpha$ starting bits in their codes will find their next $\alpha+1$ bit in some subrange $B_{\alpha+1}[i..j]$ with $1 \leq i \leq j \leq n$. Therefore, the same properties from \gls{wt} can be exploited for a $\cnt$ operation in \gls{wm} as well, allowing us to solve it in $O(\log\sigma)$ worst-case time.
+
+	While it would also be possible to build \gls{wm} using canonical Huffman codes, it is unfortunately impossible guarantee the $O(\log\sigma)$ bound on $\cnt$ on such \gls{wm}, as the symbols lose their original lexicographic proximity, meaning that symbols which would appear on the same node of \gls{wt} due to the common most significant bits in their original codes, would get different Huffman codes based on their frequency of appearance in the text, ending up in separate nodes. On the other hand, to our best knowledge, there is no practical way of building \gls{wm} with Hu-Tucker codes.
+
+	\subsubsection{Implementation details} 
+	%We include here details regarding how we tune our \gls{htwt} and \gls{wm}.
+	As we discussed in Section~\ref{sec:wt}, both \gls{htwt} and \gls{wm} are built over bitvectors that require support for $\rank$ and $\select$ operations. In our implementations we included two alternative bitvector representations avaliable
 	at {\em libcds} library:{\footnote{\url{https://github.com/fclaude/libcds}}}
-
-	%A plain bitvector \cite{Mun96} with additional structures (extra $o(n)$ bits) to support $rank$ and $select$, and a compressed
-	%bitvector using RRR technique~\cite{Raman:2002:SID:545381.545411}.
-
+	
 	\begin{itemize}
 		\item A plain bitvector based on \cite{Mun96} named {\em RG} with 
-		additional structures to support $rank$ in constant time ($select$ in logaritmic time).
+		additional structures to support $\rank$ in constant time ($\select$ in logaritmic time).
 		{\em RG} includes a sampling parameter ($factor$) that we set to value $32$. In this case,
 		our  bitvector {\em RG} uses $n (1+1/32)$ bits. That is, we tune {\em RG} to use a sparse sampling. 
 			
 		\item A compressed RRR bitvector~\cite{Raman:2002:SID:545381.545411}. The {\em RRR} implementation includes
 		a sampling parameter that we tune to values $32$, $64$, and $128$. Higher sampling values achieve better compression.
-		
 	\end{itemize}
-	%The configuration using {\em RG} always used more space than those using {\em RRR}, and as indicated above,
-	%$size(RRR_{32}) > size(RRR_{64}) > size(RRR_{128})$.
 
 
 	In advance, when presenting results for \gls{htwt} and \gls{wm} we will consider the four bitvector configurations
 	above. Regarding our implementations of \gls{wm} and \gls{htwt}, note that we reused the same implementation of \gls{wm} from \cite{CNO15}, 
-	and we created our custom \gls{htwt} implementation, paying special focus at solving $count$ efficiently. 
-	% %
-	%\OJOFARI{ 
-	%Furthermore, in the implementation of \Ttk, we used the simpler linear approach for \gls{wm}.\footnote{Since linear approach requires 
-	%keeping track of the position in which each symbol starts and ends in the last level, 
-	%we explicitly keep pointers that were originally used to speed-up $select$ in \cite{CNO15}.}  However, in our \gls{htwt} 
-	%we also implemented the \Ttk\  using a binary partition approach.
-	%This allows us to analyze the advantage of linear approach when the distribution is uniform.  
-	%}
-	%\marginpar{\tiny ahora que tenemos top-k-bin y top-k-seq para WM Y WTHT, ya creo que mejor no comentar esto, ni lo de la footnote ... no??}
+	and we created our custom \gls{htwt} implementation, paying special focus at solving $\cnt$ efficiently.
 
 \section{Algorithms}
 	We have X to Y and even Top K queries that are not that hard to describe.
@@ -539,7 +411,7 @@
 
 	\begin{itemize}
 	\item To return the $k$ most used nodes using {\em sequential approach (\Stkseq)}. The idea is
-	to apply  $select_1$ operation sequentially for every node from $2$ to $|V|$ to compute the 
+	to apply  $\select_1$ operation sequentially for every node from $2$ to $|V|$ to compute the 
 	frequency of each node and to return the $k$ nodes with highest frequency.
 	We use a min-heap that is initialized with
 	the first $k$ nodes, and for every node $s$ from $k+1$ to $|V|$, 
@@ -548,7 +420,7 @@
 	then moved down to comply with the heap ordering. At the end of the process, the heap
 	will contain the top-k most used nodes $\langle p_1\:,\:p_2,\:\dots,\:p_k \rangle$, which can be 
 	sorted with the heapsort algorithm if needed. Finally, we return $\langle V[p_1],V[p_2],\dots,V[p_k]\rangle$.
-	Note that this  approach always performs $|V|$ $select_1$ operations on $D$.
+	Note that this  approach always performs $|V|$ $\select_1$ operations on $D$.
 
 	\item The {\em binary-partition (\Stkbin)} approach takes advantage of a skewed 
 	distribution of frequency of the nodes that trips traverse.  Working over $D$ and $V$, we 
@@ -585,7 +457,7 @@
 	$\mathbf{3}=V[4]$ with a frequency equal to $5=18-14$.
 
 	%\marginpar{\tiny algorithm ten que comezar metendo $<2,|V|>$, non $1,V$}
-	%\marginpar{\tiny $q$ debe ser $select_1(D,m)$, non $select_1(D,m+1)$}
+	%\marginpar{\tiny $q$ debe ser $\select_1(D,m)$, non $\select_1(D,m+1)$}
 
 
 	%	\begin{figure}[t]
@@ -595,7 +467,7 @@
 	%	\begin{code}
 	%	\textbf{GetTopK} $(k)$: \\
 	%	 \> $ Q ~\leftarrow$ \textbf{new PriorityQueue()}; \\
-	%	 \> $ Q .$\textbf{push$(<1, |V|>, <$select$_1(D,2), n-1>)$}; \\
+	%	 \> $ Q .$\textbf{push$(<1, |V|>, <$\select$_1(D,2), n-1>)$}; \\
 	%	 \> $ current\_k ~\leftarrow 0$; \\%\\
 	%	
 	%	 \> \textbf{while }$current\_k < k$: \\
@@ -630,7 +502,7 @@
 				\begin{code}
 					\textbf{GetTopK\_most\_used\_nodes} $(k)$: \\
 					\>(l.1~) \> ~$ Q ~\leftarrow$ \textbf{new PriorityQueue()}; \\
-					\>(l.2~) \> ~$ Q .$\textbf{push$(\langle2, |V|\rangle, \langle$select$_1(D,2), n\rangle)$}; \\
+					\>(l.2~) \> ~$ Q .$\textbf{push$(\langle2, |V|\rangle, \langle$\select$_1(D,2), n\rangle)$}; \\
 					\>(l.3~) \> ~$ current\_k ~\leftarrow 0$; \\%\\
 					
 					\>(l.4~) \> ~\textbf{while }$current\_k < k$: \\
@@ -656,7 +528,7 @@
 
 	\item {\em Top-k most used nodes to start a trip (\Stks).}
 	Both \Stk\ approaches above can be adapted for answering \Stks.
-	However, unlike its simpler variant, it requires performing $bsearch(\$X)$ over $\Psi$ (rather than a $select$ on $D$) at
+	However, unlike its simpler variant, it requires performing $bsearch(\$X)$ over $\Psi$ (rather than a $\select$ on $D$) at
 	each iteration, hence increasing the temporal complexity of the operation.
 
 	The implementation of the linear approach is straightforward. The binary-partition approach differs slightly 
@@ -676,18 +548,18 @@
 
 	\begin{itemize}[leftmargin=3mm]
 	\setlength{\itemindent}{0mm}
-	%\item {\em Number of nodes used at instant $t$}. This is computed as $rank_t(n) -rank_t(z+1)$. 
+	%\item {\em Number of nodes used at instant $t$}. This is computed as $\rank_t(n) -rank_t(z+1)$. 
 	%That is, to discard the occurrences of $t$ in the $\$$ zone, we count the occurrences of instant $t$ in \gls{wt}, and
-	%then we subtract $rank_t(z+1)$, where $|\mathcal{T}|$ is the number of trips.
+	%then we subtract $\rank_t(z+1)$, where $|\mathcal{T}|$ is the number of trips.
 
 
 	\item {\em Number of trips starting during the time interval $[t_1,t_2]$ (\Tst).} Since we keep the
 	starting time of each trip within $Icode^{\Psi}[1,z]$, we can efficiently solve this query 
-	by simply computing $count(1,z,t_1,t_2)$.
+	by simply computing $\cnt(1,z,t_1,t_2)$.
 
 	\item  {\em Total usage of network stops during the time interval $[t_1,t_2]$ (\Tut).} This query
 	can be seem as the sum of the number of trips that traversed each network node during $[t_1,t_2]$.
-	We can solve this query by computing $count(z+1,n,t_1,t_2)$. 
+	We can solve this query by computing $\cnt(z+1,n,t_1,t_2)$. 
 
 	\item {\em Number of trips performed during the time interval $[t_1,t_2]$ (\Ttt).} This is also an
 	interesting query that permits to know the actual network usage during a time interval. 
@@ -703,7 +575,7 @@
 	A possible solution to efficiently solve \textit{\Tet}$(0,t_1-1)$, would require to increment our temporal
 	component, in parallel with $Icode^{\Psi}[1,z]$,  with another \gls{wt}-based representation of the 
 	ending times for our $z$ trips. This would permit to report the number of trips
-	ending before $t_1$ as $count'(1,z,0,t_1-1)$, but would increase the overall size of \gls{ctr}.
+	ending before $t_1$ as $\cnt'(1,z,0,t_1-1)$, but would increase the overall size of \gls{ctr}.
 	Yet, note that even without keeping ending-times, we could 
 	provide rather accurate estimations of \Ttt\ for a system administrator. For example, using \Tut\
 	to compute the number of times each trip went through any node during the time interval $[t_1,t_2]$, 
@@ -748,7 +620,7 @@
 		which started at node $X$. Then, since the time sequence $Icode^{\Psi}$ 
 		(represented with either a \gls{htwt} or \gls{wm}) is
 		 aligned with $\Psi$, we can filter out those trips that started within $[t_1,t_2]$ performing
-		operation $count(l,r,t_1,t_2)$. In Figure~\ref{fig:search2} (steps \textcircled{1} and \textcircled{2}) we can see the steps involved.
+		operation $\cnt(l,r,t_1,t_2)$. In Figure~\ref{fig:search2} (steps \textcircled{1} and \textcircled{2}) we can see the steps involved.
 
 	\begin{figure}[thb]
 		%\vspace{-0.4cm}
@@ -764,12 +636,12 @@
 		\item {\em Number of trips ending at node $X$ during the time interval $[t_1,t_2]$ (\Tewx). }
 		As above, we initially perform the spatial query $[l,r]~\leftarrow~bsearch(X\$)$ to 
 		obtain the range in $\Psi$ that corresponds to the pattern $X\$$ (trips ending at node $X$).
-		Then, we use  $count(l,r,t_1,t_2)$ operation to count how many of those trips match the temporal constraint.
+		Then, we use  $\cnt(l,r,t_1,t_2)$ operation to count how many of those trips match the temporal constraint.
 		See steps \textcircled{3} and \textcircled{4} in Figure~\ref{fig:search2}.
 		
 		\item {\em Number of trips using node $X$ during the time interval $[t_1,t_2]$ (\Tux).}
-		As in the corresponding spatial query, the range $[l,r]$ in $\Psi$  is obtained with two $select_1$ operations on $D$.
-		Finally, $count(l,r,t_1,t_2)$ finds the occurrences within the time interval $[t_1,t_2]$.
+		As in the corresponding spatial query, the range $[l,r]$ in $\Psi$  is obtained with two $\select_1$ operations on $D$.
+		Finally, $\cnt(l,r,t_1,t_2)$ finds the occurrences within the time interval $[t_1,t_2]$.
 		See steps \textcircled{5} and \textcircled{6}  in Figure~\ref{fig:search2}.
 
 
@@ -801,33 +673,33 @@
 		Note also that, due to our sorting (by starting-node, ending-node, starting-time,$\dots$) the times in $Icode^{\Psi}[\alpha,\beta]$ are 
 		increasing (all of them correspond to trips with the same starting-node $X$ and ending-node $Y$). Therefore,
 		we can find the continuous subrange $[\alpha',\beta'] \subseteq [\alpha,\beta] $ corresponding to trips
-		that start within $[t_1, t_2]$ ({\em step-\textcircled{3}}). We refer to this operation as $countLR$ in Figure~\ref{fig:search}.
+		that start within $[t_1, t_2]$ ({\em step-\textcircled{3}}). We refer to this operation as $\cntLR$ in Figure~\ref{fig:search}.
 		Thus, that assuming $Icode^{\Psi}[\alpha,\beta]$ are increasing,  
 		$[\alpha',\beta'] \leftarrow countLR(\alpha,\beta,t_1,t_2)$ would report the 
 		positions $[\alpha',\beta'] \subseteq [\alpha,\beta]$ such that $\alpha' = argmin_{x} (Icode^{\Psi}[x] \geq t_1)$ and
 		$\beta' = argmax_{x} (Icode^{\Psi}[x] \leq t_2)$.
 		
-		Using a \gls{wt}, a simple way to implement $countLR$  consists in performing  two binary searches within 
-		$[\alpha,\beta]$ to find $[\alpha',\beta']$, where at each step we would use $access$ operation. This would cost $O(\log n \log \sigma)$. 
-		Yet, we could also regard on $count$ operation to obtain a more efficient and also rather straightforward 
-		implementation of $countLR$ so that we set $\alpha' \leftarrow count(\alpha,\beta,-1,t_1-1)$ and
+		Using a \gls{wt}, a simple way to implement $\cntLR$  consists in performing  two binary searches within 
+		$[\alpha,\beta]$ to find $[\alpha',\beta']$, where at each step we would use $\access$ operation. This would cost $O(\log n \log \sigma)$. 
+		Yet, we could also regard on $\cnt$ operation to obtain a more efficient and also rather straightforward 
+		implementation of $\cntLR$ so that we set $\alpha' \leftarrow count(\alpha,\beta,-1,t_1-1)$ and
 		$\beta' \leftarrow \alpha'+ count(\alpha,\beta,t_1,t_2)$. It costs $O(\log\sigma)$.
 		
 		
 		\begin{itemize}
 			\item {\em Strong semantics (\Tfxtys).} Note that the subrange $[\alpha',\beta']$ (containing trips starting within $[t_1,t_2]$) 
 			has a matching subrange $[l',r'] \subseteq [l,r]$ ({\em step-\textcircled{4}}), where some of the ending times of these trips will fall inside 
-			$[t_1, t_2]$ (this allows us to check the ending time constraint). By performing  $count(l',r',t_1,t_2]$  we get the final result 
+			$[t_1, t_2]$ (this allows us to check the ending time constraint). By performing  $\cnt(l',r',t_1,t_2]$  we get the final result 
 			({\em step-\textcircled{5}}). 
-			To sum up, answering this query  requires: one $bsearch$ over $\Psi$ (to find $[l,r]$), one $access$ to $\Psi$ to obtain
-			 $\alpha$ ($\beta\leftarrow \alpha+r-l$), one $countLR$ to find $[\alpha',\beta']$, and one $count$ 
+			To sum up, answering this query  requires: one $bsearch$ over $\Psi$ (to find $[l,r]$), one $\access$ to $\Psi$ to obtain
+			 $\alpha$ ($\beta\leftarrow \alpha+r-l$), one $\cntLR$ to find $[\alpha',\beta']$, and one $\cnt$ 
 			 (to count the valid ending times in $[l',r']$).
 			
 			
 			\item {\em Weak semantics (\Tfxtyw).}
 			The size of $[\alpha',\beta']$ is already a partial answer. To get the final result, we need to add 
 			also the occurrences of those trips starting before $t_1$ that end at $t_1$ or later. 
-			To do so, if $l<l'$, we need to compute $count(l,l'-1, t_1, {\sigma_t})$. This gives us the number of time 
+			To do so, if $l<l'$, we need to compute $\cnt(l,l'-1, t_1, {\sigma_t})$. This gives us the number of time 
 			instants in the range $[l,l')$ of  $Icode^{\Psi}$ that fall inside $[t_1, {\sigma_t}]$. 
 			That is, ending times equal or after $t_1$.
 		\end{itemize}
@@ -838,12 +710,12 @@
 	\item {\em Top-k most used nodes during  time interval $[t_1,t_2]$ (\STtk).}
 	Both the sequential and binary-partition approaches discussed in Section~\ref{sec:sq} can easily
 	be extended to support this query. The idea is that, when we add a node either to the min-heap or priority-queue
-	respectively, we compute its frequency within time interval $[t_1,t_2]$ (using $count$ operation) 
+	respectively, we compute its frequency within time interval $[t_1,t_2]$ (using $\cnt$ operation) 
 	rather than using its overall frequency.
 
 	\begin{itemize}
 		\item In the {\em sequential approach (\Stkseq)}, given a node whose corresponding range
-		in $\Psi$ is $D[l,r]$, we compute its frequency using $count(l,r,t_1,t_2)$ instead of simply using  $r-l+1$. 
+		in $\Psi$ is $D[l,r]$, we compute its frequency using $\cnt(l,r,t_1,t_2)$ instead of simply using  $r-l+1$. 
 		The rest of the process is exactly as discussed for the pure spatial \Stkseq\ query.
 		
 		\item In the {\em binary-partition approach (\Stkbin)}, we have to consider the priority of a
@@ -1277,7 +1149,7 @@
 
 	Focusing on \Stk\ queries, we can see huge differences between \Stks\  
 	and the rest of the \Stk\ queries, as the former needs to perform {$ bsearch$} over the compressed $\Psi$
-	instead of a $select$ on $D$. 
+	instead of a $\select$ on $D$. 
 
 	We can also see that due to the small number of stops in Madrid dataset, it is always more efficient 
 	to use the sequential version of \Stks\ and \Stk\ algorithms. This is also because a rather uniform frequency among nodes 
@@ -1326,10 +1198,10 @@
 
 	\subsubsection{Comparing the space/time trade-off of WM and HTWT}
 	\label{sec:time_exp}
-	In order to compare the efficiency of our \gls{htwt} (that uses variable-length codes and supports $count$ efficiently)
+	In order to compare the efficiency of our \gls{htwt} (that uses variable-length codes and supports $\cnt$ efficiently)
 	 with a balanced \gls{wm} alternative under 
 	different time distributions (recall that this \gls{wm} is time distribution invariant), 
-	we run some experiments that evaluate the average time to execute $count$ operation on
+	we run some experiments that evaluate the average time to execute $\cnt$ operation on
 	both representations.
 
 	\begin{figure}[tbp]
@@ -1366,11 +1238,11 @@
 	Then we built the \gls{htwt} and the \gls{wm} considering two different granularities for the discretization of times: 
 	five-minute and thirty-minute intervals. Then, we generated $10,\!000$ random intervals of times $[t_1,t_2]$ over the whole 
 	time sequence of the dataset considering interval widths of five minutes, one hour, and six hours.  
-	Finally, we run $10,\!000$  $count(z+2,n,t_1,t_2)$ queries (we show average times) from each query set over 
+	Finally, we run $10,\!000$  $\cnt(z+2,n,t_1,t_2)$ queries (we show average times) from each query set over 
 	the six configurations of \gls{htwt} and \gls{wm}  
 	(2 different granularities for the time discretization and 3 datasets).
 
-	%We made a custom \gls{wt} implementation with Hu-Tucker coding, where we focused in optimizing the $count$ operation. We also implemented the $top-k$ mentioned in Section~\ref{sec:tq} using a binary partition approach.
+	%We made a custom \gls{wt} implementation with Hu-Tucker coding, where we focused in optimizing the $\cnt$ operation. We also implemented the $top-k$ mentioned in Section~\ref{sec:tq} using a binary partition approach.
 
 	%For the \gls{wm} we reuse the implementation from \cite{CNO15}, with $top-k$ implemented with a simple linear approach, using leaf pointers that were already stored in the structure. That allows us to analyze the advantage of the linear when the distribution is uniform.
 
@@ -1414,7 +1286,7 @@
 	results when considering a very skewed distribution. Moreover, figures in the left column show results
 	for our structures considering that a 5-minute granularity is chosen for the discretization of times, whereas
 	figures on the right column assume time granularity is 30 minutes. For each scenario we include plots
-	\texttt{wtht:5-min}, \texttt{wtht:1-hour}, and \texttt{wtht:6-hour} for \gls{htwt} (range width for $count$ is respectively
+	\texttt{wtht:5-min}, \texttt{wtht:1-hour}, and \texttt{wtht:6-hour} for \gls{htwt} (range width for $\cnt$ is respectively
 	5-minutes, 1-hour, and 6-hours). We also present those plots for \gls{wm} (\texttt{wm:5-min}, \texttt{wm:1-hour}, and \texttt{wm:6-hour}).
 
 	The baseline used for the space usage (x-axis) is the size of an array of
@@ -1446,7 +1318,7 @@
 	%statistical coder has been used. As expected, in Figure~\ref{fig:study}
 	%the version with the plain bitvector {\em RG} uses even more space than the original unindexed
 	%representation, as the bitvectors need additional structures for
-	%$rank$ and $select$.
+	%$\rank$ and $\select$.
 	%
 	%Regarding query times, there is a slight advantage of the \gls{wm} that is mostly
 	%because the Hu-Tucker codes are longer than the original binary codes in some cases,
@@ -1497,7 +1369,7 @@
 	% \Ttcuarenta\ instead of \Ttcien\ since there are only $48$ available time-IDs.
 	% 
 	% Regarding query \Tut\  we can see that both \gls{htwt} and \gls{wm} obtain similar times (requiring less than 4$\mu$s 
-	% to perform a $count$ operation) and that those times improve as the height of the structure decreases.
+	% to perform a $\cnt$ operation) and that those times improve as the height of the structure decreases.
 	% 
 	% %When querying the top ten most used time intervals, we are using a sequential algorithm for the \gls{wm}, and binary 
 	% %for the \gls{wt}. For this reason, in the Figure~\ref{fig:madridst_topk} the points for each temporal index belong 
@@ -1552,15 +1424,15 @@
 
 
 	We can see that when running \Tut\ queries, both \gls{htwt} and \gls{wm} obtain rather similar times (requiring less than 4$\mu$s 
-	to perform a $count$ operation in all cases) and that those times improve as the height of the structure decreases. We can see 
+	to perform a $\cnt$ operation in all cases) and that those times improve as the height of the structure decreases. We can see 
 	that in the highest \gls{htwt} and \gls{wm}, corresponding to using $5$-min intervals in Madrid dataset, \Tut\ requires less
 	than $3.5\mu$s. Then, when using $30$-min intervals, the time required to solve \Tut\ is always below $2.3\mu$s (yet
 	\gls{wm} performs faster than \gls{htwt} here), and those times are similar to the ones obtained for Porto dataset when
 	using $5$-min intervals. And finally, the best query times (below $1.2\mu$s) are obtained for Porto dataset with 
 	$30$-min intervals.
 
-	Regarding $\Tst$, recall that it also performs a $count$ operation, but within a smaller range ($[1,z]$) in comparison with the range
-	$[z+1,n]$ where  $count$ is performed for \Tut. We can see that, whereas \gls{wm} obtains similar times to those of 
+	Regarding $\Tst$, recall that it also performs a $\cnt$ operation, but within a smaller range ($[1,z]$) in comparison with the range
+	$[z+1,n]$ where  $\cnt$ is performed for \Tut. We can see that, whereas \gls{wm} obtains similar times to those of 
 	$\Tut$ query,  \Tst\ performs clearly faster than \Tut\ over \gls{htwt}.
 
 
@@ -1647,13 +1519,13 @@
 	faster (from $1$ to $25$\%) than its \gls{wm} counterpart.
 
 	For queries \Tfxtys\ and \Tfxtyw\ we can see a big gap between the times reported by \gls{htwt} and \gls{wm}.
-	This gap arises because in \gls{wm} we have used exactly the $countLR$ operation discussed in Section~\ref{sec:stq}
-	that is implemented with two calls to the $count$ operation from the \gls{wm}.\footnote{For \gls{wm} we used exactly the same 
-		implementation in \cite{CNO15} and simply added the new operation $countLR$ that calls the underlying $count$ from the
+	This gap arises because in \gls{wm} we have used exactly the $\cntLR$ operation discussed in Section~\ref{sec:stq}
+	that is implemented with two calls to the $\cnt$ operation from the \gls{wm}.\footnote{For \gls{wm} we used exactly the same 
+		implementation in \cite{CNO15} and simply added the new operation $\cntLR$ that calls the underlying $\cnt$ from the
 		\gls{wm}. }  
 	However, in our implementation of
-	\gls{htwt} we have engineered an improved version of $countLR$ where, during the execution of $count$, we also report
-	$\alpha'$ and  $\beta'$, hence avoiding two calls to $count$.
+	\gls{htwt} we have engineered an improved version of $\cntLR$ where, during the execution of $\cnt$, we also report
+	$\alpha'$ and  $\beta'$, hence avoiding two calls to $\cnt$.
 	 
 	%
 	%\OJOFARI{Reescribir para  decir que WM usa 2 counts para implementar countLR, mientras que WTHT usa una 
