@@ -68,21 +68,21 @@
 			
 			\item Spatio-temporal queries:
 			\begin{itemize}
-				\item[-] {\em Number of trips starting at node $X$ during time interval $[t_1,t_2]$ (\startX$_T$).}
-				\item[-] {\em Number of trips ending at node $X$ during the time interval $[t_1,t_2]$ (\endX$_T$). }
-				\item[-] {\em Number of trips starting at $X$ and ending at $Y$ occurring during  time interval $[t_1,t_2]$ (\XtoY$_T$).} This type of queries is further classified into: 
+				\item[-] {\em Number of trips starting at node $X$ during time interval $[t_1..t_2]$ (\startX$_T$).}
+				\item[-] {\em Number of trips ending at node $X$ during the time interval $[t_1..t_2]$ (\endX$_T$). }
+				\item[-] {\em Number of trips starting at $X$ and ending at $Y$ occurring during  time interval $[t_1..t_2]$ (\XtoY$_T$).} This type of queries is further classified into: 
 				\begin{itemize}
-				    \item[(i)] \XtoY$_T$ with strong semantics (\XtoY$_{Ts}$), which considers trips that completely occur within interval $[t_1,t_2]$.
-				    \item[(ii)] \XtoY$_T$ with weak semantics (\XtoY$_{Tw}$), which considers trips whose life time overlap $[t_1,t_2]$.
+				    \item[(i)] \XtoY$_T$ with strong semantics (\XtoY$_{Ts}$), which considers trips that completely occur within interval $[t_1..t_2]$.
+				    \item[(ii)] \XtoY$_T$ with weak semantics (\XtoY$_{Tw}$), which considers trips whose life time overlap $[t_1..t_2]$.
 				\end{itemize}
-				\item[-] {\em Number of trips using node $X$ during the time interval $[t_1,t_2]$. Can also be seen as the average load of the node $X$ within a given time interval. (\loadX$_T$).}
+				\item[-] {\em Number of trips using node $X$ during the time interval $[t_1..t_2]$. Can also be seen as the average load of the node $X$ within a given time interval. (\loadX$_T$).}
 			\end{itemize}
 			
 			\item Pure temporal queries:
 			\begin{itemize}
-				\item[-] {\em Number of trips starting during the time interval $[t_1,t_2]$ (\startT). } 
-				\item[-] {\em Total usage (load) of network stops during the time interval $[t_1,t_2]$ (\loadT).}
-				\item[-] {\em Number of trips performed within the time interval $[t_1,t_2]$ (\tripT).} 
+				\item[-] {\em Number of trips starting during the time interval $[t_1..t_2]$ (\startT). } 
+				\item[-] {\em Total usage (load) of network nodes during the time interval $[t_1..t_2]$ (\loadT).}
+				\item[-] {\em Number of trips performed within the time interval $[t_1..t_2]$ (\tripT).} 
 			\end{itemize}
 		\end{enumerate}
 		
@@ -96,8 +96,8 @@
 			
 			\item Spatio-temporal {\em Top-k}  queries:
 			\begin{itemize}
-				\item[-] {\em Top-k most used nodes during time interval $[t_1,t_2]$(\topK$_T$)} that returns the nodes with the largest number of trips passing through within time interval $[t_1,t_2]$. 
-				\item[-] {\em Top-k most used nodes to start a trip during time interval $[t_1,t_2]$(\topK$_{Ts}$)} that returns the nodes with the largest number of trips starting there within time interval $[t_1,t_2]$ at that node.
+				\item[-] {\em Top-k most used nodes during time interval $[t_1..t_2]$(\topK$_T$)} that returns the nodes with the largest number of trips passing through within time interval $[t_1..t_2]$. 
+				\item[-] {\em Top-k most used nodes to start a trip during time interval $[t_1..t_2]$(\topK$_{Ts}$)} that returns the nodes with the largest number of trips starting there within time interval $[t_1..t_2]$ at that node.
 			\end{itemize}
 		\end{enumerate}
 	\end{itemize}
@@ -207,7 +207,7 @@
 
 	The next step involves concatenating the codes $s^i_j$ and $\$_i$ of the spatial components of our trips and to add an 
 	extra trailing terminator $\$_0$ to create a sequence $Text[1,n]$\footnote{By definition, it must hold that $n = |\mathcal{T}| + 1 + \displaystyle\sum^{|\mathcal{T}|}_{i=1} n_i$.}. $\$_0$ must be  lexicographically 
-	smaller than any other entry in $S$ (then it also holds $\$_0 \prec \$_i$ $\forall i \in [1,|\mathcal{T}|]$). In the top part of
+	smaller than any other entry (then it also holds $\$_0 \prec \$_i$, $\forall i \in [1,|\mathcal{T}|]$). In the top part of
 	Figure~\ref{fig:tcsa}, we can see array $Text$ for the running example, as well as the corresponding time-IDs that
 	are regarded in sequence $Icode$  ($Time$ shows the original times).
 	
@@ -284,12 +284,12 @@
 		In our \gls{csa}, we have used the {\em SDArray} from \cite{okanohara2007practical} to represent $D$. It provides a very 
 		good compression for sparse bitvectors, as well as constant-time $\select_1$ operation.
 		
-		\item In \cite{FBNCPR12}, $bsearch$ operation was implemented with a simple binary search over $\Psi$ rather than
+		\item In \cite{FBNCPR12}, $\bsearch$ operation was implemented with a simple binary search over $\Psi$ rather than
 		using the backward-search optimization proposed in the original \gls{csa} \cite{Sad03}. In our experiments, we used
 		backward search since it led to a much lower performance degradation at query time when a sparse sampling of $\Psi$ 
 		was used.
 		
-		%We implemented a backward search for the $bsearch$ operation in the \gls{csa}. When the pattern $P[1,p]$ is searched, 
+		%We implemented a backward search for the $\bsearch$ operation in the \gls{csa}. When the pattern $P[1,p]$ is searched, 
 		%we start by locating the ranges for $P[p]$ and $P[p-1]$ in $D$. After that, we binary search over $\Psi$ for the symbols
 		%in $P[p-1]$ that point to $P[p]$, getting a narrower range. We repeat it recursively until reaching $P[1]$. The main
 		%advantage of the backward search in this situation is that we have more control on the accesses on the compressed 
@@ -372,46 +372,38 @@
 	and we created our custom \gls{htwt} implementation, paying special focus at solving $\cnt$ efficiently.
 
 \section{Algorithms}
-	We have X to Y and even Top K queries that are not that hard to describe.
+	In these section, we are going to discuss how our previously described structures can solve the queries proposed in Section~\ref{sec:ctr_desc}. We are also going to include a brief complexity analysis for some of the cases.
 
 	\subsection{Spatial queries}
 	\label{sec:sq}
 
-	With the structure described for representing the spatial component of the trips,
+	With the \gls{csa} structure described for representing the spatial component of the trips,
 	the following queries can be solved.
 
-	%\vspace{-2mm}
-	\begin{itemize}[leftmargin=3mm]
-	\setlength{\itemindent}{0mm}
-	\item {\em Number of trips starting at node $X$ (\Sswx).}
+	\begin{itemize}
+	\item {\em Number of trips starting at node $X$ (\startX).}
 	Because $\Psi$ was cyclically built in such a way that every $\$$ symbol is followed by the first node 
-	of its trip, this query is solved by $[l,r]~\leftarrow~bsearch(\$X)$ over the \gls{csa}, 
-	which results on a binary search for the pattern $\$X$ over the section $\Psi[2,z+1]$ corresponding to $\$$ symbols. 
+	of its trip, this query is solved by $[l..r]~\leftarrow~\bsearch(\$X)$ over the \gls{csa}, 
+	which results on a binary search for the pattern $\$X$ over the section $\Psi[2,|\mathcal{T}|]$ corresponding to $\$$ symbols. 
 	Then $r-l+1$ gives the number of trips starting at $X$.
+	Applying the backward search algorithm for \gls{csa}, this query involves two $\select_1$ operations over $D$ in order to delimit the region $\Psi[l_x..r_x]$ for $X$\footnote{Assuming that $X$ is at position $p$ in the vocabulary $V$ of \gls{ctr} ($V[p]=X$), its region in $\Psi[l_x..r_x]$ is obtained as $l_x \leftarrow \select_1(D,p)$,  $r_x \leftarrow \select_1(D,p+1)$. If $p$ is the last entry in $V$, we set $r_x \leftarrow n$.} and binary search in the $\$$ region to find the subrange for $\$X$. Since $\select_1$ on $D$ are $O(1)$, the temporal complexity of this query is $O(\log|\mathcal{T}|)$, omitting a constant factor due to the compression of $\Psi$.
 
-	\item {\em Number of trips ending at node $X$ (\Sewx).} In a similar way to the previous query, 
-	this one can be answered with $bsearch(X\$)$.
+	\item {\em Number of trips ending at node $X$ (\endX).} In a similar way to the previous query, this one can be answered with $\bsearch(X\$)$. It will require four $\select_1$ operations (still $O(1)$) and a binary search over the $X$ region, giving a total worst-case complexity of $O(\log (n - |\mathcal{T}|)) \subset O(\log n)$.
 
-	\item {\em Number of trips starting at $X$ and ending at $Y$ (\Sfxty).}
-	Combining both ideas from above, and thanks to the cyclical construction of $\Psi$, this query is solved 
-	using $bsearch(Y\$X)$.
+	\item {\em Number of trips starting at $X$ and ending at $Y$ (\XtoY).}
+	Combining both ideas from above, and thanks to the cyclical construction of $\Psi$, this query is solved using $\bsearch(Y\$X)$. As it requires both binary searches, the total complexity is $O(\log n)$.
 
-	\item {\em Number of trips using node $X$ (\Sux).}
-	%Instead of performing a binary search over $\Psi$, we can operate on bitmap $D$. 
-	Even though we could solve this query with $bsearch(X)$, it is more efficient to solve it by directly operating on $D$. 
-	 Assuming that $X$ is
-	at position $p$ in the vocabulary $V$ of  \gls{ctr} ($V[p]=X$), its total frequency is obtained by
-	$occs_X \leftarrow select_1(D,p+1) - select_1(D,p)$. %That is, we find the range in $D$ corresponding to the node $X$.
-	If $p$ is the last entry in $V$, we set $occs_X \leftarrow n+1-select_1(D,p)$.
+	\item {\em Number of trips using node $X$ (\loadX).}
+	Even though we could solve this query with $\bsearch(X)$, it is more efficient to solve it by directly operating on $D$, finding the region $\Psi[l..r]$ for $X$ and calculating $r-l+1$. All the operations involved are $O(1)$.
+	 %Assuming that $X$ is at position $p$ in the vocabulary $V$ of  \gls{ctr} ($V[p]=X$), its total frequency is obtained by $occs_X \leftarrow select_1(D,p+1) - select_1(D,p)$. %That is, we find the range in $D$ corresponding to the node $X$.
+	%If $p$ is the last entry in $V$, we set $occs_X \leftarrow n+1-select_1(D,p)$.
 
-	\setlength{\itemindent}{0mm}
-	\item {\em Top-k most used nodes (\Stk).}
-	We provide two possible solutions for this query named: %These queries have two possible implementations:
-	sequential and binary-partition approaches. 
+	\item {\em Top-k most used nodes (\topK).}
+	We provide two possible solutions for this query named: a sequential and a binary-partition approach:
 
 	\begin{itemize}
-	\item To return the $k$ most used nodes using {\em sequential approach (\Stkseq)}. The idea is
-	to apply  $\select_1$ operation sequentially for every node from $2$ to $|V|$ to compute the 
+	\item To return the $k$ most used nodes using {\em sequential approach (\topK$_{seq}$)}. The idea is
+	to apply  $\select_1(D,i)$ operations sequentially for every $i \in [2..|V|$ to compute the 
 	frequency of each node and to return the $k$ nodes with highest frequency.
 	We use a min-heap that is initialized with
 	the first $k$ nodes, and for every node $s$ from $k+1$ to $|V|$, 
@@ -419,33 +411,31 @@
 	the heap. In case the frequency of $s$ is higher, the root of the heap is replaced by $s$ and
 	then moved down to comply with the heap ordering. At the end of the process, the heap
 	will contain the top-k most used nodes $\langle p_1\:,\:p_2,\:\dots,\:p_k \rangle$, which can be 
-	sorted with the heapsort algorithm if needed. Finally, we return $\langle V[p_1],V[p_2],\dots,V[p_k]\rangle$.
-	Note that this  approach always performs $|V|$ $\select_1$ operations on $D$.
+	sorted with the heapsort algorithm if needed. 
+	%Finally, we return $\langle V[p_1],V[p_2],\dots,V[p_k]\rangle$.
+	Note that, since $|S| = |V|-1$, this approach will perform $|S|$ $\select_1$ operations on $D$, as well as up to $|S|$ insertions in the heap of size $k$, thus having an overall complexity of $O(|S|\log k)$.
 
-	\item The {\em binary-partition (\Stkbin)} approach takes advantage of a skewed 
-	distribution of frequency of the nodes that trips traverse.  Working over $D$ and $V$, we 
+	\item The {\em binary-partition (\topK$_{bin}$)} approach takes advantage of the skewed 
+	frequency distribution for the nodes that trips traverse.  Working over $D$ and $V$, we 
 	recursively split $D$  into two segments after each iteration. 
 	If possible, we leave the same number of different nodes in each side of the partition. 
-	Initially, we start considering the range in $D[l,r] \leftarrow D[select_1(D,2),n]=D[z+2,n]$ 
+	Initially, we start considering the range in $D[l..r] \leftarrow D[\select_1(D,2),n]=D[|\mathcal{T}|+2,n]$ 
 	which corresponds to the nodes that appear in 
 	$V$ from positions $i=2$ to $j=|V|$.\footnote{We skip the $\$$ at the first entry of $V$ and its corresponding 
-	entries in $D$; that is, $D[1,select_1(D,2)-1]$.}
+	entries in $D$; that is, $D[1,\select_1(D,2)-1]$.}
 	%	$D$ (without its initial range 	%of $|V|$ $\$$ symbols).
 	We use a priority queue that is initialized as $Q \leftarrow (\langle i,j\rangle, \langle l,r\rangle)$.
-	Then, assuming $m=i + \frac{j-i+1}{2}$ and $q=select_1(D,m)$, we create two partitions 
+	Then, assuming $m=i + \frac{j-i+1}{2}$ and $q=\select_1(D,m)$, we create two partitions 
 	$D[l, q-1]$ and  $D[q, r]$, which correspond respectively to the nodes in $V[i,m-1]$ and $V[m, j]$.
 	These  segments created after the partitioning step are
 	pushed into  $Q$. %, storing the initial and the final positions of the segment in $D$,
 	%and also the initial and final corresponding positions in $V$. 
-	The pseudocode can be found in  Figure~\ref{fig:topk_nieves}.
+	The pseudocode can be found in the Algorithm~\ref{alg:topk_nieves}.
 
 	The priority of each segment in $Q$ is
 	directly the size of its range in $D$ ($r-l+1$). 
-	%The priority queue $Q$ is initialized with a segment covering the whole $D$ (without its initial range
-	%of $|V|$ $\$$ symbols). 
 	When a segment extracted from $Q$ represents the instance of only one node ($(\langle i,j\rangle, \langle l,r\rangle)$, with $i=j$),
-	that node is returned as a result of the top-k algorithm (we return $V[i]$). The algorithm stops when the first $k$
-	nodes are found.
+	that node is returned as a result of the top-k algorithm (we return $V[i]$). The algorithm stops when the first $k$ nodes are found.
 
 	For example, when searching for the top-1 most used nodes in the example from Figure~\ref{fig:tcsa}, $Q$ is initialized with
 	the segment $[8, 28]$, corresponding to nodes from~1~to~10 (positions from~2~to~11 in $V$). Note
@@ -455,6 +445,8 @@
 	$(\langle 3,3\rangle, \langle 14,18\rangle)$, hence obtaining the segment $[14, 18]$ for
 	the single node 3 (position $4$ in $V$), concluding that the  {\em Top-1 most used node} is 
 	$\mathbf{3}=V[4]$ with a frequency equal to $5=18-14$.
+	
+	Even though the worst-case complexity of this approach is $O(|S|\log|S|)$, which can be expected when the distribution of nodes is uniform, it can perform considerably better than the sequential approach with a skewed distribution and a small $k$, as will be experimentally proven in the Section~\ref{sec:exp:spat}.
 
 	%\marginpar{\tiny algorithm ten que comezar metendo $<2,|V|>$, non $1,V$}
 	%\marginpar{\tiny $q$ debe ser $\select_1(D,m)$, non $\select_1(D,m+1)$}
@@ -495,14 +487,13 @@
 	\end{itemize}
 
 
-	\begin{figure}[t]
-		%\vspace{-0.5cm}
+	\begin{algorithm}[ht]
 		\begin{center}
 			\begin{minipage}{0.70\textwidth}
 				\begin{code}
 					\textbf{GetTopK\_most\_used\_nodes} $(k)$: \\
 					\>(l.1~) \> ~$ Q ~\leftarrow$ \textbf{new PriorityQueue()}; \\
-					\>(l.2~) \> ~$ Q .$\textbf{push$(\langle2, |V|\rangle, \langle$\select$_1(D,2), n\rangle)$}; \\
+					\>(l.2~) \> ~$ Q .$\textbf{push$(\langle2, |V|\rangle, \langle\select_1(D,2), n\rangle)$}; \\
 					\>(l.3~) \> ~$ current\_k ~\leftarrow 0$; \\%\\
 					
 					\>(l.4~) \> ~\textbf{while }$current\_k < k$: \\
@@ -513,74 +504,60 @@
 					\>(l.8~) \> ~\> \> $ current\_k ~\leftarrow current\_k + 1$; \\
 					\>(l.9~) \> ~\> \textbf{else}: \\
 					\>(l.10) \> ~\> \> $ m ~\leftarrow i + \frac{j - i + 1}{2}$; \\
-					\>(l.11) \> ~\> \> $ q ~\leftarrow$ \textbf{select$_1(D,m + 1)$}; \\
+					\>(l.11) \> ~\> \> $ q ~\leftarrow$ \textbf{$\select_1(D,m + 1)$}; \\
 					\>(l.12) \> ~\> \> $ Q .$\textbf{push$(\langle i, m-1 \rangle, \langle l, q-1 \rangle)$}; \\
 					\>(l.13) \> ~\> \> $ Q .$\textbf{push$(\langle m, j \rangle, \langle q, r \rangle)$}; \\%\\
 					\>(l.14) \> ~\textbf{return} $topK$; \\
 				\end{code}
 			\end{minipage}
 		\end{center}
-		\vspace{-0.3cm}
 		\caption{Algorithm {\em Top-k most used nodes} using binary-partition approach.}
-		\label{fig:topk_nieves}
-		%\vspace{-0.5cm}
-	\end{figure}
+		\label{alg:topk_nieves}
+	\end{algorithm}
 
-	\item {\em Top-k most used nodes to start a trip (\Stks).}
-	Both \Stk\ approaches above can be adapted for answering \Stks.
-	However, unlike its simpler variant, it requires performing $bsearch(\$X)$ over $\Psi$ (rather than a $\select$ on $D$) at
+	\item {\em Top-k most used nodes to start a trip (\topK$_s$).}
+	Both \topK\ approaches above can be adapted for answering \topK$_s$.
+	However, unlike its simpler variant, it requires performing $\bsearch(\$X)$ over $\Psi$ (rather than a $\select_1$ on $D$) at
 	each iteration, hence increasing the temporal complexity of the operation.
 
 	The implementation of the linear approach is straightforward. The binary-partition approach differs slightly 
-	from the algorithm in Figure~\ref{fig:topk_nieves}: in (l.2) we insert $(\langle 2, |V| \rangle, \langle 2,z+1 \rangle)$ into $Q$, and we 
-	replace (l.11) with $[x,y]~\leftarrow~bsearch(\$V[m])$; $q \leftarrow x$.
-
-	%interval covers only the range corresponding to $\$$ symbols 
-	%(therefore $\langle l,r\rangle \leftarrow \langle 1,z+1\rangle$), and $q$ is computed as $[q,\_]~\leftarrow~bsearch(\$V[m])$.
-
-	%Following the same idea, one could also support querying for the Top-k nodes used to end a trip. 
+	from the Algorithm~\ref{alg:topk_nieves}: in (l.2) we insert $(\langle 2, |V| \rangle, \langle 2,z+1 \rangle)$ into $Q$, and we 
+	replace (l.11) with $[x,y]~\leftarrow~\bsearch(\$V[m])$; $q \leftarrow x$. This increases the temporal complexity of \topK$_s$ by a factor of $O(\log n)$ over the complexities discussed for the original \topK\ queries.
 	\end{itemize}
 
 	\subsection{Temporal queries}
 	\label{sec:tq}
-	With either one of the described alternatives (\gls{htwt} or \gls{wm}) to represent time intervals
-	we can answer the following pure temporal queries:
-
-	\begin{itemize}[leftmargin=3mm]
-	\setlength{\itemindent}{0mm}
+	With either one of the described alternatives (\gls{htwt} or \gls{wm}) to represent time intervals we can answer the following purely temporal queries:
+	
+	\begin{itemize}
 	%\item {\em Number of nodes used at instant $t$}. This is computed as $\rank_t(n) -rank_t(z+1)$. 
 	%That is, to discard the occurrences of $t$ in the $\$$ zone, we count the occurrences of instant $t$ in \gls{wt}, and
 	%then we subtract $\rank_t(z+1)$, where $|\mathcal{T}|$ is the number of trips.
 
+	\item {\em Number of trips starting during the time interval $[t_1..t_2]$ (\startT).} Since we keep the
+	starting time of each trip within $Icode^{\Psi}[2,|\mathcal{T}|+1]$, we can efficiently solve this query 
+	by simply computing $\cnt(2,|\mathcal{T}|+1,t_1,t_2)$ in $O(\log|I|)$ time.
 
-	\item {\em Number of trips starting during the time interval $[t_1,t_2]$ (\Tst).} Since we keep the
-	starting time of each trip within $Icode^{\Psi}[1,z]$, we can efficiently solve this query 
-	by simply computing $\cnt(1,z,t_1,t_2)$.
+	\item  {\em Total usage of network nodes during the time interval $[t_1..t_2]$ (\loadT).} This query
+	can be seem as the sum of the number of trips that traversed each network node during $[t_1..t_2]$.
+	We can solve this query by computing $\cnt(|\mathcal{T}|+2,n,t_1,t_2)$, in $O(\log|I|)$ time.
 
-	\item  {\em Total usage of network stops during the time interval $[t_1,t_2]$ (\Tut).} This query
-	can be seem as the sum of the number of trips that traversed each network node during $[t_1,t_2]$.
-	We can solve this query by computing $\cnt(z+1,n,t_1,t_2)$. 
-
-	\item {\em Number of trips performed during the time interval $[t_1,t_2]$ (\Ttt).} This is also an
-	interesting query that permits to know the actual network usage during a time interval. 
+	\item {\em Number of trips performed during the time interval $[t_1..t_2]$ (\tripT).} This is also an interesting query that measures the actual number of trips started or completed within the queried time interval. 
 	To solve this query
-	we could compute {\em \Ttt} by subtracting the number of trips that started after $t_2$ 
-	(\textit{\Tst}$(t_2+1,\sigma^t-1) $) and the number of trips that ended 
-	before $t_1$ (\textit{\Tet}$(0,t_1-1) $) from the total number of trips ($z$). 
+	we could compute {\em \tripT} by subtracting the number of trips that started after $t_2$  and the number of trips that ended 	before $t_1$ from the total number of trips ($|\mathcal{T}| - \startT(t_2+1,|I|) - \endT(1,t_1-1)$). 
 	However, recall that
-	$Icode^{\Psi}[1,z]$ has the starting time of each trip, but we do not keep their ending time.
-	We could solve \textit{\Tet}$(0,t_1-1)$ by taking the first node ($X$) of each trip starting
+	$Icode^{\Psi}[2,|\mathcal{T}|+1]$ has the starting time of each trip, but we do not keep their ending time.
+	We could solve $\endT(1,t_1-1)$ by taking the first node ($X$) of each trip starting
 	before $t_1$, then applying $\Psi$ until reaching the ending node ($Y$), and finally getting the ending
 	time of that trip associated to node $Y$. However, this would be rather inefficient.
-	A possible solution to efficiently solve \textit{\Tet}$(0,t_1-1)$, would require to increment our temporal
-	component, in parallel with $Icode^{\Psi}[1,z]$,  with another \gls{wt}-based representation of the 
-	ending times for our $z$ trips. This would permit to report the number of trips
-	ending before $t_1$ as $\cnt'(1,z,0,t_1-1)$, but would increase the overall size of \gls{ctr}.
+	A possible solution to efficiently solve $\endT(1,t_1-1)$, would require to augment our temporal
+	component, in parallel with $Icode^{\Psi}[2,|\mathcal{T}|+1]$, with another \gls{wt}-based representation of the 
+	ending times for our $|\mathcal{T}|$ trips. This would permit to report the number of trips
+	ending before $t_1$ as $\cnt'(2,|\mathcal{T}|+1,0,t_1-1)$, but would increase the overall size of \gls{ctr}.
 	Yet, note that even without keeping ending-times, we could 
-	provide rather accurate estimations of \Ttt\ for a system administrator. For example, using \Tut\
-	to compute the number of times each trip went through any node during the time interval $[t_1,t_2]$, 
-	and dividing that value by the average nodes per trip. Another good estimation can also be obtained with 
-	{\em\Tst$(t_1,t_2)$}.
+	provide rather accurate estimations of \tripT\ for a system administrator. For example, using \loadT\
+	to compute the number of times each trip went through any node during the time interval $[t_1..t_2]$, 
+	and dividing that value by the average nodes per trip. Another good estimation can also be obtained with \startT$(t_1,t_2)$.
 
 
 	% 
@@ -601,142 +578,123 @@
 	\label{sec:stq}
 	Apart from the pure spatial and temporal queries discussed in the previous sections, % in Sections~\ref{sec:sq}~and~\ref{sec:tq}, 
 	we can combine both the self-indexed spatial and temporal components from \gls{ctr} to answer spatio-temporal queries. 
-	The idea is to restrict spatial queries to a time interval $[t_1, t_2]$.  An example of this type of query is to return  the
+	The idea is to restrict spatial queries to a time interval $[t_1..t_2]$.  An example of this type of query is to return  the
 	{\em number of trips starting at node $X$ that occurred between $t_1$ and $t_2$}, which we can solve by first finding the
 	range in the \gls{csa} of the trips starting in $X$ and then relying on the  ${count}$
 	operation in the \gls{htwt} (or \gls{wm}). The following spatio-temporal queries can be solved by \gls{ctr}:
-	%\marginpar{\tiny ojo, comente operacion ``report''}
 
-
-
-	\begin{itemize}[leftmargin=3mm]
-
-		\setlength{\itemindent}{0mm}
-		\item {\em Number of trips starting at node $X$ during time interval $[t_1,t_2]$ (\Tswx).}
-		Recall that in the time sequence we also included timestamps associated with the area of $\$$-symbols in $\Psi$.
-		Particularly, for each $\$$, we keep the time of the first node of its trip. Therefore, 
-		we can perform $[l,r]~\leftarrow~bsearch(\$X)$ as in a regular spatial query to find the
-		range $\Psi[l,r]$ ($[l,r]\subseteq [2,z+1]$) that corresponds to $\$$ symbols that end a trip
-		which started at node $X$. Then, since the time sequence $Icode^{\Psi}$ 
+	\begin{itemize}
+	
+		\item {\em Number of trips starting at node $X$ during time interval $[t_1..t_2]$ (\startX$_T$).}
+		Recall that in the time sequence we also included timestamps associated with the area of $\$$-symbols in $\Psi[1..|\mathcal{T}|+1]$.
+		Particularly, for each $\$$ at $\Psi[i+1]$, we keep the time of the first node of its trip $\mathcal{T}_i$. Therefore, 
+		we can perform $[l..r]~\leftarrow~\bsearch(\$X)$ as in a regular spatial query to find the
+		range $\Psi[l..r]$ ($[l..r]\subseteq [2..|\mathcal{T}|+1]$) that corresponds to $\$$ symbols that end a trip which started at node $X$. Then, since the time sequence $Icode^{\Psi}$ 
 		(represented with either a \gls{htwt} or \gls{wm}) is
-		 aligned with $\Psi$, we can filter out those trips that started within $[t_1,t_2]$ performing
-		operation $\cnt(l,r,t_1,t_2)$. In Figure~\ref{fig:search2} (steps \textcircled{1} and \textcircled{2}) we can see the steps involved.
+		 aligned with $\Psi$, we can filter out those trips that started within $[t_1..t_2]$ performing operation $\cnt(l,r,t_1,t_2)$. Because both $\bsearch$ and $\cnt$ are used, the time complexity for the whole query is $O(\log n + \log|I|)$. In Figure~\ref{fig:search2} (steps \textcircled{1} and \textcircled{2}) we illustrate steps involved.
 
-	\begin{figure}[thb]
-		%\vspace{-0.4cm}
+	\begin{figure}[th]
 		\begin{center}
 			{\includegraphics[width=0.90\textwidth]{figures/search2.eps}}
 		\end{center}
-		\vspace{-0.3cm}
-		\caption{Trips staring at, ending at, or using node $X$  during time interval $[t_1,t_2]$.}
+		\caption{Trips staring at, ending at, or using node $X$  during time interval $[t_1..t_2]$.}
 		\label{fig:search2}
-		%\vspace{-0.6cm}
 	\end{figure}
 		
-		\item {\em Number of trips ending at node $X$ during the time interval $[t_1,t_2]$ (\Tewx). }
-		As above, we initially perform the spatial query $[l,r]~\leftarrow~bsearch(X\$)$ to 
-		obtain the range in $\Psi$ that corresponds to the pattern $X\$$ (trips ending at node $X$).
-		Then, we use  $\cnt(l,r,t_1,t_2)$ operation to count how many of those trips match the temporal constraint.
-		See steps \textcircled{3} and \textcircled{4} in Figure~\ref{fig:search2}.
+		\item {\em Number of trips ending at node $X$ during the time interval $[t_1..t_2]$ (\endX$_T$). }
+		As above, we initially perform the spatial query $[l..r]~\leftarrow~\bsearch(X\$)$ to 
+		obtain the range in $\Psi[l..r]$ that corresponds to the pattern $X\$$ (trips ending at node $X$). Then, we use  $\cnt(l,r,t_1,t_2)$ operation to count how many of those trips match the temporal constraint. See steps \textcircled{3} and \textcircled{4} in Figure~\ref{fig:search2}.
 		
-		\item {\em Number of trips using node $X$ during the time interval $[t_1,t_2]$ (\Tux).}
-		As in the corresponding spatial query, the range $[l,r]$ in $\Psi$  is obtained with two $\select_1$ operations on $D$.
-		Finally, $\cnt(l,r,t_1,t_2)$ finds the occurrences within the time interval $[t_1,t_2]$.
-		See steps \textcircled{5} and \textcircled{6}  in Figure~\ref{fig:search2}.
+		\item {\em Number of trips using node $X$ during the time interval $[t_1..t_2]$ (\loadX$_T$).}
+		As in the corresponding spatial query, the range $\Psi[l..r]$  is obtained with two $\select_1$ operations on $D$.
+		Finally, $\cnt(l,r,t_1,t_2)$ finds the occurrences within the time interval $[t_1..t_2]$, thus solving this query in $O(log|I|)$ time.
+		See steps \textcircled{5} and \textcircled{6} in Figure~\ref{fig:search2}.
 
 
-
-	\begin{figure}[thb]
-		%\vspace{-0.4cm}
+	\begin{figure}[th]
 		\begin{center}
 			{\includegraphics[width=0.90\textwidth]{figures/search.eps}}
 		\end{center}
-		\vspace{-0.3cm}
-		\caption{Trips staring at $X$ and ending at $Y$ during time interval $[t_1,t_2]$.}
+		\caption{Trips staring at $X$ and ending at $Y$ during time interval $[t_1..t_2]$.}
 		\label{fig:search}
-		%\vspace{-0.6cm}
-	\end{figure}	
-		\item {\em Number of trips starting at $X$ and ending at $Y$ occurring during  time interval $[t_1,t_2]$ (\Tfxty).}
+	\end{figure}
+	
+		\item {\em Number of trips starting at $X$ and ending at $Y$ occurring during  time interval $[t_1..t_2]$ (\XtoY$_T$).}
 		We consider two different semantics. A query with  {\em strong semantics} will obtain trips
-		that start and end within  $[t_1,t_2]$. Whereas, a query with  {\em weak semantics} will obtain trips
-		whose time intervals overlap  $[t_1,t_2]$ and, therefore, they could actually start before $t_1$ or end after $t_2$.
+		that start and end within  $[t_1..t_2]$. Whereas, a query with  {\em weak semantics} will obtain trips whose time intervals overlap  $[t_1..t_2]$ and, therefore, they could actually start before $t_1$ or end after $t_2$.
 		
 		In Figure~\ref{fig:search}, we show the step-by-step process to solve this type of queries.
-		As in a spatial query, we start by searching for the range $[l,r] \leftarrow bsearch(Y\$X)$ in $\Psi$ corresponding 
-		to trips starting at $Y$ and ending at $X$ ({\em step-\textcircled{1}}). Next, due to our sorting of trips,  the range for $Y\$X$ in $\Psi[l,r]$
-		can be mapped to a continuous range $[\alpha,\beta]$ of the same size in the $\$XY$ region of $\Psi$. We compute $\alpha \leftarrow \Psi[l], 
+		As in a spatial query, we start by searching for the range $[l..r] \leftarrow \bsearch(Y\$X)$ in $\Psi$ corresponding 
+		to trips starting at $Y$ and ending at $X$ ({\em step-\textcircled{1}}). Next, due to our sorting of trips, the range for $Y\$X$ in $\Psi[l..r]$
+		can be mapped to a continuous range $\Psi[\alpha..\beta]$ of the same size in the $\$X$ region of $\Psi$\footnote{As the trips were sorted by the key $s_1,s_n,t_1,s_{2..n-1}$, and we positioned each $\$_i$ according to the order of their trip $\mathcal{T}_i$, the region $Y\$X$ will be conveniently sorted by the key $s_n,\$,s_1,s_n,t_1,s_{2..n-1}$ within $\Psi$, thus delimiting an equivalent region $\Psi[\alpha..\beta]$ in $\$X$ where each entry corresponds to a trip that also ends in $Y$.}. 
+		We compute $\alpha \leftarrow \Psi[l], 
 		\beta\leftarrow\alpha+r-l$ ({\em step-\textcircled{2}}). Furthermore, note that the range for $\$XY$ preserves the same order as that for $Y\$X$.
 		
 		At this point, since $Icode^{\Psi}$  was aligned with $\Psi$, 
-		we could check ending-time constraints within $Icode^{\Psi}[l,r]$  and starting-time constraints 
-		within $Icode^{\Psi}[\alpha,\beta]$ (recall we keep starting times associated with the corresponding $\$$ of each trip).
-		Note also that, due to our sorting (by starting-node, ending-node, starting-time,$\dots$) the times in $Icode^{\Psi}[\alpha,\beta]$ are 
-		increasing (all of them correspond to trips with the same starting-node $X$ and ending-node $Y$). Therefore,
-		we can find the continuous subrange $[\alpha',\beta'] \subseteq [\alpha,\beta] $ corresponding to trips
-		that start within $[t_1, t_2]$ ({\em step-\textcircled{3}}). We refer to this operation as $\cntLR$ in Figure~\ref{fig:search}.
-		Thus, that assuming $Icode^{\Psi}[\alpha,\beta]$ are increasing,  
-		$[\alpha',\beta'] \leftarrow countLR(\alpha,\beta,t_1,t_2)$ would report the 
-		positions $[\alpha',\beta'] \subseteq [\alpha,\beta]$ such that $\alpha' = argmin_{x} (Icode^{\Psi}[x] \geq t_1)$ and
+		we could check ending-time constraints within $Icode^{\Psi}[l..r]$  and starting-time constraints 
+		within $Icode^{\Psi}[\alpha..\beta]$ (recall we keep starting times associated with the corresponding $\$$ of each trip).
+		Note also that, due to our sorting (by starting-node, ending-node, starting-time,$\dots$) the times in $Icode^{\Psi}[\alpha..\beta]$ are 
+		increasing ($Icode^{\Psi}[i] \leq Icode^{\Psi}[i+1], \forall \alpha \leq i < \beta$), as long as they are within the region $\Psi[\alpha..\beta]$, which corresponds to trips with the same starting-node $X$ and ending-node $Y$.
+		Therefore, we can find the continuous subrange $[\alpha'..\beta'] \subseteq [\alpha..\beta] $ corresponding to trips
+		that start within $[t_1..t_2]$ ({\em step-\textcircled{3}}).
+		%We refer to this operation as $\cnt_{LR}$ in Figure~\ref{fig:search}.
+		This operation was defined as $\cnt_{LR}$ in the Section~\ref{sec:wt}.
+		Thus, that assuming $Icode^{\Psi}[\alpha..\beta]$ are increasing,  
+		$[\alpha'..\beta'] \leftarrow countLR(\alpha,\beta,t_1,t_2)$ would report the 
+		positions $[\alpha'..\beta'] \subseteq [\alpha..\beta]$ such that $\alpha' = argmin_{x} (Icode^{\Psi}[x] \geq t_1)$ and
 		$\beta' = argmax_{x} (Icode^{\Psi}[x] \leq t_2)$.
 		
-		Using a \gls{wt}, a simple way to implement $\cntLR$  consists in performing  two binary searches within 
-		$[\alpha,\beta]$ to find $[\alpha',\beta']$, where at each step we would use $\access$ operation. This would cost $O(\log n \log \sigma)$. 
-		Yet, we could also regard on $\cnt$ operation to obtain a more efficient and also rather straightforward 
-		implementation of $\cntLR$ so that we set $\alpha' \leftarrow count(\alpha,\beta,-1,t_1-1)$ and
-		$\beta' \leftarrow \alpha'+ count(\alpha,\beta,t_1,t_2)$. It costs $O(\log\sigma)$.
+		%Using a \gls{wt}, a simple way to implement $\cnt_{LR}$  consists in performing two binary searches within $[\alpha..\beta]$ to find $[\alpha'..\beta']$, where at each step we would use $\access$ operation. This would cost $O(\log n \log \sigma)$. 
+		%Yet, we could also regard on $\cnt$ operation to obtain a more efficient and also rather straightforward implementation of $\cnt_{LR}$ so that we set $\alpha' \leftarrow count(\alpha,\beta,-1,t_1-1)$ and $\beta' \leftarrow \alpha'+ count(\alpha,\beta,t_1,t_2)$. It costs $O(\log\sigma)$.
 		
+		The last step will differ on whether the query is implementing strong or weak semantics:
 		
 		\begin{itemize}
-			\item {\em Strong semantics (\Tfxtys).} Note that the subrange $[\alpha',\beta']$ (containing trips starting within $[t_1,t_2]$) 
-			has a matching subrange $[l',r'] \subseteq [l,r]$ ({\em step-\textcircled{4}}), where some of the ending times of these trips will fall inside 
-			$[t_1, t_2]$ (this allows us to check the ending time constraint). By performing  $\cnt(l',r',t_1,t_2]$  we get the final result 
+			\item {\em Strong semantics (\XtoY$_{Ts}$).} Note that the subrange $[\alpha'..\beta']$ (containing trips starting within $[t_1..t_2]$) 
+			has a matching subrange $[l'..r'] = [l+\alpha'-\alpha..l+\beta'-\alpha] \subseteq [l..r]$ ({\em step-\textcircled{4}}), where some of the ending times of these trips will fall inside 
+			$[t_1..t_2]$, allowing us to check the ending time constraint. By performing  $\cnt(l',r',t_1,t_2]$  we get the final result 
 			({\em step-\textcircled{5}}). 
-			To sum up, answering this query  requires: one $bsearch$ over $\Psi$ (to find $[l,r]$), one $\access$ to $\Psi$ to obtain
-			 $\alpha$ ($\beta\leftarrow \alpha+r-l$), one $\cntLR$ to find $[\alpha',\beta']$, and one $\cnt$ 
-			 (to count the valid ending times in $[l',r']$).
+			To sum up, answering this query  requires: one $\bsearch$ over $\Psi$ (to find $[l..r]$), one $\access$ to $\Psi$ to obtain
+			 $\alpha$ (since $\beta = \alpha+r-l$), one $\cnt_{LR}$ to find $[\alpha'..\beta']$, and one final $\cnt$ to count the valid ending times in $[l'..r']$, amounting in a total of $O(\log n + \log|I|)$ time.
 			
 			
-			\item {\em Weak semantics (\Tfxtyw).}
-			The size of $[\alpha',\beta']$ is already a partial answer. To get the final result, we need to add 
-			also the occurrences of those trips starting before $t_1$ that end at $t_1$ or later. 
-			To do so, if $l<l'$, we need to compute $\cnt(l,l'-1, t_1, {\sigma_t})$. This gives us the number of time 
-			instants in the range $[l,l')$ of  $Icode^{\Psi}$ that fall inside $[t_1, {\sigma_t}]$. 
-			That is, ending times equal or after $t_1$.
+			\item {\em Weak semantics (\XtoY$_{Tw}$).}
+			The size of $[\alpha'..\beta']$ ($\beta' - \alpha' + 1$) is already a partial answer. To get the final result, we need to add 
+			also the occurrences of those trips starting before $t_1$ that end at $t_1$ or later, which can only exist if $\alpha<\alpha'$. 
+			To do so, we need to obtain $l'~\leftarrow~l+\alpha'-\alpha$ as done in \XtoY$_{Ts}$, and compute $\cnt(l,l'-1, t_1, |I|)$. This gives us the number of time instants in the range $[l,l')$ of  $Icode^{\Psi}$ that fall inside $[t_1, |I|]$. 
+			That is, ending times equal or after $t_1$. Yet again, the time complexity for this query is $O(\log n + \log|I|)$.
 		\end{itemize}
 		
 		
 
 
-	\item {\em Top-k most used nodes during  time interval $[t_1,t_2]$ (\STtk).}
+	\item {\em Top-k most used nodes during  time interval $[t_1..t_2]$ (\topK$_T$).}
 	Both the sequential and binary-partition approaches discussed in Section~\ref{sec:sq} can easily
 	be extended to support this query. The idea is that, when we add a node either to the min-heap or priority-queue
-	respectively, we compute its frequency within time interval $[t_1,t_2]$ (using $\cnt$ operation) 
+	respectively, we compute its frequency within time interval $[t_1..t_2]$ (using $\cnt$ operation) 
 	rather than using its overall frequency.
 
 	\begin{itemize}
-		\item In the {\em sequential approach (\Stkseq)}, given a node whose corresponding range
-		in $\Psi$ is $D[l,r]$, we compute its frequency using $\cnt(l,r,t_1,t_2)$ instead of simply using  $r-l+1$. 
-		The rest of the process is exactly as discussed for the pure spatial \Stkseq\ query.
+		\item In the {\em sequential approach (\topK$_{Tseq}$)}, given a node whose corresponding range
+		in $\Psi[l..r]$, we compute its frequency using $\cnt(l,r,t_1,t_2)$ instead of simply using  $r-l+1$. 
+		The rest of the process is exactly as discussed for the pure spatial \topK$_{seq}$\ query. The time complexity is increased by a factor of $O(\log|I|)$ over the spatial \topK$_{seq}$\ variant, resulting in $O(|S|\log k\log|I|)$.
 		
-		\item In the {\em binary-partition approach (\Stkbin)}, we have to consider the priority of a
-		given segment as the number of trips covered by that segment that occurred during $[t_1,t_2]$. Again, given
-		a segment $[l,r]$ in $\Psi$ we compute that priority as $p_l^r \leftarrow count(l,r,t_1,t_2)$ instead of 
-		$p_l^r \leftarrow  r-l+1$. Apart from
-		that, the only modifications that we must consider over the pure spatial \Stkbin\ algorithm in 
-		Figure~\ref{fig:topk_nieves} are:
-		we replace (l.2) by $p_l^r \leftarrow count(select_1(D,2),n,t_1,t_2)$; $Q.push(\langle2, |V|\rangle, \langle select_1(D,2), n\rangle, \underline{p_l^r})$,
-		and we replace  (l.12) and (l.13) respectively by 
-		   $ Q.push(\langle i, m-1 \rangle, \langle l, q-1 \rangle, \underline{count(l,q-1,t_1,t_2)})$ and
-		   $ Q.push(\langle m,   j \rangle, \langle q,   r \rangle, \underline{count(q,r,t_1,t_2)})$.
+		\item In the {\em binary-partition approach (\topK$_{Tbin}$)}, we have to consider the priority of a
+		given segment as the number of trips covered by that segment that occurred during $[t_1..t_2]$. Again, given
+		a segment $[l..r]$ in $\Psi$ we compute that priority as $p_{l..r} \leftarrow \cnt(l,r,t_1,t_2)$ instead of 
+		$p_{l..r} \leftarrow  r-l+1$. Apart from
+		that, the only modifications that we must consider over the pure spatial \topK$_{bin}$\ Algorithm~\ref{alg:topk_nieves} are:
+		we replace (l.2) by $p_{l..r} \leftarrow \cnt(\select_1(D,2),n,t_1,t_2)$; $Q.push(\langle2, |V|\rangle, \langle \select_1(D,2), n\rangle, \underline{p_{l..r}})$,
+		and we replace  (l.12) and (l.13), respectively, by 
+		   $ Q.push(\langle i, m-1 \rangle, \langle l, q-1 \rangle, \underline{\cnt(l,q-1,t_1,t_2)})$ and
+		   $ Q.push(\langle m,   j \rangle, \langle q,   r \rangle, \underline{\cnt(q,r,t_1,t_2)})$. Due to these modifications, the overall time complexity for this variant is $O(|S|\log|S|\log|I|)$
 		
 	\end{itemize}
 
 
-	\item {\em Top-k most used nodes to start a trip during time interval $[t_1,t_2]$(\STtks).}
-	Following the same guidelines discussed above for \STtk, adapting the  sequential and 
-	binary-partition solutions for the spatial \Stks\ to include temporal constraints is straightforward.	
-		
-		
+	\item {\em Top-k most used nodes to start a trip during time interval $[t_1..t_2]$(\topK$_{Ts}$).}
+	Following the same guidelines discussed above for \topK$_T$, adapting the  sequential and 
+	binary-partition solutions for the spatial \topK$_s$\ to include temporal constraints is straightforward, making its time complexity $O(|S|\log|S|\log|I|\log n)$.
 	\end{itemize}
 
 
@@ -1046,7 +1004,7 @@
 	Through this section, we evaluate the time performance of \gls{ctr} when solving spatial, temporal, and spatio-temporal queries.
 	We have randomly generated $10,\!000$ query patterns from our two datasets for each type of query.
 	Each time measurement presented below is the average execution time of $10,\!000$ runs using the corresponding query patterns, 
-	except for the \Stk\ queries where we perform $100$ runs of the {\em top-k} algorithms with $k=\{10,100\}$.
+	except for the \topK\ queries where we perform $100$ runs of the {\em top-k} algorithms with $k=\{10,100\}$.
 
 	Our test machine has an Intel(R) Core(tm) i5-4690@3.50GHz CPU (4 cores/4 siblings) and 8GB of DDR3 RAM. 
 	It runs Ubuntu Linux 16.04 (Kernel 4.4.0-21-generic). The compiler used was g++ version 5.4.0 and we set compiler optimization flags to $-O9$. All our experiments run in a single core and time measures refer to CPU user-time.
@@ -1054,21 +1012,21 @@
 	During the generation of query patterns, for those queries involving only one node $X$ from the network, 
 	we have randomly chosen $X$ $10,\!000$ times from the available network nodes. 
 	This is the case of the query patters used both for
-	the spatial queries \Sswx, \Sewx, and \Sux\ or the spatio-temporal \Tswx, \Tewx, and \Tux.
-	In the case of the spatial \Sfxty\ and the spatio-temporal \Tfxtys, and \Tfxtyw\ the pair of
+	the spatial queries \startX, \endX, and \loadX\ or the spatio-temporal \startX$_T$, \endX$_T$, and \loadX$_T$.
+	In the case of the spatial \XtoY\ and the spatio-temporal \XtoY$_{Ts}$, and \XtoY$_{Tw}$\ the pair of
 	network nodes $\langle X,Y \rangle$ that compose our
 	query patterns were generated by randomly choosing
 	$10,\!000$ trips and then extracting the initial $X$ and ending $Y$ nodes of those trips.
 
-	Moreover, we also generated the time intervals $[t_1,t_2]$ required for 
+	Moreover, we also generated the time intervals $[t_1..t_2]$ required for 
 	the spatio-temporal queries. Considering the different available time-IDs, we chose a random starting
 	instant $t_1$ and then randomly generated the width of that interval from five minutes to two hours.
 	Note that if we discretized time into $5$-minute intervals and $interval$-$width=59$ minutes, our time
-	interval $[t_1,t_2]$ would contain exactly $12$ time IDs ($t_2\leftarrow t_1+11$). However, if time was
-	discretized into $30$-minute intervals, $[t_1,t_2]$ would contain only $2$ time IDs ($t_2\leftarrow t_1+1$).
-	We followed the same procedure to gather the query patterns used for the pure temporal queries \Tut\ and \Tst.
-	%queries \Tuti\ and \Tutr. 
-	%Yet, since \Tuti\ only needs a unique time-ID, we only randomly extracted $t_1$.
+	interval $[t_1..t_2]$ would contain exactly $12$ time IDs ($t_2\leftarrow t_1+11$). However, if time was
+	discretized into $30$-minute intervals, $[t_1..t_2]$ would contain only $2$ time IDs ($t_2\leftarrow t_1+1$).
+	We followed the same procedure to gather the query patterns used for the pure temporal queries \loadT\ and \startT.
+	%queries \loadTi\ and \loadTr. 
+	%Yet, since \loadTi\ only needs a unique time-ID, we only randomly extracted $t_1$.
 
 
 	%Each time result was the average of the execution of 10000 random queries of that type, except for the top-k queries. 
@@ -1076,7 +1034,7 @@
 
 	%\OJOFARIDONE{posiblemente no tabla con todas las queries, pq -las probamos todas-}
 
-	\subsubsection{Space/time trade-off when dealing with spatial queries} \label{sec:exp:temp}
+	\subsubsection{Space/time trade-off when dealing with spatial queries} \label{sec:exp:spat}
 
 	In Figures~\ref{fig:madridsp} and \ref{fig:portosp}, we show the performance of \gls{ctr} at
 	solving spatial queries for Madrid and Porto datasets respectively. 
@@ -1091,12 +1049,12 @@
 
 	%It is worth noting 
 	Results show that the queries that involve searching in the $\$$ region of 
-	$\Psi$, such as \Sswx\ or \Sfxty\ are considerably slower than queries \Sewx\ and \Sux\ 
+	$\Psi$, such as \startX\ or \XtoY\ are considerably slower than queries \endX\ and \loadX\ 
 	due to the large size of that region. Recall there is one $\$$ for every trip. 
 	%
 	%This difference is much more accentuated if a forward search was used in the \gls{csa}.
 
-	%\marginpar{\tiny Daniil, como se implementa backward search? supongo que usas select para localizar zona para X y luego bsearch dentro de esa %zona? Ya me comentaras...}  Ok, correcto! ;)
+	%\marginpar{\tiny Daniil, como se implementa backward search? supongo que usas select para localizar zona para X y luego \bsearch dentro de esa %zona? Ya me comentaras...}  Ok, correcto! ;)
 
 
 	%%%%%%%%%%% MADRID -SPATIAL %%%%%%%%%%%%%
@@ -1128,15 +1086,15 @@
 		%\vspace{-0.6cm}
 	\end{figure}
 
-	In both datasets, we can see that \Sux\ (solved using {\em select} on $D$ rather than
-	$bsearch$ on $\Psi$) is the fastest query. On average, it takes only around $10$ns
-	per query. Except in the most sparse configuration of \gls{csa}, queries \Sewx, \Sswx, and 
-	\Sfxty\ require typically less than $10\mu$s. This basically shows the cost of performing
-	$bsearch$ on a compressed $\Psi$. In the most sparse setup, times for \Sswx\ and \Sfxty\ are always better 
-	in Madrid than in Porto dataset, and \Sewx\ draws rather identical times.
-	With the densest configuration  ($t_{\Psi}=32$), \Sewx\ and \Sfxty\ are respectively 
-	around $10$-$20$\% fastest in Madrid dataset (\Sewx\ takes $4.05\mu$s and $4.51\mu$s respectively, and
-	\Sfxty\ takes $4.54\mu$s and $5.66\mu$s). However, \Sswx\ performs around $20$\% faster in Porto dataset 
+	In both datasets, we can see that \loadX\ (solved using {\em select} on $D$ rather than
+	$\bsearch$ on $\Psi$) is the fastest query. On average, it takes only around $10$ns
+	per query. Except in the most sparse configuration of \gls{csa}, queries \endX, \startX, and 
+	\XtoY\ require typically less than $10\mu$s. This basically shows the cost of performing
+	$\bsearch$ on a compressed $\Psi$. In the most sparse setup, times for \startX\ and \XtoY\ are always better 
+	in Madrid than in Porto dataset, and \endX\ draws rather identical times.
+	With the densest configuration  ($t_{\Psi}=32$), \endX\ and \XtoY\ are respectively 
+	around $10$-$20$\% fastest in Madrid dataset (\endX\ takes $4.05\mu$s and $4.51\mu$s respectively, and
+	\XtoY\ takes $4.54\mu$s and $5.66\mu$s). However, \startX\ performs around $20$\% faster in Porto dataset 
 	($2.28\mu$s vs $2.90\mu$s).
 	\medskip
 
@@ -1144,15 +1102,15 @@
 	%F-X-to-Y     Madrid/Porto (4.54/5.66)
 	%Starts-with-X   Madrid/Porto (2.90/2.28)
 
-	%Regarding \Stk\ queries we can see that the fact of having less trips, but a larger vocabulary, make
-	%\Stk\ queries to perform slower at Porto than at Madrid dataset.
+	%Regarding \topK\ queries we can see that the fact of having less trips, but a larger vocabulary, make
+	%\topK\ queries to perform slower at Porto than at Madrid dataset.
 
-	Focusing on \Stk\ queries, we can see huge differences between \Stks\  
-	and the rest of the \Stk\ queries, as the former needs to perform {$ bsearch$} over the compressed $\Psi$
+	Focusing on \topK\ queries, we can see huge differences between \topK$_s$\  
+	and the rest of the \topK\ queries, as the former needs to perform {$ \bsearch$} over the compressed $\Psi$
 	instead of a $\select$ on $D$. 
 
 	We can also see that due to the small number of stops in Madrid dataset, it is always more efficient 
-	to use the sequential version of \Stks\ and \Stk\ algorithms. This is also because a rather uniform frequency among nodes 
+	to use the sequential version of \topK$_s$\ and \topK\ algorithms. This is also because a rather uniform frequency among nodes 
 	increases the number of insertions in the priority queue ($i$) of the binary algorithm
 	needed for retrieving the first $k$ nodes ($i \approx |V|$). Moreover, note that for the sequential algorithm 
 	$i$ is  at most $|V|$, whereas for the binary-partition counterpart it could become up to $2|V|-1$.
@@ -1160,8 +1118,8 @@
 
 	However, in Porto dataset, where nodes follow a biased distribution (some streets are far more used than others
 	by taxis), and whose vocabulary 
-	is $190$ times larger than that of Madrid's, the binary-partition version of \Stks\ and \Stk\ algorithms is clearly
-	faster than the sequential counterpart (\Stkseq\ and \Stksseq).
+	is $190$ times larger than that of Madrid's, the binary-partition version of \topK$_s$\ and \topK\ algorithms is clearly
+	faster than the sequential counterpart (\topK$_{seq}$\ and \topK$_s$seq).
 	Note that in Madrid dataset, \Stcien\ returns 32\% of the nodes (hence sequential processing worths it) 
 	whereas in Porto dataset less than 0.2\% of the nodes are returned. 
 
@@ -1169,7 +1127,7 @@
 	is due to the cost of the insertion of nodes in the min-heap. However, the gap between 
 	the binary \Stdiez\ and \Stcien\ 
 	is mainly related to the number of iterations performed until the binary-partition algorithm gathers the first
-	$10$ and $100$ {nodes}  returned respectively. The same discussion applies for \Stks\ queries.
+	$10$ and $100$ {nodes}  returned respectively. The same discussion applies for \topK$_s$\ queries.
 
 	%\begin{itemize}
 	%	\item top-100-starts en Madrid: seq y bin son similares en tiempo: solo hay 314 nodos en la red y 
@@ -1236,7 +1194,7 @@
 	\medskip
 
 	Then we built the \gls{htwt} and the \gls{wm} considering two different granularities for the discretization of times: 
-	five-minute and thirty-minute intervals. Then, we generated $10,\!000$ random intervals of times $[t_1,t_2]$ over the whole 
+	five-minute and thirty-minute intervals. Then, we generated $10,\!000$ random intervals of times $[t_1..t_2]$ over the whole 
 	time sequence of the dataset considering interval widths of five minutes, one hour, and six hours.  
 	Finally, we run $10,\!000$  $\cnt(z+2,n,t_1,t_2)$ queries (we show average times) from each query set over 
 	the six configurations of \gls{htwt} and \gls{wm}  
@@ -1341,19 +1299,19 @@
 	In this section we focus on the performance of the temporal component of \gls{ctr}. We use the same 
 	configurations as in Table~\ref{table:ctr_wt_spaces} for \gls{wm} and \gls{htwt}, and 
 	show the space/time trade-offs obtained when solving pure temporal queries. Figures~\ref{fig:madridst_topk}
-	and \ref{fig:portost_topk} present the results obtained at  \Tut\ and \Tst\ queries for Madrid and Porto datasets respectively. 
+	and \ref{fig:portost_topk} present the results obtained at  \loadT\ and \startT\ queries for Madrid and Porto datasets respectively. 
 	Note that, in this case, since the \gls{csa} is not actually needed to solve temporal queries, we do not include its size
 	within the compression values (x-axis). 
 
 	%pure-temporal queries:
-	%\STuti, \STutic, \Tutr,
-	%\Tut,
+	%\STuti, \STutic, \loadTr,
+	%\loadT,
 	%\Ttk,
 	%\Ttdiezseq,
 	%\Ttcienseq.
 
 
-	%\Tut,
+	%\loadT,
 	%\Ttk,
 	%\Ttdiezseq,
 	%\Ttcienseq.
@@ -1368,7 +1326,7 @@
 	% still preferred.  Note that in this dataset, when time is discretized into $30$-min intervals we run
 	% \Ttcuarenta\ instead of \Ttcien\ since there are only $48$ available time-IDs.
 	% 
-	% Regarding query \Tut\  we can see that both \gls{htwt} and \gls{wm} obtain similar times (requiring less than 4$\mu$s 
+	% Regarding query \loadT\  we can see that both \gls{htwt} and \gls{wm} obtain similar times (requiring less than 4$\mu$s 
 	% to perform a $\cnt$ operation) and that those times improve as the height of the structure decreases.
 	% 
 	% %When querying the top ten most used time intervals, we are using a sequential algorithm for the \gls{wm}, and binary 
@@ -1423,17 +1381,17 @@
 
 
 
-	We can see that when running \Tut\ queries, both \gls{htwt} and \gls{wm} obtain rather similar times (requiring less than 4$\mu$s 
+	We can see that when running \loadT\ queries, both \gls{htwt} and \gls{wm} obtain rather similar times (requiring less than 4$\mu$s 
 	to perform a $\cnt$ operation in all cases) and that those times improve as the height of the structure decreases. We can see 
-	that in the highest \gls{htwt} and \gls{wm}, corresponding to using $5$-min intervals in Madrid dataset, \Tut\ requires less
-	than $3.5\mu$s. Then, when using $30$-min intervals, the time required to solve \Tut\ is always below $2.3\mu$s (yet
+	that in the highest \gls{htwt} and \gls{wm}, corresponding to using $5$-min intervals in Madrid dataset, \loadT\ requires less
+	than $3.5\mu$s. Then, when using $30$-min intervals, the time required to solve \loadT\ is always below $2.3\mu$s (yet
 	\gls{wm} performs faster than \gls{htwt} here), and those times are similar to the ones obtained for Porto dataset when
 	using $5$-min intervals. And finally, the best query times (below $1.2\mu$s) are obtained for Porto dataset with 
 	$30$-min intervals.
 
-	Regarding $\Tst$, recall that it also performs a $\cnt$ operation, but within a smaller range ($[1,z]$) in comparison with the range
-	$[z+1,n]$ where  $\cnt$ is performed for \Tut. We can see that, whereas \gls{wm} obtains similar times to those of 
-	$\Tut$ query,  \Tst\ performs clearly faster than \Tut\ over \gls{htwt}.
+	Regarding $\startT$, recall that it also performs a $\cnt$ operation, but within a smaller range ($[1,z]$) in comparison with the range
+	$[z+1,n]$ where  $\cnt$ is performed for \loadT. We can see that, whereas \gls{wm} obtains similar times to those of 
+	$\loadT$ query,  \startT\ performs clearly faster than \loadT\ over \gls{htwt}.
 
 
 
@@ -1450,7 +1408,7 @@
 	This is the reason why while plots for Madrid dataset are decreasing from left to right, in Porto
 	dataset the first point ($RG$) in the left figures ($5$-min intervals), and the third point ($RG$) 
 	in the right figures ($30$-min intervals) require less space than the others ($RRR$) and are also typically  faster. 
-	%This is mainly noticeable for queries \Tfxtys\ and \Tfxtyw.
+	%This is mainly noticeable for queries \XtoY$_{Ts}$\ and \XtoY$_{Tw}$.
 
 
 	% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
@@ -1513,18 +1471,18 @@
 
 
 
-	For queries \Tswx, \Tewx, and \Tux\ we can see typically small differences between using \gls{wm} or \gls{htwt}. In 
+	For queries \startX$_T$, \endX$_T$, and \loadX$_T$\ we can see typically small differences between using \gls{wm} or \gls{htwt}. In 
 	Madrid dataset, \gls{wm} overcomes \gls{htwt} being $2$-$30$\% faster in these types of queries. 
 	However, in Porto dataset \gls{htwt} is slightly 
 	faster (from $1$ to $25$\%) than its \gls{wm} counterpart.
 
-	For queries \Tfxtys\ and \Tfxtyw\ we can see a big gap between the times reported by \gls{htwt} and \gls{wm}.
-	This gap arises because in \gls{wm} we have used exactly the $\cntLR$ operation discussed in Section~\ref{sec:stq}
+	For queries \XtoY$_{Ts}$\ and \XtoY$_{Tw}$\ we can see a big gap between the times reported by \gls{htwt} and \gls{wm}.
+	This gap arises because in \gls{wm} we have used exactly the $\cnt_{LR}$ operation discussed in Section~\ref{sec:stq}
 	that is implemented with two calls to the $\cnt$ operation from the \gls{wm}.\footnote{For \gls{wm} we used exactly the same 
-		implementation in \cite{CNO15} and simply added the new operation $\cntLR$ that calls the underlying $\cnt$ from the
+		implementation in \cite{CNO15} and simply added the new operation $\cnt_{LR}$ that calls the underlying $\cnt$ from the
 		\gls{wm}. }  
 	However, in our implementation of
-	\gls{htwt} we have engineered an improved version of $\cntLR$ where, during the execution of $\cnt$, we also report
+	\gls{htwt} we have engineered an improved version of $\cnt_{LR}$ where, during the execution of $\cnt$, we also report
 	$\alpha'$ and  $\beta'$, hence avoiding two calls to $\cnt$.
 	 
 	%
@@ -1539,7 +1497,7 @@
 	%dataset the first point ($RG$) in the left figures ($5$-min intervals), and the third point ($RG$) 
 	%in the right figures ($30$-min intervals) requires less space than the others ($RRR$) and is also typically  faster. 
 	%This is mainly
-	%noticeable for queries \Tfxtys\ and \Tfxtyw.
+	%noticeable for queries \XtoY$_{Ts}$\ and \XtoY$_{Tw}$.
 
 
 
@@ -1557,7 +1515,7 @@
 			
 		\end{center}
 		\vspace{-0.3cm}
-		\caption{Spatio-temporal {\Stk\ and \Stks} queries for Madrid. \acrshort{ctr} uses either a \glsacrlong (left) or a \acrlong{wm} (right). 
+		\caption{Spatio-temporal {\topK\ and \topK$_s$} queries for Madrid. \acrshort{ctr} uses either a \glsacrlong (left) or a \acrlong{wm} (right). 
 			Time granularity is $5$ minutes (top) or $30$ minutes (bottom). 
 		}
 		\label{fig:madridst.tk}
@@ -1576,7 +1534,7 @@
 			
 		\end{center}
 		\vspace{-0.3cm}
-		\caption{Spatio-temporal {\Stk\ and \Stks} queries for Porto. \acrshort{ctr} uses a fixed $t_{\Psi}=32$ for \acrlong{csa}, 
+		\caption{Spatio-temporal {\topK\ and \topK$_s$} queries for Porto. \acrshort{ctr} uses a fixed $t_{\Psi}=32$ for \acrlong{csa}, 
 			and either a \acrlong{htwt} (left) or a \acrlong{wm} (right). 
 			Time granularity is $5$ minutes (top) or $30$ minutes (bottom). 
 		}
@@ -1589,17 +1547,17 @@
 	%in Figure~\ref{fig:madridst}. This time we calculate the space usage of the whole \gls{ctr} structure, with a fixed 
 	%$\Psi_{sampling}$ of 32 and varying the bitvectors for the temporal structures.
 
-	%\DAGAL{Oculto la implementación para obtener $[\alpha',\beta']$ de forma óptima a propósito: la implementación es un cristo
+	%\DAGAL{Oculto la implementación para obtener $[\alpha'..\beta']$ de forma óptima a propósito: la implementación es un cristo
 	% y sólo se usa para una consulta...}
 	%There is a big difference in the \texttt{from-x-to-y} queries between the Hu-Tucker \gls{wt} and the \gls{wm} structures as the 
-	%former has a more efficient implementation for reporting the limits of $[\alpha',\beta']$ (mentioned in Section~\ref{sec:stq}). 
+	%former has a more efficient implementation for reporting the limits of $[\alpha'..\beta']$ (mentioned in Section~\ref{sec:stq}). 
 	%If needed, the \gls{wm} could be improved with a similar optimization in the future. For the rest of the queries, the 
 	%difference in time efficiency is barely noticeable for both structures and even both time intervals.$\Psi_{sampling}$ 
 	%of 32 and varying the bitvectors for the temporal structures.
 
 
 
-	Finally, we also include results for \STtk\ and \STtks\ queries in Figures~\ref{fig:madridst.tk} and \ref{fig:portost.tk}. 
+	Finally, we also include results for \topK$_T$\ and \topK$_{Ts}$\ queries in Figures~\ref{fig:madridst.tk} and \ref{fig:portost.tk}. 
 	As explained in Section~\ref{sec:exp:temp}, the sequential approach is preferred when the frequency distribution of nodes is
 	rather uniform (Madrid dataset). Otherwise, the binary-partition counterpart outperforms it. The need for applying a temporal
 	constraint simply accentuates this effect in comparison with the corresponding pure spatial queries.
