@@ -21,7 +21,7 @@
 	exploiting trajectories represented in a self-indexed way.
 
 \section{Description}
-\label{sec:ctr_desc}
+\label{sec:ctr:desc}
     Given a transportation network, whether it is based on urban strets or public transportation, we work with a representation of the network that is based on a directed graph. For an urban street network, a \textbf{node} represents a road segment delimited by intersections, where two nodes are connected by an edge if it is possible (i.e. legally allowed). This allows to accurately describe a trajectory by sequentially listing the road segments that were traversed, while minimizing the redundancy.
 
 	In the other hand, for public transportation networks we define the nodes as stops or stations, making two of them connected if there exists a line or route that stops at each, consecutively. We can represent user trajectories following the same strategy as for urban street networks, although that will lead us to redundant representations in most cases. On subway and bus networks it is common to find stops that belong to only one route, and therefore must be either the end of a trajectory or be followed by the only possible next node. Furthermore, a more minimalist representation of a trajectory with the starting, ending and route switching nodes alone would be sufficient to reconstruct the original trajectory. Such representation will be contemplated later in Chapter~\ref{sec:newctr}, while on \gls{ctr} we maintain a common representation strategy for both kinds of networks. Because listing every node traversed introduces redundancy on public transportation networks, we state that \gls{ctr} is more adequate for urban street networks.
@@ -103,8 +103,8 @@
 	\end{itemize}
 
 \section{Structures}
-\label{sec:ctr_str}
-	To support the queries seen in Section~\ref{sec:ctr_desc}, we need to represent the spatial and temporal components of our collection of user trips that is coherent with the network model described. Therefore, we will proceed to detail how each trip is described, before we show how that description is implemented in our compact data structures.
+\label{sec:ctr:str}
+	To support the queries seen in Section~\ref{sec:ctr:desc}, we need to represent the spatial and temporal components of our collection of user trips that is coherent with the network model described. Therefore, we will proceed to detail how each trip is described, before we show how that description is implemented in our compact data structures.
 
 	If we consider a network $\mathcal{N}$ with a set of nodes $S$, 
 	we can see a dataset of trips $\mathcal{T}$ over $\mathcal{N}$ as 
@@ -169,15 +169,15 @@
 
 	In \gls{ctr} we represent both the spatial and the temporal component of the trips using well-known
 	self-indexing structures in order to provide both a compact representation and the ability to 
-	perform fast indexed searches at query time. In Section~\ref{sec:transnet_repr} we focus on the
+	perform fast indexed searches at query time. In Section~\ref{sec:ctr:str:spat} we focus on the
 	spatial component and discuss how we adapted  \gls{csa} to deal with trips. We also
-	show how we support spatial queries. Then, in Section~\ref{sec:time_repr} we show that the times,
+	show how we support spatial queries. Then, in Section~\ref{sec:ctr:str:temp} we show that the times,
 	which are kept aligned with the spatial component of the trips, can be handled with   
 	a \gls{wt}-based representation. Actually we study two alternatives (a \gls{htwt} and a \gls{wm}) 
-	and show how temporal and spatio-temporal (Section~\ref{sec:stq}) queries are supported by \gls{ctr}.
+	and show how temporal and spatio-temporal (Section~\ref{sec:ctr:alg:stq}) queries are supported by \gls{ctr}.
 
 	\subsection{Spatial component using a CSA}
-	\label{sec:transnet_repr}
+	\label{sec:ctr:str:spat}
 	We use a slightly adapted \gls{csa} to represent the spatial component of our dataset of trips within \gls{ctr}. 
 	However, we must perform some preprocessing on each trip  $\mathcal{T}_i \in \mathcal{T}$ before building a \gls{csa} on it. Initially, we sort the trips by their first node ($s^i_1$), then by the last node ($s^i_n$), then by the starting time ($t^i_1$), and finally, by its second node ($s^i_2$), third node ($s^i_3$), and successive nodes (i.e. the trips are sorted by the key $s_1,s_n,t_1,s_{2..n-1}$.  Note that the start time ($t^i_1$) of the trip does not belong to the spatial component, but it is nevertheless used for the sorting\footnote{This initial sorting of the trips will allow us to answer some useful queries very efficiently  (i.e., count trips starting at node $X$ and ending at node $Y$).}.
 
@@ -298,10 +298,10 @@
 	\end{itemize}
 
 	\subsection{Time intervals representations}
-	\label{sec:time_repr}
+	\label{sec:ctr:str:temp}
 
 	In this section we focus on the temporal component associated with each node of the enlarged trips $\mathcal{T}'_i$ 
-	in our dataset, previously described in Section~\ref{sec:transnet_repr}. Recall that in Figure~\ref{fig:tcsa}, sequence $Time$ contains the discretized time intervals
+	in our dataset, previously described in Section~\ref{sec:ctr:str:spat}. Recall that in Figure~\ref{fig:tcsa}, sequence $Time$ contains the discretized time intervals
 	associated with each visited node in a trip, and $Icode$ a possible encoding of times.
 	In \gls{ctr} we focus on the values in $Icode$, yet, since $Text$ is not kept anymore in \gls{ctr}, we 
 	reorganize the values in $Icode$ to keep them aligned with $\Psi$ rather than with $Text$. Those
@@ -336,7 +336,7 @@
 			{\includegraphics[width=1.0\textwidth]{figures/wma.eps}}
 			{\includegraphics[width=1.0\textwidth]{figures/wta.eps}}
 		\end{center}
-		\caption{Balanced \acrlong{wm} (top) and \acrlong{htwt} (bottom)}
+		\caption{Balanced \acrshort{wm} (top) and \acrshort{htwt} (bottom)}
 		\label{fig:wtwm}
 	\end{figure}
 
@@ -352,6 +352,7 @@
 	While it would also be possible to build \gls{wm} using canonical Huffman codes, it is unfortunately impossible guarantee the $O(\log\sigma)$ bound on $\cnt$ on such \gls{wm}, as the symbols lose their original lexicographic proximity, meaning that symbols which would appear on the same node of \gls{wt} due to the common most significant bits in their original codes, would get different Huffman codes based on their frequency of appearance in the text, ending up in separate nodes. On the other hand, to our best knowledge, there is no practical way of building \gls{wm} with Hu-Tucker codes.
 
 	\subsubsection{Implementation details} 
+	\label{sec:ctr:str:time:imp}
 	%We include here details regarding how we tune our \gls{htwt} and \gls{wm}.
 	As we discussed in Section~\ref{sec:wt}, both \gls{htwt} and \gls{wm} are built over bitvectors that require support for $\rank$ and $\select$ operations. In our implementations we included two alternative bitvector representations avaliable
 	at {\em libcds} library:{\footnote{\url{https://github.com/fclaude/libcds}}}
@@ -371,11 +372,11 @@
 	above. Regarding our implementations of \gls{wm} and \gls{htwt}, note that we reused the same implementation of \gls{wm} from \cite{CNO15}, 
 	and we created our custom \gls{htwt} implementation, paying special focus at solving $\cnt$ efficiently.
 
-\section{Algorithms}
-	In these section, we are going to discuss how our previously described structures can solve the queries proposed in Section~\ref{sec:ctr_desc}. We are also going to include a brief complexity analysis for some of the cases.
+\section{Algorithms} \label{sec:ctr:alg}
+	In these section, we are going to discuss how our previously described structures can solve the queries proposed in Section~\ref{sec:ctr:desc}. We are also going to include a brief complexity analysis for some of the cases.
 
 	\subsection{Spatial queries}
-	\label{sec:sq}
+	\label{sec:ctr:alg:sq}
 
 	With the \gls{csa} structure described for representing the spatial component of the trips,
 	the following queries can be solved.
@@ -446,7 +447,7 @@
 	the single node 3 (position $4$ in $V$), concluding that the  {\em Top-1 most used node} is 
 	$\mathbf{3}=V[4]$ with a frequency equal to $5=18-14$.
 	
-	Even though the worst-case complexity of this approach is $O(|S|\log|S|)$, which can be expected when the distribution of nodes is uniform, it can perform considerably better than the sequential approach with a skewed distribution and a small $k$, as will be experimentally proven in the Section~\ref{sec:exp:spat}.
+	Even though the worst-case complexity of this approach is $O(|S|\log|S|)$, which can be expected when the distribution of nodes is uniform, it can perform considerably better than the sequential approach with a skewed distribution and a small $k$, as will be experimentally proven in the Section~\ref{sec:ctr:exp:queries:spat}.
 
 	%\marginpar{\tiny algorithm ten que comezar metendo $<2,|V|>$, non $1,V$}
 	%\marginpar{\tiny $q$ debe ser $\select_1(D,m)$, non $\select_1(D,m+1)$}
@@ -526,7 +527,7 @@
 	\end{itemize}
 
 	\subsection{Temporal queries}
-	\label{sec:tq}
+	\label{sec:ctr:alg:tq}
 	With either one of the described alternatives (\gls{htwt} or \gls{wm}) to represent time intervals we can answer the following purely temporal queries:
 	
 	\begin{itemize}
@@ -562,7 +563,7 @@
 
 	% 
 	% \item {\em Top-k most used times (\Ttk)}. We can follow a similar procedure to that used to solve the {\em Top-k most used
-	% 	nodes} discussed in Section~\ref{sec:sq}. We can use both the simpler sequential or a binary-partition approach.
+	% 	nodes} discussed in Section~\ref{sec:ctr:alg:sq}. We can use both the simpler sequential or a binary-partition approach.
 	% For the binary-partition approach we proceed similarly as in Figure~\ref{fig:topk_nieves}. In this case,
 	% we start with the root node in the priority queue, and recursively split the
 	% extracted node $v$ (whose bitvector is $B_v$) with $n_0 \leftarrow rank_0(B_v,|B_v|)$, 
@@ -570,13 +571,13 @@
 	% depends on the size of the bitmaps in the nodes, for $v_0$ it is $n_0$, whereas for 
 	% $v_1$ it is $|B_v| - n_0$. The process stops when the first $k$ leaves are extracted from the queue.
 	% 
-	% As we will show in Section~\ref{sec:exp:temp}, the binary-partition approach is preferred when the distribution of times 
+	% As we will show in Section~\ref{sec:ctr:exp:temp}, the binary-partition approach is preferred when the distribution of times 
 	% is skewed and the queried $k$ is not large.  Otherwise, the sequential approach is typically preferred.
 	\end{itemize}
 
 	\subsection{Spatio-temporal queries}
-	\label{sec:stq}
-	Apart from the pure spatial and temporal queries discussed in the previous sections, % in Sections~\ref{sec:sq}~and~\ref{sec:tq}, 
+	\label{sec:ctr:alg:stq}
+	Apart from the pure spatial and temporal queries discussed in the previous sections, % in Sections~\ref{sec:ctr:alg:sq}~and~\ref{sec:ctr:alg:tq}, 
 	we can combine both the self-indexed spatial and temporal components from \gls{ctr} to answer spatio-temporal queries. 
 	The idea is to restrict spatial queries to a time interval $[t_1..t_2]$.  An example of this type of query is to return  the
 	{\em number of trips starting at node $X$ that occurred between $t_1$ and $t_2$}, which we can solve by first finding the
@@ -591,24 +592,24 @@
 		we can perform $[l..r]~\leftarrow~\bsearch(\$X)$ as in a regular spatial query to find the
 		range $\Psi[l..r]$ ($[l..r]\subseteq [2..|\mathcal{T}|+1]$) that corresponds to $\$$ symbols that end a trip which started at node $X$. Then, since the time sequence $Icode^{\Psi}$ 
 		(represented with either a \gls{htwt} or \gls{wm}) is
-		 aligned with $\Psi$, we can filter out those trips that started within $[t_1..t_2]$ performing operation $\cnt(l,r,t_1,t_2)$. Because both $\bsearch$ and $\cnt$ are used, the time complexity for the whole query is $O(\log n + \log|I|)$. In Figure~\ref{fig:search2} (steps \textcircled{1} and \textcircled{2}) we illustrate steps involved.
+		 aligned with $\Psi$, we can filter out those trips that started within $[t_1..t_2]$ performing operation $\cnt(l,r,t_1,t_2)$. Because both $\bsearch$ and $\cnt$ are used, the time complexity for the whole query is $O(\log n + \log|I|)$. In Figure~\ref{fig:ctr:search2} (steps \textcircled{1} and \textcircled{2}) we illustrate steps involved.
 
 	\begin{figure}[th]
 		\begin{center}
 			{\includegraphics[width=0.90\textwidth]{figures/search2.eps}}
 		\end{center}
 		\caption{Trips staring at, ending at, or using node $X$  during time interval $[t_1..t_2]$.}
-		\label{fig:search2}
+		\label{fig:ctr:search2}
 	\end{figure}
 		
 		\item {\em Number of trips ending at node $X$ during the time interval $[t_1..t_2]$ (\endX$_T$). }
 		As above, we initially perform the spatial query $[l..r]~\leftarrow~\bsearch(X\$)$ to 
-		obtain the range in $\Psi[l..r]$ that corresponds to the pattern $X\$$ (trips ending at node $X$). Then, we use  $\cnt(l,r,t_1,t_2)$ operation to count how many of those trips match the temporal constraint. See steps \textcircled{3} and \textcircled{4} in Figure~\ref{fig:search2}.
+		obtain the range in $\Psi[l..r]$ that corresponds to the pattern $X\$$ (trips ending at node $X$). Then, we use  $\cnt(l,r,t_1,t_2)$ operation to count how many of those trips match the temporal constraint. See steps \textcircled{3} and \textcircled{4} in Figure~\ref{fig:ctr:search2}.
 		
 		\item {\em Number of trips using node $X$ during the time interval $[t_1..t_2]$ (\loadX$_T$).}
 		As in the corresponding spatial query, the range $\Psi[l..r]$  is obtained with two $\select_1$ operations on $D$.
 		Finally, $\cnt(l,r,t_1,t_2)$ finds the occurrences within the time interval $[t_1..t_2]$, thus solving this query in $O(log|I|)$ time.
-		See steps \textcircled{5} and \textcircled{6} in Figure~\ref{fig:search2}.
+		See steps \textcircled{5} and \textcircled{6} in Figure~\ref{fig:ctr:search2}.
 
 
 	\begin{figure}[th]
@@ -616,14 +617,14 @@
 			{\includegraphics[width=0.90\textwidth]{figures/search.eps}}
 		\end{center}
 		\caption{Trips staring at $X$ and ending at $Y$ during time interval $[t_1..t_2]$.}
-		\label{fig:search}
+		\label{fig:ctr:search}
 	\end{figure}
 	
 		\item {\em Number of trips starting at $X$ and ending at $Y$ occurring during  time interval $[t_1..t_2]$ (\XtoY$_T$).}
 		We consider two different semantics. A query with  {\em strong semantics} will obtain trips
 		that start and end within  $[t_1..t_2]$. Whereas, a query with  {\em weak semantics} will obtain trips whose time intervals overlap  $[t_1..t_2]$ and, therefore, they could actually start before $t_1$ or end after $t_2$.
 		
-		In Figure~\ref{fig:search}, we show the step-by-step process to solve this type of queries.
+		In Figure~\ref{fig:ctr:search}, we show the step-by-step process to solve this type of queries.
 		As in a spatial query, we start by searching for the range $[l..r] \leftarrow \bsearch(Y\$X)$ in $\Psi$ corresponding 
 		to trips starting at $Y$ and ending at $X$ ({\em step-\textcircled{1}}). Next, due to our sorting of trips, the range for $Y\$X$ in $\Psi[l..r]$
 		can be mapped to a continuous range $\Psi[\alpha..\beta]$ of the same size in the $\$X$ region of $\Psi$\footnote{As the trips were sorted by the key $s_1,s_n,t_1,s_{2..n-1}$, and we positioned each $\$_i$ according to the order of their trip $\mathcal{T}_i$, the region $Y\$X$ will be conveniently sorted by the key $s_n,\$,s_1,s_n,t_1,s_{2..n-1}$ within $\Psi$, thus delimiting an equivalent region $\Psi[\alpha..\beta]$ in $\$X$ where each entry corresponds to a trip that also ends in $Y$.}. 
@@ -637,7 +638,7 @@
 		increasing ($Icode^{\Psi}[i] \leq Icode^{\Psi}[i+1], \forall \alpha \leq i < \beta$), as long as they are within the region $\Psi[\alpha..\beta]$, which corresponds to trips with the same starting-node $X$ and ending-node $Y$.
 		Therefore, we can find the continuous subrange $[\alpha'..\beta'] \subseteq [\alpha..\beta] $ corresponding to trips
 		that start within $[t_1..t_2]$ ({\em step-\textcircled{3}}).
-		%We refer to this operation as $\cnt_{LR}$ in Figure~\ref{fig:search}.
+		%We refer to this operation as $\cnt_{LR}$ in Figure~\ref{fig:ctr:search}.
 		This operation was defined as $\cnt_{LR}$ in the Section~\ref{sec:wt}.
 		Thus, that assuming $Icode^{\Psi}[\alpha..\beta]$ are increasing,  
 		$[\alpha'..\beta'] \leftarrow countLR(\alpha,\beta,t_1,t_2)$ would report the 
@@ -669,7 +670,7 @@
 
 
 	\item {\em Top-k most used nodes during  time interval $[t_1..t_2]$ (\topK$_T$).}
-	Both the sequential and binary-partition approaches discussed in Section~\ref{sec:sq} can easily
+	Both the sequential and binary-partition approaches discussed in Section~\ref{sec:ctr:alg:sq} can easily
 	be extended to support this query. The idea is that, when we add a node either to the min-heap or priority-queue
 	respectively, we compute its frequency within time interval $[t_1..t_2]$ (using $\cnt$ operation) 
 	rather than using its overall frequency.
@@ -699,44 +700,37 @@
 
 
 \section{Experiments}
-	We may have not compared it to anything but we sure do have tons of results!
-
+\label{sec:ctr:exp}
 	We have run experiments to evaluate both the space requirement and performance at query time of \gls{ctr}
 	when dealing with spatial, temporal and spatio-temporal queries over two different datasets 
-	(Porto and Madrid) that are described in Section~\ref{sec:ed}. 
+	(Porto and Madrid) that are described in Section~\ref{sec:ctr:exp:data}. 
 
 	We have used several configurations of \gls{ctr} by tuning both its
-	spatial and temporal components. In the spatial part, %(Section~\ref{sec:transnet_repr}), 
-	we set the  $\Psi$ sampling parameter ($t_{\Psi}$) to the values $t_{\Psi} = \{32, 128, 512\}$. 
-	For the temporal component, % (Section~\ref{sec:time_repr}), 
+	spatial and temporal components. In the spatial part, %(Section~\ref{sec:ctr:str:spat}), 
+	we set the  $\Psi$ sampling parameter ($t_{\Psi}$) to the values $t_{\Psi} \in \{32, 128, 512\}$. 
+	For the temporal component, % (Section~\ref{sec:ctr:str:temp}), 
 	we have tested both the 
-	balanced \gls{wm}, and the Hu-Tucker-shaped \gls{wt} (\gls{htwt}) using the same bitvector configurations
-	discussed in Section~\ref{sec:time_exp}. That is, using either a plain bitvector $RG$ with a 
+	balanced \gls{wm}, and the Hu-Tucker-shaped \gls{wt} (\gls{htwt}) using the bitvector configurations
+	discussed in Section~\ref{sec:ctr:str:time:imp}. That is, using either a plain bitvector $RG$ with a 
 	sparse sampling ($RG_{32}$), or a $RRR$ bitvector with sampling parameter $\in \{32,64,128\}$ 
 	($RRR_{32}, RRR_{64}$, and $ RRR_{128})$.
 
 
 	\subsection{Experimental datasets}
-	\label{sec:ed}
+	\label{sec:ctr:exp:data}
 	We used two different datasets of trips in our experiments:
 	\begin{itemize}
-	   %%%%%%%%%	
+	
 	  \item {\bf Madrid dataset}:
-	  Using GTFS\footnote{GTFS is a well-known specification for representing an urban transportation network. See
-	  \url{https://developers.google.com/transit/gtfs/reference?hl=en}} data from the  public transportation network of 
+	  Using \gls{gtfs} data obtained for the public transportation network of 
 	  {Madrid},\footnote{Data from
-	  the EMT corporation at \url{https://www.emtmadrid.es/movilidad20/googlet.html}} we generated a dataset of 
-	  synthetic trips combining the subway network with the Spanish commuter rail system (called {\em cercanías}).
+	  the CRTM corporation at \url{http://www.crtm.es/}} we generated a dataset of 
+	  synthetic trips combining the subway network with the Spanish commuter rail system\footnote{Data scaped by the authors from public sources} (called {\em cercanías}).
 	  In total, there are $313$ different stations/nodes from $23$ lines.
 	 
 	We generated $10$ million trips with lengths varying from $2$ to $31$ nodes traversed. Those lengths follow a binomial 
 	distribution. The average length of the trips is $11.81$ nodes. 
-	%
-	%	\marginpar{\tiny \OJOFARI{Daniil, se hace asi realmente? porfa check}}
-	%	In the generation of a trip of length $l$, we randomly choose a starting node from a line and the starting direction. Then, we follow that line until 
-	%	we reach a switching node. At this node, we choose the line and direction to follow with uniform distribution. We avoid repeated nodes in the trip.
-	%	Generation ends when $l$ nodes have been added to the trip.
-
+	
 	In the generation of a trip of length $l$, we randomly choose a starting node from a line, and the starting direction. 
 	Then, we follow that line until we reach a switching node. At this node, we decide whether to follow the current 
 	line or to switch to a new line. We allow only up to four line switches for a given trip, and use fixed probability 
@@ -746,46 +740,38 @@
 	Generation process ends when $l$ nodes have been added to the trip, or a dead end is reached.
 
 	As a baseline, the plain representation of the generated trips using a $9$-bit integer ($\lceil\log_2 314\rceil= 9$) 
-	for every node-ID (and $\$$ separator) would require $137.47$ MiB.
-
+	for every node-ID (and $\$$ separator) would require $137.47$ MiB, while requiring a sequential processing on the whole collection to answer most of our proposed queries.
 	 
-	%We also generated synthetic times for those trips that can be seen in Figure~\ref{fig:distrib} with the label 
-	%\textit{skewed}, so most of the trip timestamps belong to rush hours. 
 	We also generated synthetic times for those trips following the same rules used to create the time distribution
-	named \textit{skewed} in Figure~\ref{fig:distrib}, so most of the trip timestamps belong to rush hours. 
-	Yet, instead of using only regular working days, we distinguished four kinds of days in a week: 
+	named \textit{skewed} in Figure~\ref{fig:ctr:distrib}, so most of the trip timestamps belong to rush hours. 
+	Instead of using only regular working days, we distinguished four kinds of days in a week:
 	regular working days; Fridays and holiday eves; Saturdays; and Sundays and holidays. We also 
 	assume that there are two kinds of weeks related to high and low season periods. 
 	Therefore, a time interval may belong to eight types of day. 
 	When discretized at five-minute intervals we obtain $2,\!304$ distinct time intervals, 
 	while when we use thirty-minute intervals we obtain $384$. In the former case, our  baseline
-	 for the generated times using  $12$ bits per time-ID would occupy $183.30$ MiB. In the latter one, each
-	time-ID requires  $9$ bits and the  temporal baseline requires $137.47$ MiB.
+	 for the generated times using  $12$ bits per time-ID would occupy $183.30$ MiB. In the latter one, each time-ID requires  $9$ bits and the  temporal baseline requires $137.47$ MiB.
+	 
+	 \begin{figure}[ht]
+		\begin{center}
+			\includegraphics[angle=-90,width=0.80\textwidth]{figures_synt/timedistrib.eps}		
+			\caption{Time distributions tested. The final Madrid dataset was generated with the distribution called \textit{skewed}. The y-axis indicates the number of passengers per each 5-min interval.}
+			\label{fig:ctr:distrib}
+		\end{center}
+	\end{figure}
 
-	%
-	%\marginpar{\tiny OJO Tal y como se generan las probabilidades de tiempos para cada tiempo, sólo estamos considerando un tipo de tiempo}
-	%
-
-	   %%%%%%%%%
-	   \item \textbf{Porto dataset}:
+	\item \textbf{Porto dataset}:
 		We downloaded a collection of $1,\!710,\!671 $ trajectories from the city of {Porto} corresponding to taxi trips during 
 		a full year (from July 1, 2013 to June 30, 2014), provided by \cite{moreira2013predicting}.\footnote{Description at \url{http://www.geolink.pt/ecmlpkdd2015-challenge/dataset.html}. Download at \url{https://archive.ics.uci.edu/ml/machine-learning-databases/00339/train.csv.zip}} Among other
 		fields those data include, for each taxi ride, a list of GPS coordinates and times gathered every $15$ seconds of
 		the trip. We adapted such data to our needs by using a map matching algorithm provided by the Graphhopper library,\footnote{\url{https://github.com/graphhopper/map-matching}}
-		 and OpenStreetMap cartography.\footnote{\url{http://www.openstreetmap.org/}} This permitted us to
-	  figure out the streets that trips were passing through. Finally, trips were encoded as a sequence of identifiers
-	  corresponding to adjacent stretches of street (that is, basic street segments with no intersections) the trip traversed, 
-	  each one of them tagged with a timestamp.
-
-	  %[1] https://archive.ics.uci.edu/ml/machine-learning-databases/00339/train.csv.zip
-	  %[2] https://archive.ics.uci.edu/ml/datasets/Taxi+Service+Trajectory+-+Prediction+Challenge,+ECML+PKDD+2015
+		 and OpenStreetMap cartography.\footnote{\url{http://www.openstreetmap.org/}} With this we could determine what streets segments were traversed by the trips from their list of coordinates. Finally, trips were encoded as a sequence of identifiers
+	  corresponding to adjacent stretches of street (that is, basic street segments with no intersections) the trip traversed, each one of them tagged with a timestamp.
 	  
 	  After filtering incomplete matches, $1,\!617,\!774$ trips, built  over $59,\!618$ distinct street segments, were used for the dataset. 
 	  Due to the nature of the network and the trips, 
-	  %the average length per trip is longer than in Madrid, of $64.74$ street segments. 
 	  the average number of street segments per trip is $64.74$; that is, the length of the trips is longer than in Madrid dataset.
-	  Since we needed $16=\lceil\log_2 59,\!618 \rceil$ bits to represent each segment in a trip, the total size of our
-	  plain spatial baseline is $202.85$ MiB.
+	  Since we needed $16=\lceil\log_2 59,\!618 \rceil$ bits to represent each segment in a trip, the total size of our plain spatial baseline is $202.85$ MiB.
 
 	  For the temporal part, we considered only one kind of day. Therefore, when we sample those $24$ hours into five-minute intervals,
 	  we obtain $288$ distinct time intervals that are given a $9$-bit time-ID. Consequently the overall size of the temporal
@@ -794,18 +780,14 @@
 	\end{itemize}
 
 
-
-	\subsection{Space Requirements of \acrshort{ctr}}\label{sec:exp.space}
-	We show the compression obtained by \gls{ctr} when built on our two test datasets. Compression is shown
-	as the percentage of the size of the plain baselines discussed above.
+	\subsection{Space Requirements}
+	\label{sec:ctr:exp:space}
+	We show the compression obtained by \gls{ctr} when built on our two test datasets. Compression is shown as the percentage of the size of the plain baselines discussed above.
 	Using different configurations of \gls{ctr}, we will show the compression of the spatial component (\gls{csa}), 
 	that of the temporal component (\gls{htwt} and \gls{wm}), and finally the overall compression of \gls{ctr}.
 
-
-	\begin{table}[htb]
-	%\vspace{-6mm}
+	\begin{table}[ht]
 	\begin{center}
-	\scriptsize
 	  \begin{tabular}{|l|*{3}{r}|}
 	  \cline{2-4}
 	  \multicolumn{1}{c|}{} & \multicolumn{3}{c|}{$t_{\Psi}$ } \\
@@ -815,38 +797,29 @@
 	  Porto & 23.66\% & 15.49\% & 13.37\% \\
 	  \hline
 	  \end{tabular}
-	%\vspace{-5mm}
-	%\caption{Compression of the spatial component with respect to the spatial-only baseline.}
-	\caption{Compression of \acrlong{csa} with respect to the spatial baseline.}
-	\label{table:spatial_spaces}
-	\vspace{-3mm}
+	\caption{Compression of \acrshort{csa} with respect to the spatial baseline.}
+	\label{table:ctr:exp:space:spat}
 	\end{center}
 	\end{table}
 
-	Results regarding the compression obtained by \gls{csa} are given in Table~\ref{table:spatial_spaces}.
-	The compression ratio is calculated over a plain spatial-only (stop-IDs or street-segment-IDs in each case) representation.   %\marginpar{\tiny Daniil, incluyes separadores aqui ?}
-	%Note that an $\icsa$  built on English text~\cite{FBNCPR12} typically
-	%reached the compression of {\em gzip} (around 35\% in compression ratio).
-	%As expected, the high compressibility of our sorted datasets of trips permits \gls{csa} to improve 
-	%those numbers with compression ratios under 30\% in the most sparse setup, while also offering indexing features 
-	%that allow us to perform efficient searches.
+	Results regarding the compression obtained by \gls{csa} are given in Table~\ref{table:ctr:exp:space:spat}.
+	The compression ratio is calculated over a plain spatial-only (stop-IDs or street-segment-IDs in each case) representation.
+	Note that an $iCSA$  built on English text~\cite{FBNCPR12} typically
+	reached the compression of {\em gzip} (around 35\% in compression ratio).
+	As expected, the high compressibility of our sorted datasets of trips helps our \gls{csa} to improve those numbers with compression ratios under 30\%, while also offering indexing features
+	that allow us to perform efficient searches.
 	In a rather dense 
 	configuration of \gls{csa} with $t_{\Psi}=32$ we obtain compression ratios around $41$\% and $23$\% for Madrid and Porto datasets respectively.
-	Those results are interesting from the simple point that the baseline representations were only using respectively 
+	Those results are interesting from the simple fact that the baseline representations were only using respectively 
 	$9$-bits per node (Madrid) and $16$-bits per segment (Porto). 
 	As expected, compression improves as we increase the $\Psi$ sampling parameter $t_{\Psi}$. We show that by tuning 
-	\gls{csa} in a more sparse setup we can almost halve the space needs of using $t_{\Psi}=32$. Yet, the resulting \gls{csa} would become
-	much slower as we will see in the next section.
+	\gls{csa} in a more sparse setup we can almost halve the space needs of using $t_{\Psi}=32$, although the resulting \gls{csa} would become
+	much slower as we will later prove in the Section~\ref{sec:ctr:exp:queries}.
 	In general, we can see that \gls{csa} obtains better compression in Porto than in Madrid. This is probably due to the longer and
-	more predictable trips. Note that is not common to arrive at an intersection having more than two valid 
-	street links where to navigate to.
+	more predictable trips. Note that is not common to arrive at an intersection having more than two valid street links where to navigate to.
 
-
-	\begin{table}[htb]
-	%\vspace{-6mm}
+	\begin{table}[ht]
 	\begin{center}
-	\scriptsize
-	\setlength\tabcolsep{2pt}
 	  \begin{tabular}{|l|*{4}{r}|}
 	  \cline{2-5}
 	  \multicolumn{1}{c|}{} & \multicolumn{4}{c|}{Type of bitvector in \gls{wm}/\gls{htwt}}\\
@@ -866,105 +839,80 @@
 	  \hline
 	  \cline{2-5}
 	  \end{tabular}
-	%\vspace{-1mm}
-	\caption{Compression of \acrlong{wm} and \acrlong{htwt} with respect to the temporal baseline.}
-	\label{table:ctr_wt_spaces}
-	\vspace{-3mm}
+	\caption{Compression of \acrshort{wm} and \acrshort{htwt} with respect to the temporal baseline.}
+	\label{table:ctr:exp:space:wt}
 	\end{center}
 	\end{table}
 
-
-
-	In Table~\ref{table:ctr_wt_spaces}, we focus on the space needed by the temporal component of \gls{ctr}. 
-	In this case we show the compression ratios obtained by \gls{htwt} and \gls{wm} %(our two alternative representations) 
+	In Table~\ref{table:ctr:exp:space:wt}, we focus on the space needed by the temporal component of \gls{ctr}. 
+	In this case we show the compression ratios obtained by \gls{htwt} and \gls{wm} 
 	considering that time is either discretized into $5$-min or $30$-min intervals. Recall that the size of the 
 	plain baseline representations differs depending on the discretization period. Both \gls{htwt} and \gls{wm} were tuned by
 	using bitvector representations $RG_{32}$, $RRR_{32}$, $RRR_{64}$, and $ RRR_{128}$.
 
-	It is interesting to see that in the synthetic dataset from Madrid $RRR$ bitvectors always lead to a better 
-	compression than the plain $RG$, while in the real dataset from Porto that is never the case. 
-	In some cases the $RRR$ does not compress the times at all. Consequently, for Porto dataset, the faster plain $RG$ 
-	bitvectors are probably the best choice. In Madrid dataset, we can see an actual space/time trade-off: $RRR$ obtains better
-	compression but will be slower (as we will see in the next section).
+	One important insight from these results is that in the synthetic dataset from Madrid $RRR$ bitvectors always lead to a better compression than the plain $RG$, while in the real dataset from Porto that is not always the case, and we have to use the sparsest configuration of $RRR$ to achieve similar space requirements of the uncompressed $RG$ version. Consequently, for Porto dataset, the faster plain $RG$ bitvectors are probably the best choice. In Madrid dataset, we can see an actual space/time trade-off: $RRR$ obtains better compression but will be slower, as later seen in the Section~\ref{sec:ctr:exp:queries}.
 
-
-
-	\begin{table}[ht!]
-	%\vspace{-6mm}
+	\begin{table}[ht]
 	\begin{center}
-	\scriptsize
-	\setlength\tabcolsep{2pt}
-	  \begin{tabular}{|l|*{4}{c}|*{4}{c}|}
-	  \cline{2-9}
-	  \multicolumn{1}{c|}{} & \multicolumn{4}{c|}{Type of bitvector in \gls{wm}/\gls{htwt}}& \multicolumn{4}{c|}{Type of bitvector in \gls{wm}/\gls{htwt}} \\
+	  \begin{tabular}{|c|l|*{4}{c}|}
+	  \cline{3-6}
+	  \multicolumn{2}{c|}{} & \multicolumn{4}{c|}{Type of bitvector in \gls{wm}/\gls{htwt}} \\
 
-	  \multicolumn{1}{c|}{}     &$RG_{32}$& $RRR_{32}$& $RRR_{64}$&$RRR_{128}$&$RG_{32}$& $RRR_{32}$& $RRR_{64}$&$RRR_{128}$ \\
-	  \hline                                             
-	  Madrid (\gls{htwt}, 5-min)  & 69.90\% &   63.93\% &   61.65\% &   60.51\% & 62.07\% &	56.10\% &	53.82\% &	 52.68\% \\
-	  Madrid (\gls{wm}, 5-min)     & 76.64\% &   66.87\% &   63.77\% &   62.21\% & 68.81\% &	59.04\% &	55.94\% &	 54.38\% \\
-	  Madrid (\gls{htwt}, 30-min) & 66.81\% &   60.11\% &   57.99\% &   56.92\% & 57.68\% &	50.98\% &	48.86\% &	 47.79\% \\
-	  Madrid (\gls{wm}, 30-min)    & 72.23\% &   62.32\% &   59.61\% &   58.25\% & 63.10\% &	53.19\% &	50.48\% &	 49.12\% \\
+	  \multicolumn{2}{c|}{}     &$RG_{32}$& $RRR_{32}$& $RRR_{64}$&$RRR_{128}$ \\
 	  \hline
-	  Porto (\gls{htwt}, 5-min)   & 48.81\% &   52.08\% &   50.52\% &   49.74\% & 42.22\% &	45.49\% &	43.93\% &	 43.15\% \\
-	  Porto (\gls{wm}, 5-min)      & 52.27\% &   53.62\% &   51.65\% &   50.66\% & 45.68\% &	47.03\% &	45.06\% &	 44.07\% \\
-	  Porto (\gls{htwt}, 30-min)  & 43.39\% &   45.51\% &   44.23\% &   43.59\% & 35.91\% &	38.03\% &	36.75\% &	 36.11\% \\
-	  Porto (\gls{wm}, 30-min)     & 45.33\% &   46.39\% &   44.89\% &   44.14\% & 37.85\% &	38.91\% &	37.41\% &	 36.66\% \\
+	  \multirow{8}{*}{\STAB{\rotatebox[origin=c]{90}{$t_{\Psi}=32$}}}
+	   & Madrid (\gls{htwt}, 5-min)  & 69.90\% &   63.93\% &   61.65\% &   60.51\% \\
+	   & Madrid (\gls{wm}, 5-min)     & 76.64\% &   66.87\% &   63.77\% &   62.21\% \\
+	   & Madrid (\gls{htwt}, 30-min) & 66.81\% &   60.11\% &   57.99\% &   56.92\% \\
+	   & Madrid (\gls{wm}, 30-min)    & 72.23\% &   62.32\% &   59.61\% &   58.25\% \\
+	  \cline{2-6}
+	   & Porto (\gls{htwt}, 5-min)   & 48.81\% &   52.08\% &   50.52\% &   49.74\% \\
+	   & Porto (\gls{wm}, 5-min)      & 52.27\% &   53.62\% &   51.65\% &   50.66\% \\
+	   & Porto (\gls{htwt}, 30-min)  & 43.39\% &   45.51\% &   44.23\% &   43.59\% \\
+	   & Porto (\gls{wm}, 30-min)     & 45.33\% &   46.39\% &   44.89\% &   44.14\% \\
 	  \hline
-	  \cline{2-9}
-	  \multicolumn{1}{c|}{} & \multicolumn{4}{c|}{$t_{\Psi}=32$}& \multicolumn{4}{c|}{$t_{\Psi}=512$} \\
-		\cline{2-9}
+	  %\cline{2-5}
+	  %\multicolumn{1}{c|}{} & \multicolumn{4}{c|}{$t_{\Psi}=32$} \\
+	%	\cline{2-5}
+	 % \end{tabular}
+	  
+	  %\begin{tabular}{|l|*{4}{c}|}
+	  %\cline{2-5}
+	  %\multicolumn{1}{c|}{} & \multicolumn{4}{c|}{Type of bitvector in \gls{wm}/\gls{htwt}} \\
+
+	  %\multicolumn{1}{c|}{}     &$RG_{32}$& $RRR_{32}$& $RRR_{64}$&$RRR_{128}$ \\
+	  \multicolumn{5}{c}{} \\
+	  \hline   
+	  \multirow{8}{*}{\STAB{\rotatebox[origin=c]{90}{$t_{\Psi}=512$}}}
+	   & Madrid (\gls{htwt}, 5-min) & 62.07\% &	56.10\% &	53.82\% &	 52.68\% \\
+	   & Madrid (\gls{wm}, 5-min)   & 68.81\% &	59.04\% &	55.94\% &	 54.38\% \\
+	   & Madrid (\gls{htwt}, 30-min) &  57.68\% &	50.98\% &	48.86\% &	 47.79\% \\
+	   & Madrid (\gls{wm}, 30-min)  & 63.10\% &	53.19\% &	50.48\% &	 49.12\% \\
+	  \cline{2-6}
+	   & Porto (\gls{htwt}, 5-min)   & 42.22\% &	45.49\% &	43.93\% &	 43.15\% \\
+	   & Porto (\gls{wm}, 5-min)      & 45.68\% &	47.03\% &	45.06\% &	 44.07\% \\
+	   & Porto (\gls{htwt}, 30-min)  & 35.91\% &	38.03\% &	36.75\% &	 36.11\% \\
+	   & Porto (\gls{wm}, 30-min)   & 37.85\% &	38.91\% &	37.41\% &	 36.66\% \\
+	  \hline
+	  %\cline{2-5}
+	  %\multicolumn{1}{c|}{} & \multicolumn{4}{c|}{$t_{\Psi}=512$} \\
+	%	\cline{2-5}
 	  \end{tabular}
-	%\vspace{-5mm}
-	\caption{Overall compression of \acrshort{ctr} including different configurations for both the spatial and temporal components.  }
-	\label{table:ctr_spaces}
-	\vspace{-4mm}
+	\caption{Overall compression of \acrshort{ctr} including different configurations for both the spatial and temporal components.}
+	\label{table:ctr:exp:space:ctr}
 	\end{center}
 	\end{table}
 
 
-	Finally, in Table~\ref{table:ctr_spaces}, we show the overall compression ratios of  \gls{ctr}.
-	We use the same configurations for \gls{htwt} and \gls{wm}  as in Table~\ref{table:ctr_wt_spaces}, and both the
+	Finally, in Table~\ref{table:ctr:exp:space:ctr}, we show the overall compression rates of  \gls{ctr}.
+	We use the same configurations for \gls{htwt} and \gls{wm}  as in Table~\ref{table:ctr:exp:space:wt}, and both the
 	most dense and sparse tuning of \gls{csa} ($t_{\Psi}= 32$ and $t_{\Psi}= 512$ respectively).
-	For Madrid dataset, the pair (node,timestamp) is represented with $9+9=18$ bits in our baseline representation 
+	For the Madrid dataset, the pair (node,timestamp) is represented with $9+9=18$ bits in our baseline representation 
 	when time is discretized into $30$-minute intervals, and with $9+12=21$ when we use $5$-minute intervals.
 	In the case of Porto dataset, when using $30$-minute intervals, each pair (node,timestamp) from the baseline requires $16+9=25$ bits. 
 	If discretization considers $5$-minute intervals, the baseline requires $16+6=22$ bits. We can see that the overall
 	compression of \gls{ctr} in Madrid dataset ranges between $76\%$ and $50\%$. Also we show that Porto dataset is much
-	more compressible, obtaining compression ratios from around $50\%$ to $35\%$.
-
-
-	% \begin{table}[h!]
-	% %\vspace{-6mm}
-	% \begin{center}
-	% \scriptsize
-	%   \begin{tabular}{|l|l|c|*{4}{c}|*{4}{c}|}
-	%   \cline{3-11}
-	%   \multicolumn{2}{l|}{} & \multicolumn{9}{c|}{Times representation} \\
-	%   \cline{3-11}
-	%   \multicolumn{2}{l|}{} & None & \multicolumn{4}{|c|}{Hu-Tucker Wavelet Tree} & \multicolumn{4}{c|}{Wavelet Matrix} \\
-	%   \cline{3-11}
-	%   \multicolumn{2}{l|}{} & & RG32 & RRR32 & RRR64 & RRR128 & RG32 & RRR32 & RRR64 & RRR128 \\ \hline
-	%   \multirow{4}{*}{\rotatebox{90}{$\Psi_{sampling}$}} & None & & 103.13\% & 86.03\% & 80.60\% & 77.88\% & RG32 & RRR32 & RRR64 & RRR128 \\ %\hline
-	%   & 32 & 41.32\% & RG32 & RRR32 & RRR64 & RRR128 & RG32 & RRR32 & RRR64 & RRR128 \\ %\hline
-	%   & 128 & 26.80\% & RG32 & RRR32 & RRR64 & RRR128 & RG32 & RRR32 & RRR64 & RRR128 \\ %\hline
-	%   & 512 & 23.06\% & RG32 & RRR32 & RRR64 & RRR128 & RG32 & RRR32 & RRR64 & RRR128 \\ \hline
-	%   \end{tabular}
-
-	%   \begin{tabular}{|l|*{5}{c}|}
-	%   \hline
-	%   \diagbox{$\Psi_{sampling}$}{bitmap} & None & RG32 & RRR32 & RRR64 & RRR128 \\ \hline
-	%   None & & RG32 & RRR32 & RRR64 & RRR128 \\ %\hline
-	%   32 & 56.81 & RG32 & RRR32 & RRR64 & RRR128 \\ %\hline
-	%   128 & 36.85 & RG32 & RRR32 & RRR64 & RRR128 \\ %\hline
-	%   512 & 31.71 & RG32 & RRR32 & RRR64 & RRR128 \\ \hline
-	%   \end{tabular}
-	% %\vspace{-5mm}
-	% \caption{Test table}
-	% \label{table:madrid_spaces}
-	% %\vspace{-10mm}
-	% \end{center}
-	% \end{table}
-
+	more compressible, obtaining compression ratios from around $50\%$ down to $35\%$.
 
 
 	%%%%%%%%%%% DESCOMENTAR CUANDO FARI CAMBIE DE OPINION %%%%%%%%%%%
@@ -997,17 +945,16 @@
 
 
 
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	\subsection{Performance at query time}
+	\label{sec:ctr:exp:queries}
 	Through this section, we evaluate the time performance of \gls{ctr} when solving spatial, temporal, and spatio-temporal queries.
 	We have randomly generated $10,\!000$ query patterns from our two datasets for each type of query.
 	Each time measurement presented below is the average execution time of $10,\!000$ runs using the corresponding query patterns, 
-	except for the \topK\ queries where we perform $100$ runs of the {\em top-k} algorithms with $k=\{10,100\}$.
+	except for the \topK\ queries where we perform $100$ runs of the {\em top-k} algorithms with $k\in\{10,100\}$.
 
 	Our test machine has an Intel(R) Core(tm) i5-4690@3.50GHz CPU (4 cores/4 siblings) and 8GB of DDR3 RAM. 
-	It runs Ubuntu Linux 16.04 (Kernel 4.4.0-21-generic). The compiler used was g++ version 5.4.0 and we set compiler optimization flags to $-O9$. All our experiments run in a single core and time measures refer to CPU user-time.
+	It runs Ubuntu Linux 16.04 (Kernel 4.4.0-21-generic). The compiler used was GCC version 5.4.0 and we set compiler optimization flags to $-O3$. All our experiments run in a single core and time measures refer to CPU user-time.
 
 	During the generation of query patterns, for those queries involving only one node $X$ from the network, 
 	we have randomly chosen $X$ $10,\!000$ times from the available network nodes. 
@@ -1016,7 +963,7 @@
 	In the case of the spatial \XtoY\ and the spatio-temporal \XtoY$_{Ts}$, and \XtoY$_{Tw}$\ the pair of
 	network nodes $\langle X,Y \rangle$ that compose our
 	query patterns were generated by randomly choosing
-	$10,\!000$ trips and then extracting the initial $X$ and ending $Y$ nodes of those trips.
+	$10,\!000$ trips and then extracting the initial $X$ and ending $Y$ nodes of those trips, in order to avoid the generating queries for pairs $\langle X,Y \rangle$ that were absent in our dataset.
 
 	Moreover, we also generated the time intervals $[t_1..t_2]$ required for 
 	the spatio-temporal queries. Considering the different available time-IDs, we chose a random starting
@@ -1025,155 +972,84 @@
 	interval $[t_1..t_2]$ would contain exactly $12$ time IDs ($t_2\leftarrow t_1+11$). However, if time was
 	discretized into $30$-minute intervals, $[t_1..t_2]$ would contain only $2$ time IDs ($t_2\leftarrow t_1+1$).
 	We followed the same procedure to gather the query patterns used for the pure temporal queries \loadT\ and \startT.
-	%queries \loadTi\ and \loadTr. 
-	%Yet, since \loadTi\ only needs a unique time-ID, we only randomly extracted $t_1$.
 
+	\subsubsection{Space/time trade-off when dealing with spatial queries} \label{sec:ctr:exp:queries:spat}
 
-	%Each time result was the average of the execution of 10000 random queries of that type, except for the top-k queries. 
-	%The time intervals for the spatio-temporal queries were generated with a random size from five minutes to two hours.
-
-	%\OJOFARIDONE{posiblemente no tabla con todas las queries, pq -las probamos todas-}
-
-	\subsubsection{Space/time trade-off when dealing with spatial queries} \label{sec:exp:spat}
-
-	In Figures~\ref{fig:madridsp} and \ref{fig:portosp}, we show the performance of \gls{ctr} at
+	In Figures~\ref{fig:ctr:exp:queries:spat:madrid} and \ref{fig:ctr:exp:queries:spat:porto}, we show the performance of \gls{ctr} at
 	solving spatial queries for Madrid and Porto datasets respectively. 
 	Note that all these queries can be answered using only the \gls{csa} component
 	of \gls{ctr}. Therefore, the size of the temporal component 
 	is not considered here and compression values (x-axis) refer only to the size of \gls{csa} with
-	respect to the spatial baseline as in Table~\ref{table:spatial_spaces}. 
+	respect to the spatial baseline as in Table~\ref{table:ctr:exp:space:spat}. 
 	We show the average query time (in $\mu$s) depending on the
 	space used by \gls{csa} with three different 
-	sampling configurations ($t_{\Psi} =\{512, 128, 32\}$).
+	sampling configurations ($t_{\Psi} \in \{512, 128, 32\}$).
 
-
-	%It is worth noting 
 	Results show that the queries that involve searching in the $\$$ region of 
 	$\Psi$, such as \startX\ or \XtoY\ are considerably slower than queries \endX\ and \loadX\ 
-	due to the large size of that region. Recall there is one $\$$ for every trip. 
-	%
-	%This difference is much more accentuated if a forward search was used in the \gls{csa}.
+	due to the large size of that region when compared to the frequency of any node: in neither of the two datasets there is a node that was visited by every trip, while there is one $\$$ per trip.
 
-	%\marginpar{\tiny Daniil, como se implementa backward search? supongo que usas select para localizar zona para X y luego \bsearch dentro de esa %zona? Ya me comentaras...}  Ok, correcto! ;)
-
-
-	%%%%%%%%%%% MADRID -SPATIAL %%%%%%%%%%%%%
-	\begin{figure}[htb]
-		%\vspace{-0.4cm}
+	\begin{figure}[ht]
 		\begin{center}
 			{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/madrid_spatial.eps}}
 			{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/madrid_spatial_topk.eps}}
 		\end{center}
-		\vspace{-0.3cm}
 		\caption{Spatial queries (left) and spatial {\em top-k} queries (right) for Madrid.}
-		\label{fig:madridsp}
-		\vspace{-0.3cm}
+		\label{fig:ctr:exp:queries:spat:madrid}
 	%\end{figure}
 
-
-
-
-	%%%%%%%%%%% PORTO - SPATIAL %%%%%%%%%%%%%
-	%\begin{figure}[htb]
-		%\vspace{-0.4cm}
+	%\begin{figure}[ht]
 		\begin{center}
 			{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/porto_spatial.eps}}
 			{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/porto_spatial_topk.eps}}
 		\end{center}
-		\vspace{-0.3cm}
 		\caption{Spatial queries (left) and spatial {\em top-k} queries (right) for Porto.}
-		\label{fig:portosp}
-		%\vspace{-0.6cm}
+		\label{fig:ctr:exp:queries:spat:porto}
 	\end{figure}
 
-	In both datasets, we can see that \loadX\ (solved using {\em select} on $D$ rather than
+	In both datasets, we can see that \loadX\ (solved using $\select$ on $D$ rather than
 	$\bsearch$ on $\Psi$) is the fastest query. On average, it takes only around $10$ns
 	per query. Except in the most sparse configuration of \gls{csa}, queries \endX, \startX, and 
 	\XtoY\ require typically less than $10\mu$s. This basically shows the cost of performing
-	$\bsearch$ on a compressed $\Psi$. In the most sparse setup, times for \startX\ and \XtoY\ are always better 
-	in Madrid than in Porto dataset, and \endX\ draws rather identical times.
+	$\bsearch$ on a compressed $\Psi$. In the most sparse setup ($t_{\Psi}=512$), times for \startX\ and \XtoY\ are always better 
+	for the dataset of Madrid than for the one of Porto, and \endX\ draws rather identical times.
 	With the densest configuration  ($t_{\Psi}=32$), \endX\ and \XtoY\ are respectively 
 	around $10$-$20$\% fastest in Madrid dataset (\endX\ takes $4.05\mu$s and $4.51\mu$s respectively, and
 	\XtoY\ takes $4.54\mu$s and $5.66\mu$s). However, \startX\ performs around $20$\% faster in Porto dataset 
 	($2.28\mu$s vs $2.90\mu$s).
 	\medskip
 
-	%Ends-with-X   Madrid/Porto (4.05/4.51)
-	%F-X-to-Y     Madrid/Porto (4.54/5.66)
-	%Starts-with-X   Madrid/Porto (2.90/2.28)
-
-	%Regarding \topK\ queries we can see that the fact of having less trips, but a larger vocabulary, make
-	%\topK\ queries to perform slower at Porto than at Madrid dataset.
-
 	Focusing on \topK\ queries, we can see huge differences between \topK$_s$\  
 	and the rest of the \topK\ queries, as the former needs to perform {$ \bsearch$} over the compressed $\Psi$
 	instead of a $\select$ on $D$. 
 
-	We can also see that due to the small number of stops in Madrid dataset, it is always more efficient 
-	to use the sequential version of \topK$_s$\ and \topK\ algorithms. This is also because a rather uniform frequency among nodes 
+	We can also see that due to the small number of stops in Madrid dataset, it is always more efficient to use the sequential version of \topK$_s$\ and \topK\ algorithms. This is also because a rather uniform frequency among nodes 
 	increases the number of insertions in the priority queue ($i$) of the binary algorithm
-	needed for retrieving the first $k$ nodes ($i \approx |V|$). Moreover, note that for the sequential algorithm 
-	$i$ is  at most $|V|$, whereas for the binary-partition counterpart it could become up to $2|V|-1$.
+	needed for retrieving the first $k$ nodes ($i \approx |S|$). Moreover, note that for the sequential algorithm $i$ is at most $|S|$, whereas for the binary-partition counterpart it could become up to $2|S|-1$.
 
-
-	However, in Porto dataset, where nodes follow a biased distribution (some streets are far more used than others
-	by taxis), and whose vocabulary 
-	is $190$ times larger than that of Madrid's, the binary-partition version of \topK$_s$\ and \topK\ algorithms is clearly
-	faster than the sequential counterpart (\topK$_{seq}$\ and \topK$_s$seq).
-	Note that in Madrid dataset, \Stcien\ returns 32\% of the nodes (hence sequential processing worths it) 
+	However, in Porto dataset, where nodes follow a biased distribution (some streets are far more used than others by taxis), and a vocabulary 
+	is $190$ times larger than the one for Madrid, the binary-partition version of \topK$_s$\ and \topK\ algorithms is clearly
+	faster than the sequential counterpart (\topK$_{seq}$\ and \topK$_{sseq}$).
+	Note that in Madrid dataset, $top\_100$ returns 32\% of the nodes (hence sequential processing worths it) 
 	whereas in Porto dataset less than 0.2\% of the nodes are returned. 
 
-	The gap between \Stdiezseq\ and \Stcienseq\ that we can clearly appreciate in Madrid dataset 
+	The gap between $top\_10_{seq}$ and $top\_100_{seq}$ that we can clearly appreciate in Madrid dataset 
 	is due to the cost of the insertion of nodes in the min-heap. However, the gap between 
-	the binary \Stdiez\ and \Stcien\ 
+	the binary $top\_10_{bin}$ and $top\_100_{bin}$ 
 	is mainly related to the number of iterations performed until the binary-partition algorithm gathers the first
 	$10$ and $100$ {nodes}  returned respectively. The same discussion applies for \topK$_s$\ queries.
 
-	%\begin{itemize}
-	%	\item top-100-starts en Madrid: seq y bin son similares en tiempo: solo hay 314 nodos en la red y 
-	%	top-100starts devuelve el 33\% de los nodos. En Porto, top-100-starts devuelve el 0.2\% de los nodos 
-	%	de la red por ello bin es mucho mejor opcion que seq.
-	%	\item top-10-starts
-	%\end{itemize}
-
-
-
-
-
-	%We evaluated \gls{ctr} over the Porto dataset, with the same index configurations and type of queries as for Madrid. 
-	%Figure~\ref{fig:portosp} shows the performance of the spatial component. It is significantly slower than with Madrid 
-	%in the sparse configuration for the \texttt{starts-with-x} or \texttt{from-x-to-y}.
-
-	%\OJOFARI{DANIIL dice aqui que la siguiente frase no es valida: en concreto me dice que: esa frae la puse para explicar
-	% starts-with-x y from-x-to-y, pero estoy viendo que no es valida para explicar form-x-to-y. Asi que no se porque  
-	% from-x-to-y es mas lenta en un lado que en el otro (Madrid vs Porto)} 
-	%This is because the generated queries are with random street segment identifiers, while most of them have never been 
-	%used as a starting stop for a taxi, thus triggering the worst case of a binary search.
-
-	%We can also see that because of the increased size of the vocabulary, the sequential versions of top-k perform much 
-	%slower than their binary counterparts.
-
 
 	\subsubsection{Comparing the space/time trade-off of WM and HTWT}
-	\label{sec:time_exp}
-	In order to compare the efficiency of our \gls{htwt} (that uses variable-length codes and supports $\cnt$ efficiently)
-	 with a balanced \gls{wm} alternative under 
+	\label{sec:ctr:exp:queries:wt}
+	In order to compare the efficiency of our \gls{htwt} (that uses variable-length codes and supports $\cnt$ efficiently) with a balanced \gls{wm} alternative under 
 	different time distributions (recall that this \gls{wm} is time distribution invariant), 
 	we run some experiments that evaluate the average time to execute $\cnt$ operation on
 	both representations.
 
-	\begin{figure}[tbp]
-		\begin{center}
-			\includegraphics[angle=-90,width=0.75\textwidth]{figures_synt/timedistrib.eps}		
-			\caption{Time distributions used. The y-axis indicates the number of passengers per each 5-min interval.}
-			\label{fig:distrib}
-		\end{center}
-		\vspace{-3mm}
-	\end{figure}
-
-	We used a dataset of generated trips  (Refer to Section~\ref{sec:ed} for the details about Madrid dataset) and we
-	generated three kinds of time distributions for our evaluation. We refer to them as: uniform, skewed and very skewed. They are shown
-	in Figure~\ref{fig:distrib}. 
+	We used a dataset of generated trips  (refer to Section~\ref{sec:ctr:exp:data} for the details about Madrid dataset) and we
+	generated three kinds of time distributions for our evaluation. We refer to them as: uniform, skewed and very skewed, as they are shown
+	in Figure~\ref{fig:ctr:distrib}. 
 	According to the total number of passengers in a day, in the uniform distribution $51,\!000$ passengers 
 	use the network for each 5-minute interval. 
 	We also generated a skewed distribution for the time interval frequencies in an effort to
@@ -1184,8 +1060,7 @@
 		\item With 30\% of probability, a trip occurs during a morning rush hour.
 		\item With 45\% of probability, a trip occurs in an evening rush hour.
 		\item With 5\% of probability, a trip occurs during lunch rush hour.
-		\item The remaining 20\% of probability is associated to unclassified trips, starting at a random hour of the day, which may
-		also fall into one of the three previous periods discussed.
+		\item The remaining 20\% of probability is associated to unclassified trips, starting at a random hour of the day, which may also fall into one of the three previous periods discussed.
 	\end{itemize}
 	%
 	In the very skewed distribution we increase the rush-hour probabilities with
@@ -1193,35 +1068,18 @@
 	2\% of random movements.
 	\medskip
 
-	Then we built the \gls{htwt} and the \gls{wm} considering two different granularities for the discretization of times: 
+	For these generated datasets, we have built the \gls{htwt} and the \gls{wm} considering two different granularities for the discretization of times: 
 	five-minute and thirty-minute intervals. Then, we generated $10,\!000$ random intervals of times $[t_1..t_2]$ over the whole 
 	time sequence of the dataset considering interval widths of five minutes, one hour, and six hours.  
-	Finally, we run $10,\!000$  $\cnt(z+2,n,t_1,t_2)$ queries (we show average times) from each query set over 
+	Finally, we run $10,\!000$  $\cnt(|\mathcal{T}|+2,n,t_1,t_2)$ queries (we show average times) from each query set over 
 	the six configurations of \gls{htwt} and \gls{wm}  
 	(2 different granularities for the time discretization and 3 datasets).
 
-	%We made a custom \gls{wt} implementation with Hu-Tucker coding, where we focused in optimizing the $\cnt$ operation. We also implemented the $top-k$ mentioned in Section~\ref{sec:tq} using a binary partition approach.
+	%We made a custom \gls{wt} implementation with Hu-Tucker coding, where we focused in optimizing the $\cnt$ operation. We also implemented the $top-k$ mentioned in Section~\ref{sec:ctr:alg:tq} using a binary partition approach.
 
-	%For the \gls{wm} we reuse the implementation from \cite{CNO15}, with $top-k$ implemented with a simple linear approach, using leaf pointers that were already stored in the structure. That allows us to analyze the advantage of the linear when the distribution is uniform.
+	%For the \gls{wm} we reuse the implementation from \cite{CNO15}, with $top-k$ implemented with a simple linear approach, using leaf pointers that were already stored in the structure. That allows us to analyze the advantage of the linear when the distribution is uniform
 
-
-
-
-	%F%our different bitvectors were used to evaluate our representations, sorted by the compression achieved in all experiments:
-	%\begin{itemize}
-	%  \item Plain bitvector described in \cite{Mun96} with constant time rank
-	%  and a logarithmic time binary search for select with a sampling parameter that
-	%  was set to the typical value of 32.
-	%  % a block size of 32 integers of 32 bits each (1024 bits blocks),
-	%  % that does not use any kind of compression.
-	%
-	%  \item A compressed RRR bitvector~\cite{Raman:2002:SID:545381.545411} with %a block size of 15 bits and
-	%  three sampling rates: every 32, 64 and 128 blocks. Higher sampling achieves better compression.
-	%\end{itemize}
-
-
-
-	\begin{figure}[htb]
+	\begin{figure}[ht]
 		\begin{center}
 			\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/unif5m.eps}
 			\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/unif30m.eps}
@@ -1233,12 +1091,11 @@
 				uniform (top), skewed (middle), and very skewed (bottom).
 				Time granularity for the time index is 5 minutes (left) or 30 minutes (right).
 			}
-			\vspace{-3mm}
-			\label{fig:study}
+			\label{fig:ctr:exp:queries:wt:study}
 		\end{center}
 	\end{figure}
 
-	In Figure~\ref{fig:study}, we show the results of our experiments. In the upper part of the figure, we 
+	In Figure~\ref{fig:ctr:exp:queries:wt:study}, we show the results of our experiments. In the upper part of the figure, we 
 	include the results for \gls{htwt} and \gls{wm} built over the times assuming uniform frequency distribution.
 	In the middle part we assume times follow a the skewed distribution, and in the bottom of the figure we show
 	results when considering a very skewed distribution. Moreover, figures in the left column show results
@@ -1249,12 +1106,11 @@
 
 	The baseline used for the space usage (x-axis) is the size of an array of
 	fixed-length time-interval IDs represented with the least number of bits needed (12 bits and 9 bits
-	respectively for 5-minute and 30-minute granularity, see Section~\ref{sec:ed}).
+	respectively for 5-minute and 30-minute granularity, see Section~\ref{sec:ctr:exp:data}).
 	\medskip
 
-
 	When times are uniformly distributed, our \gls{htwt} can only exploit the redundancy introduced by
-	the $\$$ symbols. This fact permits \gls{htwt} to obtain only a minimal compression (around $96-98\%$ of the baseline)
+	the $\$$ symbols. With this, \gls{htwt} can obtain only a minimal compression (around $96-98\%$ of the baseline)
 	when using a $RG$ (plain) bitvector, whereas \gls{wm} uses more space than the baseline (around $104\%$).
 	Recall that for each plot we present four points corresponding (left-to-right) 
 	to $RRR_{128}$, $RRR_{64}$, $RRR_{32}$, and $RG$ bitvectors.
@@ -1266,14 +1122,14 @@
 	which explains the higher compression obtained. However,
 	it also slightly increases the query times, especially in the wider
 	one-hour and six-hours query sets. This happens because the probability of having a query 
-	that forces to descend completely up to the leaves of the \gls{htwt} increases.
+	that forces to descend completely up to the leaves of the \gls{htwt} also increases.
 
 	For a very skewed distribution, the gap in compression between \gls{htwt} and \gls{wm} increases clearly (around 
 	$5$ percentage points), whereas query times remain similar to those in the previous scenario.
 
 	%In case of a \gls{wm} representation, the time and space efficiency is the same
 	%regardless of the statistical distribution of the times in the dataset, as no
-	%statistical coder has been used. As expected, in Figure~\ref{fig:study}
+	%statistical coder has been used. As expected, in Figure~\ref{fig:ctr:exp:queries:wt:study}
 	%the version with the plain bitvector {\em RG} uses even more space than the original unindexed
 	%representation, as the bitvectors need additional structures for
 	%$\rank$ and $\select$.
@@ -1293,28 +1149,16 @@
 	% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 	% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 	\subsubsection{Space/time trade-off when dealing with temporal  queries}
+	\label{sec:ctr:exp:queries:temp}
 	% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 	% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 
 	In this section we focus on the performance of the temporal component of \gls{ctr}. We use the same 
-	configurations as in Table~\ref{table:ctr_wt_spaces} for \gls{wm} and \gls{htwt}, and 
-	show the space/time trade-offs obtained when solving pure temporal queries. Figures~\ref{fig:madridst_topk}
-	and \ref{fig:portost_topk} present the results obtained at  \loadT\ and \startT\ queries for Madrid and Porto datasets respectively. 
+	configurations as in Table~\ref{table:ctr:exp:space:wt} for \gls{wm} and \gls{htwt} (although we are only using generated times for Madrid following the \textit{skewed} variant, as previously stated in Section~\ref{sec:ctr:exp:data}), and 
+	show the space/time trade-offs obtained when solving pure temporal queries. Figures~\ref{fig:ctr:exp:queries:temp:madrid}
+	and \ref{fig:ctr:exp:queries:temp:porto} present the results obtained at  \loadT\ and \startT\ queries for Madrid and Porto datasets respectively. 
 	Note that, in this case, since the \gls{csa} is not actually needed to solve temporal queries, we do not include its size
 	within the compression values (x-axis). 
-
-	%pure-temporal queries:
-	%\STuti, \STutic, \loadTr,
-	%\loadT,
-	%\Ttk,
-	%\Ttdiezseq,
-	%\Ttcienseq.
-
-
-	%\loadT,
-	%\Ttk,
-	%\Ttdiezseq,
-	%\Ttcienseq.
 
 	% We can see that when running \Ttk\ queries, the uneven distribution of times that we generated for Madrid dataset 
 	% clearly favors the binary-partition approach with respect to the sequential counterpart. Note that this happens 
@@ -1330,7 +1174,7 @@
 	% to perform a $\cnt$ operation) and that those times improve as the height of the structure decreases.
 	% 
 	% %When querying the top ten most used time intervals, we are using a sequential algorithm for the \gls{wm}, and binary 
-	% %for the \gls{wt}. For this reason, in the Figure~\ref{fig:madridst_topk} the points for each temporal index belong 
+	% %for the \gls{wt}. For this reason, in the Figure~\ref{fig:ctr:exp:queries:temp:madrid} the points for each temporal index belong 
 	% %to a completely different time range. The uneven distribution of times favors the binary algorithm of the \gls{wt}, 
 	% %and having a wider time interval reduces the height of the \gls{wt} or the \gls{wm}.
 	% %\OJOFARI{{\em pure temporal. Antes de enviar paper Daniil va a implementar top-k-binario en WM y top-k-secuencial en WTHT.
@@ -1343,45 +1187,39 @@
 
 	%%%%%%%%%%% MADRID - PURE-TEMPORAL %%%%%%%%%%%%%
 
-	\begin{figure}[!ht]
-		%\vspace{-0.4cm}
+	\begin{figure}[ht]
 		\begin{center}
 			\begin{center}
-				{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/madrid_t5mht.eps}}
-				{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/madrid_t5mwm.eps}}
-				{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/madrid_t30mht.eps}}
-				{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/madrid_t30mwm.eps}}
+				{\includegraphics[angle=-90,width=0.4\textwidth]{figures_synt/madrid_t5mht.eps}}
+				{\includegraphics[angle=-90,width=0.4\textwidth]{figures_synt/madrid_t5mwm.eps}}
+				{\includegraphics[angle=-90,width=0.4\textwidth]{figures_synt/madrid_t30mht.eps}}
+				{\includegraphics[angle=-90,width=0.4\textwidth]{figures_synt/madrid_t30mwm.eps}}
 			\end{center}
 		\end{center}
-		\vspace{-0.5cm}
-		\caption{Pure temporal queries for Madrid. \acrshort{ctr} uses either a \acrlong{htwt} (left) or a \acrlong{wm} (right). 
+		\caption{Pure temporal queries for Madrid, using either a \acrshort{htwt} (left) or a \acrshort{wm} (right). 
 			Time granularity is $5$ minutes (top) or $30$ minutes (bottom).}
-		\label{fig:madridst_topk}
-		\vspace{-0.3cm}
-	%\end{figure}
+		\label{fig:ctr:exp:queries:temp:madrid}
+	\end{figure}
 
 
 	%%%%%%%%%%% PORTO - PURE TEMPORAL %%%%%%%%%%%%%
 
 
-	%\begin{figure}[htb]
-		%\vspace{-0.4cm}
+	\begin{figure}[ht]
 		\begin{center}
-				{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/porto_t5mht.eps}}
-				{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/porto_t5mwm.eps}}
-				{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/porto_t30mht.eps}}
-				{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/porto_t30mwm.eps}}
+				{\includegraphics[angle=-90,width=0.4\textwidth]{figures_synt/porto_t5mht.eps}}
+				{\includegraphics[angle=-90,width=0.4\textwidth]{figures_synt/porto_t5mwm.eps}}
+				{\includegraphics[angle=-90,width=0.4\textwidth]{figures_synt/porto_t30mht.eps}}
+				{\includegraphics[angle=-90,width=0.4\textwidth]{figures_synt/porto_t30mwm.eps}}
 		\end{center}
-		\vspace{-0.5cm}
-		\caption{Pure temporal queries for Porto. \acrshort{ctr} uses either a \acrlong{htwt} (left) or a \acrlong{wm} (right). 
+		\caption{Pure temporal queries for Porto, using either a \acrshort{htwt} (left) or a \acrshort{wm} (right). 
 			Time granularity is $5$ minutes (top) or $30$ minutes (bottom).}
-		\label{fig:portost_topk}
-		%\vspace{-0.6cm}
+		\label{fig:ctr:exp:queries:temp:porto}
 	\end{figure}
 
 
 
-	We can see that when running \loadT\ queries, both \gls{htwt} and \gls{wm} obtain rather similar times (requiring less than 4$\mu$s 
+	We can see that when running \loadT\ queries, both the \gls{htwt} and the \gls{wm} obtain rather similar times (requiring less than 4$\mu$s 
 	to perform a $\cnt$ operation in all cases) and that those times improve as the height of the structure decreases. We can see 
 	that in the highest \gls{htwt} and \gls{wm}, corresponding to using $5$-min intervals in Madrid dataset, \loadT\ requires less
 	than $3.5\mu$s. Then, when using $30$-min intervals, the time required to solve \loadT\ is always below $2.3\mu$s (yet
@@ -1389,20 +1227,20 @@
 	using $5$-min intervals. And finally, the best query times (below $1.2\mu$s) are obtained for Porto dataset with 
 	$30$-min intervals.
 
-	Regarding $\startT$, recall that it also performs a $\cnt$ operation, but within a smaller range ($[1,z]$) in comparison with the range
-	$[z+1,n]$ where  $\cnt$ is performed for \loadT. We can see that, whereas \gls{wm} obtains similar times to those of 
-	$\loadT$ query,  \startT\ performs clearly faster than \loadT\ over \gls{htwt}.
-
-
+	Regarding $\startT$, recall that it also performs a $\cnt$ operation, but within a smaller range ($[2,|\mathcal{T}+1|]$) in comparison with the range
+	$[|\mathcal{T}|+2,n]$ where  $\cnt$ is performed for \loadT. We can see that, whereas the \gls{wm} obtains similar times to those of 
+	$\loadT$ query,  \startT\ performs clearly faster than \loadT\ over the \gls{htwt}.
+	
+	While query times are bound by $O(\log|I|)$, as seen in Section~\ref{sec:ctr:alg:tq}, it is observed that, in some cases, \startT\ is answered considerably faster than \loadT. This occurs because our randomly queried time intervals are small enough (up to two hours) so that there are no trips starting around that queried time, allowing the $\cnt$ operation to be cut short before reaching the leaves of the \gls{htwt} or the last level of the \gls{wm}. The difference is obviously accentuated in the case of \gls{htwt}, as the tree is not uniform.
 
 
 	%Due to the smaller vocabulary of times, in Porto dataset, we can see that all the indexes performs better for the top-10 times 
-	%query in Figure~\ref{fig:portost_topk}, although the binary version of the \gls{wt} is still faster because the time 
+	%query in Figure~\ref{fig:ctr:exp:queries:temp:porto}, although the binary version of the \gls{wt} is still faster because the time 
 	%distribution is not uniform either.
 
 
 	As a final note, recall that in Madrid dataset, bitvector $RG$ always needs more space than $RRR$ counterparts 
-	whereas in Porto dataset (as discussed in Section~\ref{sec:exp.space})
+	whereas in Porto dataset (as discussed in Section~\ref{sec:ctr:exp:space})
 	$RG$ obtains the best space values when using $5$-min intervals and still requires less space than $RRR_{32}$ when using
 	$30$-min intervals. 
 	This is the reason why while plots for Madrid dataset are decreasing from left to right, in Porto
@@ -1414,154 +1252,93 @@
 	% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 	% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 	\subsubsection{Space/time trade-off when dealing with spatio-temporal queries}
+	\label{sec:ctr:exp:queries:st}
 	% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 	% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 
-	In Figures~\ref{fig:madridst} and \ref{fig:portost} we show the space/time tradeoff obtained by \gls{ctr}\ when 
+	In the Figures~\ref{fig:ctr:exp:queries:st:madrid} and \ref{fig:ctr:exp:queries:st:porto} we show the space/time tradeoff obtained by \gls{ctr}\ when 
 	dealing with spatio-temporal queries. Recall that this type of queries require both using the \gls{csa}, to 
 	exploit indexed access to the nodes in the trips, and the 
-	temporal component of \gls{ctr}\ to handle temporal constraints. In this case, the space values showed in
+	temporal component of \gls{ctr} to handle temporal constraints. In this case, the space values showed in
 	the figures include both the size of \gls{csa} and that of either \gls{wm} or \gls{htwt}. Therefore, we also show the
-	overall space needs of \gls{ctr}\. In the case of \gls{csa} we
-	have set $t_{\Psi}=32$ (a fixed dense sampling), and for \gls{wm} and \gls{htwt} we used again the same 
-	configurations as in the previous sections obtained by varying the bitvectors and the temporal discretization. 
+	overall space needs of \gls{ctr}. In the case of \gls{csa} we
+	have set $t_{\Psi}=32$ (a fixed dense sampling), and for \gls{wm} and \gls{htwt} we used again the same configurations as in the previous sections obtained by varying the bitvectors and the temporal discretization. 
 
 	%%%%%%%%%%% MADRID -SPATIO-TEMPORAL %%%%%%%%%%%%%
-	\begin{figure}[!ht]
-		%\vspace{-0.4cm}
+	\begin{figure}[ht]
 		\begin{center}
-			{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/madrid_ht5.eps}}
-			{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/madrid_wm5.eps}}
-			{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/madrid_ht30.eps}}
-			{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/madrid_wm30.eps}}
-			
+			{\includegraphics[angle=-90,width=0.4\textwidth]{figures_synt/madrid_ht5.eps}}
+			{\includegraphics[angle=-90,width=0.4\textwidth]{figures_synt/madrid_wm5.eps}}
+			{\includegraphics[angle=-90,width=0.4\textwidth]{figures_synt/madrid_ht30.eps}}
+			{\includegraphics[angle=-90,width=0.4\textwidth]{figures_synt/madrid_wm30.eps}}
 		\end{center}
-		\vspace{-0.3cm}
-		\caption{Spatio-temporal queries for Madrid. \acrshort{ctr} uses either a \acrlong{htwt} (left) or a \acrlong{wm} (right). 
-			Time granularity is $5$ minutes (top) or $30$ minutes (bottom). 
+		\caption{Spatio-temporal queries for Madrid, using either a \acrshort{htwt} (left) or a \acrshort{wm} (right). 
+			Time granularity is $5$ (top) or $30$ minutes (bottom). 
 		}
-		\label{fig:madridst}
-		\vspace{-0.3cm}
-	%\end{figure}
+		\label{fig:ctr:exp:queries:st:madrid}
+	\end{figure}
 
 
 	%%%%%%%%%%% PORTO - SPATIO-TEMPORAL %%%%%%%%%%%%%
 
-	%\begin{figure}[!ht]
-		%\vspace{-0.4cm}
+	\begin{figure}[ht]
 		\begin{center}
-			{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/porto_ht5.eps}}
-			{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/porto_wm5.eps}}
-			{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/porto_ht30.eps}}
-			{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/porto_wm30.eps}}
-			
-			
-			
+			{\includegraphics[angle=-90,width=0.4\textwidth]{figures_synt/porto_ht5.eps}}
+			{\includegraphics[angle=-90,width=0.4\textwidth]{figures_synt/porto_wm5.eps}}
+			{\includegraphics[angle=-90,width=0.4\textwidth]{figures_synt/porto_ht30.eps}}
+			{\includegraphics[angle=-90,width=0.4\textwidth]{figures_synt/porto_wm30.eps}}
 		\end{center}
-		\vspace{-0.3cm}
-		\caption{Spatio-temporal queries for Porto. \acrshort{ctr} uses a fixed $t_{\Psi}=32$ for \acrlong{csa}, 
-			and either a \acrlong{htwt} (left) or a \acrlong{wm} (right). 
-			Time granularity is $5$ minutes (top) or $30$ minutes (bottom). 
+		\caption{Spatio-temporal queries for Porto, using either a \acrshort{htwt} (left) or a \acrshort{wm} (right). 
+			Time granularity is $5$ (top) or $30$ minutes (bottom). 
 		}
-		\label{fig:portost}
-		%\vspace{-0.6cm}
+		\label{fig:ctr:exp:queries:st:porto}
 	\end{figure}
 
 
-
-
-
-	For queries \startX$_T$, \endX$_T$, and \loadX$_T$\ we can see typically small differences between using \gls{wm} or \gls{htwt}. In 
-	Madrid dataset, \gls{wm} overcomes \gls{htwt} being $2$-$30$\% faster in these types of queries. 
+	For queries \startX$_T$, \endX$_T$, and \loadX$_T$\ we can see typically small differences between using \gls{wm} or \gls{htwt}. In Madrid dataset, \gls{wm} overcomes \gls{htwt} being $2$-$30$\% faster in these types of queries. 
 	However, in Porto dataset \gls{htwt} is slightly 
 	faster (from $1$ to $25$\%) than its \gls{wm} counterpart.
 
 	For queries \XtoY$_{Ts}$\ and \XtoY$_{Tw}$\ we can see a big gap between the times reported by \gls{htwt} and \gls{wm}.
-	This gap arises because in \gls{wm} we have used exactly the $\cnt_{LR}$ operation discussed in Section~\ref{sec:stq}
-	that is implemented with two calls to the $\cnt$ operation from the \gls{wm}.\footnote{For \gls{wm} we used exactly the same 
-		implementation in \cite{CNO15} and simply added the new operation $\cnt_{LR}$ that calls the underlying $\cnt$ from the
-		\gls{wm}. }  
+	This gap arises because in \gls{wm} we have used the $\cnt_{LR}$ operation discussed in Section~\ref{sec:ctr:alg:stq}
+	that was implemented with two additional upward traversals for the \gls{wm}\footnote{We used the exact same \gls{wm} 
+		implementation as in \cite{CNO15} and simply added the new operation $\cnt_{LR}$ that calls the underlying $\cnt$ from the
+		\gls{wm} and traverses up from the bottom level by using the $\select$ operation over its bitvectors. In later works, we have optimized this operation.}  
 	However, in our implementation of
-	\gls{htwt} we have engineered an improved version of $\cnt_{LR}$ where, during the execution of $\cnt$, we also report
-	$\alpha'$ and  $\beta'$, hence avoiding two calls to $\cnt$.
-	 
-	%
-	%\OJOFARI{Reescribir para  decir que WM usa 2 counts para implementar countLR, mientras que WTHT usa una 
-	%versión modificada del count (en la que se hace 1 sola bajada). Modifcar tambien en sec 5, y quitar la busqueda binaria}
-
-	%As a final note, recall that in Madrid dataset, bitvector $RG$ always needs more space than $RRR$ counterparts 
-	%whereas in Porto dataset (as discussed in Section~\ref{sec:exp.space})
-	%$RG$ obtains the best space values when using $5$-min intervals and still requires less space than $RRR_{32}$ when using
-	%$30$-min intervals. 
-	%This is the reason why while plots for Madrid dataset are decreasing from left to right, in Porto
-	%dataset the first point ($RG$) in the left figures ($5$-min intervals), and the third point ($RG$) 
-	%in the right figures ($30$-min intervals) requires less space than the others ($RRR$) and is also typically  faster. 
-	%This is mainly
-	%noticeable for queries \XtoY$_{Ts}$\ and \XtoY$_{Tw}$.
-
-
-
-
+	\gls{htwt} we have engineered an improved version of $\cnt_{LR}$ where, during the execution of $\cnt$, we also report $\alpha'$ and  $\beta'$, hence avoiding extra operations.
+	
 
 	%%%%%%%%%%% MADRID -SPATIO-TEMPORAL - TOP-K %%%%%%%%%%%%%
-	\begin{figure}[!ht]
-		%\vspace{-0.4cm}
+	\begin{figure}[ht]
 		\begin{center}
-
-			{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/madrid_st_topk_ht_5.eps}}
-			{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/madrid_st_topk_wm_5.eps}}
-			{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/madrid_st_topk_ht_30.eps}}
-			{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/madrid_st_topk_wm_30.eps}}
-			
+			{\includegraphics[angle=-90,width=0.4\textwidth]{figures_synt/madrid_st_topk_ht_5.eps}}
+			{\includegraphics[angle=-90,width=0.4\textwidth]{figures_synt/madrid_st_topk_wm_5.eps}}
+			{\includegraphics[angle=-90,width=0.4\textwidth]{figures_synt/madrid_st_topk_ht_30.eps}}
+			{\includegraphics[angle=-90,width=0.4\textwidth]{figures_synt/madrid_st_topk_wm_30.eps}}
 		\end{center}
-		\vspace{-0.3cm}
-		\caption{Spatio-temporal {\topK\ and \topK$_s$} queries for Madrid. \acrshort{ctr} uses either a \glsacrlong (left) or a \acrlong{wm} (right). 
-			Time granularity is $5$ minutes (top) or $30$ minutes (bottom). 
+		\caption{Spatio-temporal \topK\ queries for Madrid, using a \acrshort{htwt} (left) or a \acrshort{wm} (right). 
+			Time granularity is $5$ (top) or $30$ minutes (bottom). 
 		}
-		\label{fig:madridst.tk}
-		%\vspace{-0.3cm}
-	%\end{figure}
+		\label{fig:ctr:exp:queries:st:madrid.tk}
+	\end{figure}
 
 	%%%%%%%%%%% PORTO - SPATIO-TEMPORAL - topk %%%%%%%%%%%%%
-	%\begin{figure}[!ht]
-		\vspace{-0.2cm}
+	\begin{figure}[ht]
 		\begin{center}
-
-			{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/porto_st_topk_ht_5.eps}}
-			{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/porto_st_topk_wm_5.eps}}
-			{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/porto_st_topk_ht_30.eps}}
-			{\includegraphics[angle=-90,width=0.45\textwidth]{figures_synt/porto_st_topk_wm_30.eps}}
+			{\includegraphics[angle=-90,width=0.4\textwidth]{figures_synt/porto_st_topk_ht_5.eps}}
+			{\includegraphics[angle=-90,width=0.4\textwidth]{figures_synt/porto_st_topk_wm_5.eps}}
+			{\includegraphics[angle=-90,width=0.4\textwidth]{figures_synt/porto_st_topk_ht_30.eps}}
+			{\includegraphics[angle=-90,width=0.4\textwidth]{figures_synt/porto_st_topk_wm_30.eps}}
 			
 		\end{center}
-		\vspace{-0.3cm}
-		\caption{Spatio-temporal {\topK\ and \topK$_s$} queries for Porto. \acrshort{ctr} uses a fixed $t_{\Psi}=32$ for \acrlong{csa}, 
-			and either a \acrlong{htwt} (left) or a \acrlong{wm} (right). 
-			Time granularity is $5$ minutes (top) or $30$ minutes (bottom). 
+		\caption{Spatio-temporal \topK\ queries for Porto, using a \acrshort{htwt} (left) or a \acrshort{wm} (right). 
+			Time granularity is $5$ (top) or $30$ minutes (bottom). 
 		}
-		\label{fig:portost.tk}
-		\vspace{-0.3cm}
+		\label{fig:ctr:exp:queries:st:porto.tk}
 	\end{figure}
 
 
-	%The experimental results for the spatio-temporal queries (as well as the pure temporal \texttt{uses-t} query) can be found 
-	%in Figure~\ref{fig:madridst}. This time we calculate the space usage of the whole \gls{ctr} structure, with a fixed 
-	%$\Psi_{sampling}$ of 32 and varying the bitvectors for the temporal structures.
-
-	%\DAGAL{Oculto la implementación para obtener $[\alpha'..\beta']$ de forma óptima a propósito: la implementación es un cristo
-	% y sólo se usa para una consulta...}
-	%There is a big difference in the \texttt{from-x-to-y} queries between the Hu-Tucker \gls{wt} and the \gls{wm} structures as the 
-	%former has a more efficient implementation for reporting the limits of $[\alpha'..\beta']$ (mentioned in Section~\ref{sec:stq}). 
-	%If needed, the \gls{wm} could be improved with a similar optimization in the future. For the rest of the queries, the 
-	%difference in time efficiency is barely noticeable for both structures and even both time intervals.$\Psi_{sampling}$ 
-	%of 32 and varying the bitvectors for the temporal structures.
-
-
-
-	Finally, we also include results for \topK$_T$\ and \topK$_{Ts}$\ queries in Figures~\ref{fig:madridst.tk} and \ref{fig:portost.tk}. 
-	As explained in Section~\ref{sec:exp:temp}, the sequential approach is preferred when the frequency distribution of nodes is
+	Finally, we also include results for \topK$_T$\ and \topK$_{Ts}$\ queries in Figures~\ref{fig:ctr:exp:queries:st:madrid.tk} and \ref{fig:ctr:exp:queries:st:porto.tk}. 
+	As explained in Section~\ref{sec:ctr:exp:queries:spat}, the sequential approach is preferred when the frequency distribution of nodes is
 	rather uniform (Madrid dataset). Otherwise, the binary-partition counterpart outperforms it. The need for applying a temporal
 	constraint simply accentuates this effect in comparison with the corresponding pure spatial queries.
-
-
-
-	%\ART{Si yo hiciera la consulta espacio-tiempo de los top-k stops during a time  interval, pero considerara todo el %interval de tiempo del sistema. Que tan diferente es a solo hacerla espacial? }
