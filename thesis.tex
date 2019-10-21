@@ -137,10 +137,44 @@
 	
 \part{Compact representation of trajectories over transportation networks}
 \chapter{Previous concepts}
-	I am going to develop this more when I have more content on my proposals.
+	This chapter may serve as an introduction to the compact data structures used in our proposed representations, and it should give a sufficient understanding of the underlying concepts that we will be working with for the rest of this part. For a more in-depth guide on compact data structures, the reader may refer to \cite{Nav16}, where they are introduced from basic information theory concepts such as entropy.
 	
-	\section{Summed Area Tables}
-	The Summed Area Tables were first introduced in computer graphics \cite{crow1984summed} to speed up the mipmapping process.
+	A reader who is already familiar with compact data structures is still encouraged to read the Section~\ref{sec:sat}, where the \gls{sat} is introduced, which is initially unrelated to compact data structures, and also the Section~\ref{sec:wt}, where we discuss some less known variants and operations of the \gls{wt}, that we make use of in our contributions.
+	
+	\section{Summed Area Table}
+	\label{sec:sat}
+	The \gls{sat} was first introduced in computer graphics \cite{crow1984summed} to speed up the mipmapping process, where given a texture image represented as bidimensional matrices of numbers (usually three matrices of integers, one for each color channel) we are interested in finding the average color of any arbitrary rectangle within the image. This operation is most often used to reduce the rendering time for distant polygons where a pixel on the target screen may correspond to several texture pixels (texels), and also for anisotropic filtering, in order to improve the visual quality of polygons that are projected in an oblique angle.
+
+    With the most direct representation of a matrix as an array of values, we are required to compute the average value of a rectangle $(a,b),(a+h,b+w)$ as:
+    
+    \[
+    \overline{M}_{a..a+h,b..b+w}~\leftarrow~
+    \frac{\displaystyle\sum^h_{i=0}\displaystyle\sum^w_{j=0}M_{i+a,j+b}}
+    {(h+1)(w+1)}
+    \]
+    
+    Note that the summation has a time complexity of $O(hw)$, which would make this operation quite expensive for real time rendering applications. In order to improve the complexity of these calculations, the \gls{sat} precomputes the summations of $M$ in a matrix $I$, of the same size, where $I_{a,b}~\leftarrow~\displaystyle\sum^a_{i=0}\displaystyle\sum^b_{j=0}M_{i,j}$. That is, each cell of $I$ is the sum of the values within rectangle spanning from the origin of the matrix to the position of the cell. An example of a \gls{sat} can be found in the Figure~\ref{fig:sat}.
+    
+    \begin{figure}[ht]
+		\begin{center}
+			{\includegraphics[width=0.8\textwidth]{figures/example_sat.eps}}
+		\end{center}
+		\caption{An example of a \acrlong{sat} (right) built over a matrix (left).}
+		\label{fig:sat}
+	\end{figure}
+    
+    Having $I$, we can compute the average value of a rectangle in $O(1)$ operations as:
+    
+    \[
+    \overline{M}_{a..a+h,b..b+w}~\leftarrow~
+    \frac{I_{a+h,b+w} - I_{a+h,b-1} - I_{a-1,b+w} + I_{a-1,b-1}}
+    {(h+1)(w+1)}
+    \]
+    
+    In our example from Figure~\ref{fig:sat}, to calculate the sum of the delimited $3x3$ region in the matrix, we simply operate over the four terms in \textbf{bold} from the \gls{sat}, obtaining
+    $\displaystyle\sum^4_{i=2}\displaystyle\sum^4_{j=2}M_{i,j}~=~I_{4,4}-I_{4,1}-I_{1,4}+I_{1,1}~=~84-27-18+8~=~47$.
+    
+    While with this representation we do not need to keep the original matrix\footnote{As accessing a single cell can be viewed as a special case of the computation of an average where $h=0,w=0$.}, the improved computational efficiency comes at the expense of having to represent larger numbers than the original values.
 	
 	\section{Entropy coding}
 	Introduce Huffman, more importantly, Hu-Tucker, which is like Huffman but preserving lexical order.
@@ -181,7 +215,7 @@ to  $nH_0(S) + o(n(H_0(S)+1)) +  O(\sigma \log n)$ by using compressed bitvector
 	\label{sec:csa}
 	Explaining ST and SA along the way.
 
-\include{1-ctr}
+%\include{1-ctr}
 	
 \chapter{Our representation for trips over public transportation networks}
 \label{sec:newctr}
