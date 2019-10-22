@@ -178,26 +178,33 @@
     While with this representation we do not need to keep the original matrix\footnote{As accessing a single cell can be viewed as a special case of the computation of an average where $h=0,w=0$.}, the improved computational efficiency comes at the expense of having to represent larger numbers than the original values.
 	
 	\section{Entropy coding}
-	Given an information source (such as a text) that provides symbols from an alphabet of size $\sigma$ with a probability of $0 \leq p_i \leq 1$ for each symbol, where $\displaystyle\sum_ip_i=1$, the goal of an entropy coder is to exploit these probabilities in order to achieve compression by assigning shorter codes to the most frequent symbols, and longer to the less frequent ones. In the work that is considered as the foundation of information theory \cite{shannon1948mathematical}, Claude Shannon defined a concept called \textit{entropy}, which is closely related to the probabilities we are discussing, and used it to prove that the when encoding the symbols in binary, the optimal length in bits for each code is of $l_i = \frac{1}{\log_2p_i} = -\log_2p_i$ bits.
+	Given an information source (such as a text) that provides symbols from an alphabet $[1..\sigma]$ with a probability of $0 \leq p_i \leq 1$ for each symbol, where $\displaystyle\sum_ip_i=1$, the goal of an entropy coder is to exploit these probabilities in order to achieve compression by assigning shorter codes to the most frequent symbols, and longer to the less frequent ones. In the work that is considered as the foundation of information theory \cite{shannon1948mathematical}, Claude Shannon defined a concept called \textit{entropy}, which is closely related to the probabilities we are discussing, and used it to prove that the when encoding the symbols in binary, the optimal length in bits for each code is of $l_i = \frac{1}{\log_2p_i} = -\log_2p_i$ bits, and the entropy of an information source $S$ calculated as $H_0(S) = -\displaystyle\sum^\sigma_i p_il_i = -\displaystyle\sum^\sigma_i p_i\log_2p_i$.
 	
-	As this compression technique relies on using variable-length codes, it is necessary that the codes are unambiguous: there can be no two codes $C_i, C_j$ that, when concatenated, can be interpreted as another code ($C_iC_j \neq C_k, \forall i,j,k \in [1..\sigma]$). Additionally, it is computationally very useful for those codes to also be prefix-free, meaning that there can be no code that is the prefix part of another ($C_i \neq C_j0^a1^b,~\forall i,j \in [1..\sigma], a,b \in [0..\infty)$), as this will allow us to unambiguously interpret the symbol right after the bits of $C_i$ are read, without having to determine if it could be the prefix part of some other longer code $C_j$.
+	As this compression technique relies on using variable-length codes, it is necessary that the codes are unambiguous: there can be no two codes $C_i, C_j$ that, when concatenated, can be interpreted as another code 
+	% esto esta mal porque no contempla el caso de concatenar tres o mas codigos ambiguos
+	%($C_iC_j \neq C_k, \forall i,j,k \in [1..\sigma]$)
+	. Additionally, it is computationally very useful for those codes to also be prefix-free, meaning that there can be no code that is the prefix part of another ($C_i \neq C_j0^a1^b,~\forall i,j \in [1..\sigma], i\neq j, a,b \in [0..\infty)$), as this will allow us to unambiguously interpret the symbol right after the bits of $C_i$ are read, without having to determine if it could be the prefix part of some other longer code $C_j$.
 	
 	The Huffman coding, introduced in \cite{huffman1952method}, is a coding algorithm that produces prefix-free and optimal\footnote{That is, with lengths as close to $-\log_2p_i$ as possible with a whole number of bits per symbol.} codes based on the frequencies of each symbol. The ideas of the Huffman coding have been widely implemented in numerous compression algorithms and codecs since its inception, where the most notable examples are DEFLATE (PKZIP, GZIP), JPEG and MPEG.
 	
-	One less known variation of the Huffman codes are the Hu-Tucker codes \cite{hu1971optimal}, which aim to provide codes that preserve the same lexical order as the original symbols, meaning that for any two symbols $s_i,s_j$, it holds that $s_i \prec s_j \iff C_i \prec C_j$. This comes at the expense of at most one extra bit per code over Huffman on average, as discussed in \cite{Cover:2006:EIT:1146355} (pages 122-123).
+	One less known variation of the Huffman codes are the Hu-Tucker codes \cite{hu1971optimal}, which aim to provide codes that preserve the same lexical order as the original symbols, meaning that for any two symbols $s_i,s_j$, it holds that $s_i \prec s_j \iff C_i \prec C_j$. This comes at the expense of at most one extra bit per code over Huffman on average\footnote{Being $L_h$ and $L_{ht}$ the average codeword 
+	length of Huffman coding and Hu-Tucker codes for $S$ respectively, it holds: $H_0(S) \leq L_h \leq H_0(S)+1$ and $H_0(S) \leq L_{ht} \leq H_0+2(S)$
+	(see \cite{Cover:2006:EIT:1146355} (pages 122-123), or \cite{HORIBE1977148, GilbertandMore1959}).}.
 	
 	\section{Bitvectors}
+	\label{sec:bit}
 	A great amount of works in compact data structures involves the use of bitvectors, both compressed and uncompressed. A bitvector $B[1..n]$ is a sequence of $n$ bits, for which the following operations are expected to be supported:
 
     \begin{itemize}
-        \item $\rank_1(B,i)$ returns the number of set bits in $B[1..i]$. Alternatively, $\rank_0(B,i)~\leftarrow~i - rank_1(B,i)$. Consequently, it also holds that the bit from the position $i$ can be retrieved as $B[i] = rank_1(B,i-1) - rank_1(B,i)$.
-        \item $\select_1(B,i)$ returns the position in $1..n$ where the $i$th 1 occurs. Therefore, $\rank_1(B,\select_1(B,i)) = i$. An equivalent version for 0 bits may be defined as $\select_1(B,i)$, although, unlike with $\rank_0$, there does not exist a direct way of obtaining it from the previously defined operations.
+        \item $\rank_1(B,i)$ is the number of set bits in $B[1..i]$. Alternatively, $\rank_0(B,i)~\leftarrow~i - \rank_1(B,i)$. Consequently, it also holds that the bit from the position $i$ can be retrieved as $B[i] = \rank_1(B,i-1) - \rank_1(B,i)$.
+        \item $\select_1(B,i)$ is the position in $[1..n]$ where the $i$th 1 occurs. Therefore, $\rank_1(B,\select_1(B,i)) = i$. An equivalent version for 0 bits may be defined as $\select_1(B,i)$, although, unlike with $\rank_0$, there does not exist a direct way of obtaining it from the previously defined operations.
     \end{itemize}
     
     \begin{example}
         Given a bitvector $B = 011001$, it holds that $\rank_1(B,1) = 0$, $\rank_1(B,2) = 1$, $\rank_1(B,3) = 2, \rank_1(B,4) = 2$. Furthermore, $B[3] = \rank_1(B,3) - \rank_1(B,2) = 1$ and $\rank_0(B,3) = 3 - \rank_1(B,3) = 1$.
         
         We can also say that $\select_1(B,2) = 3$ and $\select_1(B,3) = 6$, thus holding that $\rank_1(B,\select_1(B,2)) = \rank_1(B,3) = 2$ and $\rank_1(B,\select_1(B,3)) = \rank_1(B,6) = 3$. Additionally, $\select_0(B,2) = 4$ as $\rank_0(B,\select_0(B,2)) = \rank_0(B,4) = 2$.
+        \qed
     \end{example}
     
     All these operations can be supported in $O(1)$ time with $o(n)$ extra bits \cite{Jac89,Mun96}. 
@@ -205,7 +212,40 @@
 	
 	\section{Wavelet Tree and Wavelet Matrix}
 	\label{sec:wt}
-	\gls{wm} will be less confusing than in my previous paper...
+	When working with a sequence $S[1..n]$ over an alphabet $[1..\sigma]$, we can extend the definitions of $\rank$ and $\select$ from the Section~\ref{sec:bit} to work over an any symbol $a \in [1..\sigma]$ instead of bits, resulting in the following operations:
+	
+	\begin{itemize}
+	    \item $\rank_a(S,i)$ is the number of occurrences of the symbol $a$ in $S[1..i]$.
+	    \item $\select_a(S,i)$ is the position in $[1..n]$ where the $i$th $a$ occurs.
+	\end{itemize}
+	
+    The \gls{wt} represents $S$ with a balanced binary tree, with $\sigma$ leaves, one for each symbol. Every internal node $v$ represents a the range of symbols $[\alpha_v..\omega_v] \subseteq [1..\sigma]$ in the same order as they appear in $S$, where the root node corresponds to all the $n$ symbols from the alphabet $[1..\sigma]$ appearing in $S$. Its left child $v_l$ will only represent the $n_l$ symbols that fall in the range $[1..\dfrac{\sigma}{2})$, preserving the order that they had in $v_0$, while the right child will represent the other $n_r$ symbols from $[\dfrac{\sigma}{2}..\sigma]$, holding that $n_l+n_r=n$. This is built recursively until a leaf $v_a$ is reached, with will correspond to only one symbol $a \in [1..\sigma]$, with $n_a = \rank_a(S,n)$ times. An example \gls{wt} can be found in Figure~\ref{fig:wt}.
+    
+    \begin{figure}[ht]
+		\begin{center}
+			{\includegraphics[width=0.65\textwidth]{figures/wt1.eps}}
+		\end{center}
+		\caption{An example \acrlong{wt} of four levels.}
+		\label{fig:wt}
+	\end{figure}
+    
+    For each node $v$, these symbols from the alphabet $[\alpha_v..\omega_v]$ are represented implicitly using a bitvector $B_v[1..n_v]$, where $B[i] = 0$ when the symbol $a$ represented in the position $i$ should belong to the left child ($a < \dfrac{\alpha_v + \omega_v}{2}$), while $B[i] = 1$ means it should belong to the right child ($a \geq \dfrac{\alpha_v + \omega_v}{2}$). By making use of $\rank$ and $\select$ operations over these bitvectors, we are able to recover the value of any $S[i]$, and also answer $\rank_a$ and $\select_a$ for any $a \in [1..\sigma]$ in $O(\log\sigma)$ without the need of storing the original sequence. As there are $n$ bits per level and $\log\sigma$ internal levels (the nodes from the leaf level do not have bitmaps), we could represent every bitmap in $n\log\sigma$ bits, which is equivalent to the space it would take to represent $S$ as an array of fixed length integers\footnote{When $\sigma$ is not a power of two, $\log\sigma$ would need to be rounded up for fixed length integers, while for the \gls{wt} there will be some leaves at level $h-1$, being $h$ the height of the tree, and its total size will depend on the frequency of those symbols ($\lfloor n\log\sigma\rfloor < \sum_i n_i < \rceil n\log\sigma\rceil$.}). However, we also need some auxiliary structures for $\rank_1$ and $\select_1$, which will require $o(n\log\sigma)$ bits and also store a pointer for every one of the $2\sigma-1$ nodes. Therefore, the total size of this representation amounts to $n\log\sigma + o(n\log\sigma) + O(\sigma\log n)$.
+    
+    In order to access the value of $S[i]$, we must start by looking into $B_v[i]$ from the root node. If $B_v[i]=0$, we traverse to the position $B_{v_0}[\rank_0(B_v,i)]$ of the bitvector of the left child. Conversely, when $B_v[i]=1$, we traverse to the bitvector of the right child at $B_{v_1}[\rank_1(B_v,i)]$. In both cases, we recurse until a leaf is reached, which will unambiguously correspond to a symbol $a$, thus we determine that $B_v[i]=a$.
+    
+    \begin{example} \label{exp:wtaccess}
+    In the \gls{wt} from Figure~\ref{fig:wt}, if we wanted to retrieve the value of $S[2]$, we would start by looking into the bit $B_v[2]=0$, meaning that the we have to traverse to the node $v_0$ and look into the bit $B_{v_0}[\rank_0(B_v,2)] = B_{v_0}[2] = 1$, leading us to the node $v_{01}$ at $B_{v_{01}}[\rank_1(B_{v_0},2)] = B_{v_{01}}[2] = 0$. The left node is a leaf node belonging to the symbol $2$, so $S[2]=2$ (namely, the first occurrence of $2$ in $S$, as $\rank_0(B_{v_{01}}, 2) = 1$).
+    \qed
+    \end{example}
+    
+    We can also solve $\rank_a$ by traversing the tree from top to bottom with the bitvector $\rank$ operation: knowing that the binary representation (and thus also the path in the \gls{wt}) of a symbol will allow us to use $\rank_1$ or $\rank_0$ in each level $i$ according to the $i$th bit of our code. In the Example~\ref{exp:wtaccess}, knowing that the binary representation of $2$ is $010$, we can calculate $\rank_2(S,2)$ (or any other position) following the same order of operations: a $\rank_0$, a $\rank_1$ and one final $\rank_0$ to determine the position of the leaf node, which will give away $\rank_2$. It is also possible to calculate $\select_a(S,i)$ with a bottom to top traversal of the tree, by starting at the $i$th position from the leaf belonging to $a$, and applying $\select_0$ and $\select_1$ on the bitvectors of the parent nodes, following the reversed binary code of $a$. Eventually, a position $S[i]=a$ will be reached such that it will contain the $i$th occurrence of $a$ in $S$.
+    
+    A more complex operation that we have found very useful in our work in is the $\cnt_{a,b}(S,i,j)$, first described in \cite{gagie2012new}, which counts the number of occurrences of symbols in $[a..b]$ within $S[i..j]$. While it is equivalent to $\displaystyle\sum^b_{k=a}\rank_k(S,j) - \rank_k(S,i)$, it can be solved more efficiently by doing two simultaneous top to bottom traversals, as described for $\rank_a$. Starting at the root node $v$ we calculate $\rank_0(B_v,i)$ and $\rank_0(B_v,j)$ to find out the limits in the left node for the codes within $[a..b]$ that start with 0, and also $\rank_1(B_v,i)$ and $\rank_1(B_v,j)$ for those codes starting by 1. If all of the codes in $[a..b]$ start with either a zero or a one, we will only compute the corresponding $\rank$. After that, we recurse for each node, where on the left $i~\leftarrow~\rank_0(B_v,i)$, $j~\leftarrow~\rank_0(B_v,j)$ and we only consider the range of symbols $[a..b']$ that can be represented by that node ($b' \leq \omega_{v_0})$). The same is true for the recursion on the right, where $i~\leftarrow~\rank_1(B_v,i)$, $j~\leftarrow~\rank_1(B_v,j)$ and $\alpha_{v_1} \leq a'$. Therefore, 
+    \begin{align*}
+    \cnt_{a,b}(v,i,j) = &\cnt_{a,b'}(v_0,\rank_0(B_v,i),\rank_0(B_v,j))\\
+    &+~\cnt_{a',b}(v_1,\rank_1(B_v,i),\rank_1(B_v,j))
+    \end{align*}
+    , recursively. The recursion on each node $v$ stops when $a \leq \alpha_v$ and $\omega_v \leq b$, in which case the count for that node is reported as $j-i+1$. Finally, all the counts are summed and the total amount of occurrences is obtained. While it may look as if the worst case would imply traversing every of the $\sigma$ internal nodes, it is avoided by stopping the recursion when $a \leq \alpha_v$ and $\omega_v \leq b$, thus requiring us to visit only $O(\log\sigma)$ nodes\footnote{In fact, the best case is $cnt_{1,\sigma}(S,i,j) = j-i+1$, which is solved without traversing at all!}. In the \gls{wt} from Figure~\ref{fig:wt}, we have marked the considered ranges for solving $\cnt_{3,3}(S,5,10)$.
 	
 	\subsection{Hu-Tucker Wavelet Tree}
 	Another way of compressing a \gls{wt} is to use a prefix-free variable-length encoding for the symbols. 
@@ -215,7 +255,7 @@ anymore. The size reduces to $n(H_0(S)+1)+ o(n(H_0(S)+1)) +  O(\sigma \log n)$,\
 includes both the tree pointers and the size of the Huffman model.}   and average time becomes
 $O(H_0(S))$ for $rank$, $access$, and $select$  (worst-case time is still $O(\log\sigma)$ 
 \cite{Barbay:2013:CPA:2562345.2562626}). By using compressed
-bitvectors \cite{{CNO15}} space can be reduced even further to $nH_0(S) +o(n(H_0(S)+1)) +  O(\sigma \log n)$.
+bitvectors \cite{CNO15} space can be reduced even further to $nH_0(S) +o(n(H_0(S)+1)) +  O(\sigma \log n)$.
 Unfortunately, the Huffman codes given to
 adjacent symbols are no longer contiguous, and it is not possible to give a $O(\log\sigma)$ bound for
 $count(i,j,\alpha,\beta)$ anymore, even if the code is canonical. Hu-Tucker codes~\cite{hu1971optimal}

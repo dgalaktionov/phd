@@ -566,7 +566,7 @@
 	% 	nodes} discussed in Section~\ref{sec:ctr:alg:sq}. We can use both the simpler sequential or a binary-partition approach.
 	% For the binary-partition approach we proceed similarly as in Figure~\ref{fig:topk_nieves}. In this case,
 	% we start with the root node in the priority queue, and recursively split the
-	% extracted node $v$ (whose bitvector is $B_v$) with $n_0 \leftarrow rank_0(B_v,|B_v|)$, 
+	% extracted node $v$ (whose bitvector is $B_v$) with $n_0 \leftarrow \rank_0(B_v,|B_v|)$, 
 	% obtaining two new nodes $v_0$ and $v_1$: one for the zeros and another for the ones. The priority of $v_0$ and $v_1$ 
 	% depends on the size of the bitmaps in the nodes, for $v_0$ it is $n_0$, whereas for 
 	% $v_1$ it is $|B_v| - n_0$. The process stops when the first $k$ leaves are extracted from the queue.
