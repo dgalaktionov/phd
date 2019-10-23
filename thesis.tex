@@ -208,7 +208,7 @@
     \end{example}
     
     All these operations can be supported in $O(1)$ time with $o(n)$ extra bits \cite{Jac89,Mun96}. 
-    Additionally, there exist several techniques for compressing these bitvectors based on their arrangement although several techniques exist for compressing bitvectors depending on their statistical properties. In this work we will use a representation that excels in efficiently solving $\select_1$ operations for sparse bitvectors (with a low number of set bits in proportion to the bitvector size) introduced in \cite{okanohara2007practical}, and also another representation that works particularly well with non uniformly distributed bitvectors, with regions of bits that can be either sparse or dense \cite{Raman:2002:SID:545381.545411}.
+    Additionally, there exist several techniques for compressing these bitvectors based on their arrangement although several techniques exist for compressing bitvectors depending on their statistical properties. In this work we will use a representation that excels in efficiently solving $\select_1$ operations for sparse bitvectors (with a low number of set bits in proportion to the bitvector size) introduced in \cite{okanohara2007practical}, and also another representation that works particularly well with non uniformly distributed bitvectors, thus exploiting their entropy to require only $nH_0(B) + o(n)$ bits\footnote{Being $n_1$ the number of set bits in $B$ and $n_0 = n - n_1$, then $H_0(B) = \dfrac{n_1\log\dfrac{n}{n_1} + n_0\log\dfrac{n}{n_0}}{n} \leq 1$.} \cite{Raman:2002:SID:545381.545411}.
 	
 	\section{Wavelet Tree and Wavelet Matrix}
 	\label{sec:wt}
@@ -219,7 +219,7 @@
 	    \item $\select_a(S,i)$ is the position in $[1..n]$ where the $i$th $a$ occurs.
 	\end{itemize}
 	
-    The \gls{wt} represents $S$ with a balanced binary tree, with $\sigma$ leaves, one for each symbol. Every internal node $v$ represents a the range of symbols $[\alpha_v..\omega_v] \subseteq [1..\sigma]$ in the same order as they appear in $S$, where the root node corresponds to all the $n$ symbols from the alphabet $[1..\sigma]$ appearing in $S$. Its left child $v_l$ will only represent the $n_l$ symbols that fall in the range $[1..\dfrac{\sigma}{2})$, preserving the order that they had in $v_0$, while the right child will represent the other $n_r$ symbols from $[\dfrac{\sigma}{2}..\sigma]$, holding that $n_l+n_r=n$. This is built recursively until a leaf $v_a$ is reached, with will correspond to only one symbol $a \in [1..\sigma]$, with $n_a = \rank_a(S,n)$ times. An example \gls{wt} can be found in Figure~\ref{fig:wt}.
+    The \gls{wt} \cite{WT03} represents $S$ with a balanced binary tree, with $\sigma$ leaves, one for each symbol. Every internal node $v$ represents a the range of symbols $[\alpha_v..\omega_v] \subseteq [1..\sigma]$ in the same order as they appear in $S$, where the root node corresponds to all the $n$ symbols from the alphabet $[1..\sigma]$ appearing in $S$. Its left child $v_l$ will only represent the $n_l$ symbols that fall in the range $[1..\dfrac{\sigma}{2})$, preserving the order that they had in $v_0$, while the right child will represent the other $n_r$ symbols from $[\dfrac{\sigma}{2}..\sigma]$, holding that $n_l+n_r=n$. This is built recursively until a leaf $v_a$ is reached, with will correspond to only one symbol $a \in [1..\sigma]$, with $n_a = \rank_a(S,n)$ times. An example \gls{wt} can be found in Figure~\ref{fig:wt}.
     
     \begin{figure}[ht]
 		\begin{center}
@@ -246,37 +246,78 @@
     &+~\cnt_{a',b}(v_1,\rank_1(B_v,i),\rank_1(B_v,j))
     \end{align*}
     , recursively. The recursion on each node $v$ stops when $a \leq \alpha_v$ and $\omega_v \leq b$, in which case the count for that node is reported as $j-i+1$. Finally, all the counts are summed and the total amount of occurrences is obtained. While it may look as if the worst case would imply traversing every of the $\sigma$ internal nodes, it is avoided by stopping the recursion when $a \leq \alpha_v$ and $\omega_v \leq b$, thus requiring us to visit only $O(\log\sigma)$ nodes\footnote{In fact, the best case is $cnt_{1,\sigma}(S,i,j) = j-i+1$, which is solved without traversing at all!}. In the \gls{wt} from Figure~\ref{fig:wt}, we have marked the considered ranges for solving $\cnt_{3,3}(S,5,10)$.
+    
+    \subsection{Hu-Tucker Wavelet Tree}
+    A straightforward way of reducing the size of a \gls{wt} is to use compressed bitvectors, as discussed in \cite{CNspire08.1}, allowing to represent a \gls{wt} in $nH_0(S) + o(n\log\sigma) + O(\sigma\log n)$ bits \cite{WT03}. There is, however, a different approach to achieve similar space requirements is to use a prefix-free variable-length encoding for the symbols.
+    For example, Huffman code \cite{huffman1952method} can be used to build a
+    Huffman-Shaped \gls{wt} \cite{ferragina2009compressed}, where the tree is not balanced
+    anymore, as level of each leaf $v_a$ will be the number of bits for the Huffman code of $a$, which will depend on the frequency of $a$ in $S$. The size reduces to $n(H_0(S)+1)+ o(n(H_0(S)+1)) +  O(\sigma \log n)$\footnote{$O(\sigma \log n)$ term 
+    includes both the tree pointers and the size of the Huffman model.}, while average time becomes
+    $O(H_0(S))$ for $\rank_a$, and $\select_a$  (the worst-case time is still $O(\log\sigma)$ 
+    \cite{Barbay:2013:CPA:2562345.2562626}). By using compressed
+    bitvectors \cite{CNspire08.1} space can be even further reduced to $nH_0(S) + o(n(H_0(S)+1)) +  O(\sigma \log n)$.
+    Unfortunately, the Huffman codes (including \textit{canonical Huffman}) assigned to
+    lexicographically adjacent symbols do not maintain that lexicographic order, and it is not possible to have a $O(\log\sigma)$ bound for $\cnt_{a,b}(S,i,j)$ anymore.
 	
-	\subsection{Hu-Tucker Wavelet Tree}
-	Another way of compressing a \gls{wt} is to use a prefix-free variable-length encoding for the symbols. 
-For example,  Huffman~\cite{huffman1952method} code can be used to build a
-Huffman-Shaped \gls{wt}~\cite{ferragina2009compressed}, where the tree is not balanced
-anymore. The size reduces to $n(H_0(S)+1)+ o(n(H_0(S)+1)) +  O(\sigma \log n)$,\footnote{$O(\sigma \log n)$ term 
-includes both the tree pointers and the size of the Huffman model.}   and average time becomes
-$O(H_0(S))$ for $rank$, $access$, and $select$  (worst-case time is still $O(\log\sigma)$ 
-\cite{Barbay:2013:CPA:2562345.2562626}). By using compressed
-bitvectors \cite{CNO15} space can be reduced even further to $nH_0(S) +o(n(H_0(S)+1)) +  O(\sigma \log n)$.
-Unfortunately, the Huffman codes given to
-adjacent symbols are no longer contiguous, and it is not possible to give a $O(\log\sigma)$ bound for
-$count(i,j,\alpha,\beta)$ anymore, even if the code is canonical. Hu-Tucker codes~\cite{hu1971optimal}
-can be used instead.\footnote{Hu-Tucker ~\cite{hu1971optimal}
-	 is an optimal prefix code that preserves the order of the input vocabulary.
-	This means that the lexicographic order of the output variable-length binary codes is the same as the order of the input symbols.}
-Compression degrades slightly with respect to using Huffman coding,\footnote{Being $L_h$ and $L_{ht}$ the average codeword 
-	length of Huffman coding and Hu-Tucker codes respectively, it holds: $H_0 \leq L_h \leq H_0+1$ and $H_0 \leq L_{ht} \leq H_0+2$
-	(see \cite{Cover:2006:EIT:1146355} (pages 122-123), or \cite{HORIBE1977148, GilbertandMore1959}).} but the
-codes for adjacent symbols are lexicographically contiguous. This permits to solve $count$ efficiently. 
-%The size of a Hu-Tucker-shaped $\wt$ ($\wtht$) can be bounded to $n(H_0(S)+2) + o(n(H_0(S)+2)) +  O(\sigma \log n)$ and can be reduced
-%to  $n(H_0(S)+1) + o(n(H_0(S)+2)) +  O(\sigma \log n)$ using compressed bitvectors as well.
-%\ART{Por que en negritas?}
-The size of a \gls{htwt}  can be bounded to $n(H_0(S)+2) + o(n(H_0(S)+1)) +  O(\sigma \log n)$ and can be reduced
-to  $nH_0(S) + o(n(H_0(S)+1)) +  O(\sigma \log n)$ by using compressed bitvectors as well.
+	In order to support $\cnt_{a,b}(S,i,j)$ more efficiently, Hu-Tucker codes \cite{hu1971optimal} can be used instead. While the compression achieved by a \gls{htwt} \cite{barbay2009compressed} degreades slightly with respect to using Huffman coding, yielding a bound of $n(H_0(S)+2) + o(n(H_0(S)+1)) +  O(\sigma \log n)$\footnote{This can be reduced to  $nH_0(S) + o(n(H_0(S)+1)) +  O(\sigma \log n)$ by using compressed bitvectors as well.}, the codes for adjacent symbols are lexicographically contiguous. Therefore, we can guarantee a bound of $O(\log\sigma)$ for $\cnt_{a,b}(S,i,j)$ again. An example of a \gls{htwt} in practice can be found in the Figure~\ref{fig:wtwm}.
+	
+	\subsection{Wavelet Matrix}
+	For large alphabets, the size of the \gls{wt} is affected by the term $ O(\sigma \log n)$. A {pointerless}
+    \gls{wt} \cite{CNspire08.1} permits to remove\footnote{In a pointerless Huffman-shaped \gls{wt}  a
+    term $O(\sigma \log\log n)$ still remains due to the need of storing the canonical Huffman model.} 
+    that term by concatenating all the bitmaps level-wise 
+    and computing the values of the pointers during the \gls{wt} traversals. 
+    The operations on a pointerless \gls{wt} have the same time complexity but become slower in practice. 
+    
+    By reorganizing the nodes in each level of a pointerless \gls{wt}, the \gls{wm} \cite{CNO15} obtains the  same space requirements, yet its performance is very close 
+    to that of the regular \gls{wt} with pointers. Figure~\ref{fig:wm} contains an example of a \gls{wm}, representing the same sequence as in Figure~\ref{fig:wt}.
+    
+    \begin{figure}[ht]
+	\begin{center}
+		{\includegraphics[width=0.65\textwidth]{figures/wm1.eps}}
+	\end{center}
+	\caption{An example \acrlong{wm} of three levels. A conceptual fourth level was omitted since it does not contain a bitvector.}
+	\label{fig:wm}
+	\end{figure}
+    
+    As in the \gls{wt}, the $i$-th level stores the $i$-th bits of the encoded symbols. 
+    A single bitvector $B_i$ is kept for each level. In the first level, $B_1$ stores the
+    $1$-st bit of the encoding of the symbols in the order of the original sequence $S$.
+    From there on, at level $i$, symbols are reordered according to the $(i-1)$-th bit of their encoding; 
+    that is, according to the bit they had in the previous level.
+    Those symbols whose encoding had a zero at position $i-1$ must be arranged before those that
+    had a one. After that, the relative order from the previous level is maintained. That is, if 
+    a symbol $a$ occurred before other symbol $b$, and the $(i-1)$-th bit of their encoding
+    coincides, then $a$ will precede $b$ at level $i$. %Note that, following this rule,
+    %the symbols in the last level shall be ordered by their reversed bit encoding.
+    
+    If we simply keep track of the number of zeros at each level $z_l\leftarrow \rank_0(B_l,n)$, we can easily see that the symbol with the $k$-th zero
+    at level $i-1$ is mapped at position $k$ within $B_i$, whereas the symbol with the $j$-th one at level $i-1$ is 
+    mapped at position $z_l +j$ within $B_i$. This avoids the need for pointers, enabling to retain
+    the same time complexity of the \gls{wt} operations, including $\cnt_{a,b}(S,i,j)$. For 
+    implementation details see \cite{CNO15,ordonez2015statistical}. 
+    
+    \begin{example}
+    To find out the symbol at $S[8]$, we start by observing that $B_1[8]=0$ and $\rank_0(B_1,8)=5$. We move to the next level where we check position $5$; we see that $B_2[5]=1$ and $\rank_1(B_2,5)=3$. We move to next level and check position $3+z_2 = 3+5 = 8$,
+    where we finally see $B_3[8]=1$. Therefore, we have decoded the bits $\mathbf{011}$ that correspond to the symbol $S[8] = 3$.
+    \qed
+    \end{example}
+    
+    To reduce the space needs of \gls{wm} we could use compressed bitvectors as for \gls{wt}. Yet, 
+    compressing the \gls{wm} by giving it either a Huffman or Hu-Tucker shape is not possible as the reordering of the \gls{wm} would lead to the existence of %holes in the structure 
+    gaps in the bitvectors 
+    that would ruin the process of 
+    tracking symbols during traversals. To overcome this issue, an optimal Huffman-based coding was 
+    specifically developed for wavelet matrices \cite{CNO15, Farina2016}. This allows to obtain space
+    similar to the one a pointerless Huffman-shaped \gls{wt} but with faster $\rank_a$ and $\select_a$ operations.
+    Unfortunately, since the encodings of consecutive symbols do not keep the same order, $\cnt_{a,b}(S,i,j)$ is no longer supported in $O(\log\sigma)$ time.
+    %and computing $\rank_a(S,j)-rank_c(S,i)+1$ is required for each $c$ in $[\alpha,\beta]$.
 	
 	\section{Compressed Suffix Array}
 	\label{sec:csa}
 	Explaining ST and SA along the way.
 
-%\include{1-ctr}
+\include{1-ctr}
 	
 \chapter{Our representation for trips over public transportation networks}
 \label{sec:newctr}
