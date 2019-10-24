@@ -315,7 +315,54 @@
 	
 	\section{Compressed Suffix Array}
 	\label{sec:csa}
-	Explaining ST and SA along the way.
+	Given a sequence $S[1..n]$ built over an alphabet $\Sigma$ of length
+    $\sigma$, the {\em suffix array} $A[1..n]$ is built over $S$ \cite{MM93}
+    as a permutation of the positions $i \in [1..n]$ of all the suffixes $S[i..n]$, so that
+    $S[A[i],n] \prec S[A[i+1],n]$ for all $1 \le i < n$
+    %, being $\prec$ the lexicographic ordering. 
+    Because $A$ contains all the suffixes of $S$ in lexicographic order,
+    we can use this structure to search for any pattern $P[1..m] \in S$ in time
+    $O(m \log n)$ by simply performing binary searches for the range $A[l..r]$ that
+    contains pointers to all the positions in $S$ where $P$ occurs.
+    %For the construction of the $A$ a linear time construction
+    %algorithm such as the SA-IS~\cite{nong2011two} could be used.
+    %which is based on induction sorting.
+    We can find an example of an suffix array $A$ in the Figure~\ref{fig:csa}. Any pattern $P[1..m] \in S$ (such as $ana$) can be delimited by a range $A[l..r]$ (for $ana$ it is $A[3..4]$), where the limits $l$ and $r$ can be found with binary searches due to the suffixes being sorted.
+    
+    \begin{figure}[ht]
+		\begin{center}
+			{\includegraphics[width=0.5\textwidth]{figures/csa.eps}}
+		\end{center}
+		\caption{All the structures involved in constructing a \acrlong{csa} over the sequence $S = banana\$$. Note that $S$ and $A$ do not need to be stored.}
+		\label{fig:csa}
+	\end{figure}
+    
+    A straightforward enhancement to avoid storing the original string $S$ is to set up a vocabulary array $V[1..\sigma']$, with all the different symbols from $\Sigma$ appearing in $S$\footnote{$\sigma' \leq \sigma)$, since some of the symbols from $\Sigma$ may never appear in $S$.}, and a bitmap $D[1..n]$ aligned to $A$ so that $D[1]=1$ and $D[i]=1~\iff~S[A[i-1]] \neq S[A[i]]$ for all the other $i \in [2..n]$. This means that $D$ marks with a $1$ the beginning of a range of suffixes pointed from $A$ such that the first symbol of those suffixes coincides. With $D$, keeping $S$ is not longer needed since $S[A[i]] = V[\rank_1(D,i)]$.
+    
+    We also replace $A$ as described in Sadakane's \gls{csa} \cite{Sad03}, using
+    another permutation $\Psi[1..n]$ defined in \cite{GV00}, where $\Psi[i] = A^{-1}[A[i]+1]$. That is, for every $A[i]=k$ and $A[j]=k+1$, $\Psi[i]=j$.
+    %For each position $j$ in $S$ pointed from $A[i]=j$, $\Psi[i]$ gives the position $z$ such that $A[z]$ points to $j+1$. 
+    The special case when $A[i]=n$\footnote{$i=1$ if we use the unique terminator $\$$.} is handled as $\Psi[i]=A^{-1}[1]$, making a cycle.
+    Therefore, the \gls{csa} is formed by $\Psi$, $D$, and $V$, which are sufficient to simulate binary searches of the interval $A[l,r]$ for the occurrences of $P$ without the need of accessing $A$ nor $S$. 
+    The symbol $S[A[i]]$ pointed by $A[i]$ can be obtained as
+    $V[\rank_1(D,i)]$. We can also easily obtain the following symbol from the source sequence  $S[A[i]+1]$ as
+    $V[\rank_1(D, \Psi[i])]$, $S[A[i]+2]$ can be obtained as $V[\rank_1(D, \Psi[\Psi[i]])]$, and so on.
+    %Therefore, the \gls{csa} replaces $S$, and it does not need $A$ anymore to perform searches.
+    
+    Although an uncompressed $\Psi$ would have the same space requirements
+    as $A$, it is highly compressible, since it is formed by $\sigma$ strictly increasing subsequences. By using $\delta$-codes of the gaps (differences of each value with respect to the previous one) we are able to compress $\Psi$ to around the zero-order entropy of $S$~\cite{Sad03}, with $nH_0(S)+O(n\log\log\sigma)$ bits.
+    In \cite{NM07} it has been further proved that $\Psi$ can be split into
+    at most $nH_k+\sigma^k$ (for any $k$) {\em runs} of consecutive values so
+    that the differences within those runs are always $1$. This allows for a combination of $\delta$-coding of gaps with run-length
+    encoding (of $1$-$runs$) to achieve a higher-order compression of $\Psi$ without further intervention.
+    In addition, to maintain fast random access to $\Psi$, absolute
+    samples at regular intervals (every $t_{\Psi}$ entries) are kept. Parameter
+    $t_{\Psi}$ implies a space/time trade-off. Larger values lead to better compression of $\Psi$ but slow down access time to non-sampled $\Psi[i]$ values.
+    
+    In \cite{FBNCPR12}, the authors have adapted Sadakane's \gls{csa} to deal with large (integer-based) alphabets
+    and created the {\em integer-based CSA} ($iCSA$). They also showed that, in their scenario (natural language text indexing), the best
+    compression of $\Psi$ was obtained by combining differential encoding of runs with Huffman and
+    run-length encoding.
 
 \include{1-ctr}
 	
