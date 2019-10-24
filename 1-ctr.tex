@@ -111,7 +111,7 @@
 	a set of trips, where for each trip $\mathcal{T}_i \in \mathcal{T}$, we represent a list with the 
 	$n_i$
 	temporary-ordered nodes it traverses and the corresponding timestamps: 
-	$\mathcal{T}= \{ \langle (s^i_1, s^i_2, \dots,  s^i_{n_i}),(t^i_1, t^i_2, \dots,  t^i_{n_i}) \rangle\}$, $i\in[1,|\mathcal{T}|]$, 
+	$\mathcal{T}= \{ \langle (s^i_1, s^i_2, \dots,  s^i_{n_i}),(t^i_1, t^i_2, \dots,  t^i_{n_i}) \rangle\}$, $i\in[1..|\mathcal{T}|]$, 
 	$s^i_j \in S$, and $t^i_{x} \leq t^i_y, \forall x < y$. 
 	Note that every node in the network can be identified with an integer ID $S_i \in S$ and that, if we are interested in
 	analyzing the usage patterns of the network, we will also be interested in discretizing time into 
@@ -206,8 +206,8 @@
 	\mathbf{\$_i}),(t^i_1, t^i_2, \dots,  t^i_{n_i}, \mathbf{t^i_1}) \rangle$. 
 
 	The next step involves concatenating the codes $s^i_j$ and $\$_i$ of the spatial components of our trips and to add an 
-	extra trailing terminator $\$_0$ to create a sequence $Text[1,n]$\footnote{By definition, it must hold that $n = |\mathcal{T}| + 1 + \displaystyle\sum^{|\mathcal{T}|}_{i=1} n_i$.}. $\$_0$ must be  lexicographically 
-	smaller than any other entry (then it also holds $\$_0 \prec \$_i$, $\forall i \in [1,|\mathcal{T}|]$). In the top part of
+	extra trailing terminator $\$_0$ to create a sequence $Text[1..n]$\footnote{By definition, it must hold that $n = |\mathcal{T}| + 1 + \displaystyle\sum^{|\mathcal{T}|}_{i=1} n_i$.}. $\$_0$ must be  lexicographically 
+	smaller than any other entry (then it also holds $\$_0 \prec \$_i$, $\forall i \in [1..|\mathcal{T}|]$). In the top part of
 	Figure~\ref{fig:tcsa}, we can see array $Text$ for the running example, as well as the corresponding time-IDs that
 	are regarded in sequence $Icode$  ($Time$ shows the original times).
 	
@@ -247,11 +247,11 @@
 	us to cyclically traverse the nodes of the trip instead of accessing the following entries of $Text$.
 
 	Another interesting property arises from the use of a cyclical $\Psi$ on trips, and from using trip terminators.
-	Since the first entries in $\Psi[2,|\mathcal{T}|+1]$ correspond the $\$$ symbols that 
+	Since the first entries in $\Psi[2..|\mathcal{T}|+1]$ correspond the $\$$ symbols that 
 	mark the end of each trip in $Text$ (remember that $\Psi[1]$ corresponds the $\$_0$), we can see that the $j^{th}$ node of the $i^{th}$ trip can
 	be obtained as $V[\rank_1(D, \Psi^j[i+1])]$, (where $\Psi^3[x]= \Psi[\Psi[\Psi[x]]]$). This property
 	makes it very simple to find starting nodes for any trip.
-	For example, if we focus on the shaded area $\Psi[2,7]$, we can find the ending terminator $\$_4$ of the
+	For example, if we focus on the shaded area $\Psi[2..7]$, we can find the ending terminator $\$_4$ of the
 	fourth trip at the $5^{th}$ position (because the first $\$_0$
 	corresponds to the final $\$$ at $S[28]$). Therefore, its starting node can be found 
 	as $V[\rank_1(D, \Psi[4+1])]$. Since $\Psi[5] = 12$ and $\rank_1(D,12)= 3$, 
@@ -284,12 +284,12 @@
 		In our \gls{csa}, we have used the {\em SDArray} from \cite{okanohara2007practical} to represent $D$. It provides a very 
 		good compression for sparse bitvectors, as well as constant-time $\select_1$ operation.
 		
-		\item In \cite{FBNCPR12}, $\bsearch$ operation was implemented with a simple binary search over $\Psi$ rather than
+		\item In \cite{FBNCPR12}, $\bsearch(\Psi,P)$ operation was implemented with a simple binary search over $\Psi$ rather than
 		using the backward-search optimization proposed in the original \gls{csa} \cite{Sad03}. In our experiments, we used
 		backward search since it led to a much lower performance degradation at query time when a sparse sampling of $\Psi$ 
 		was used.
 		
-		%We implemented a backward search for the $\bsearch$ operation in the \gls{csa}. When the pattern $P[1,p]$ is searched, 
+		%We implemented a backward search for the $\bsearch$ operation in the \gls{csa}. When the pattern $P[1..p]$ is searched, 
 		%we start by locating the ranges for $P[p]$ and $P[p-1]$ in $D$. After that, we binary search over $\Psi$ for the symbols
 		%in $P[p-1]$ that point to $P[p]$, getting a narrower range. We repeat it recursively until reaching $P[1]$. The main
 		%advantage of the backward search in this situation is that we have more control on the accesses on the compressed 
@@ -316,7 +316,7 @@
 	\begin{itemize}
 	  \item A Wavelet Tree ~\cite{WT03} using variable-length Hu-Tucker codes~\cite{hu1971optimal} (\gls{htwt}).
 	  Recall this is the \gls{wt} variant that permits to compress the original symbols with variable-length codes and 
-	  still supports $\cnt(i,j,\alpha,\beta)$ operation in $O(log\sigma)$ time. Since Hu-Tucker coding assigns shorter codes
+	  still supports $\cnt_{a,b}(S,i,j)$ operation in $O(log\sigma)$ time. Since Hu-Tucker coding assigns shorter codes
 	  to the most frequent symbols, the compression of our \gls{htwt} is highly dependent of the distribution
 	  of frequencies for the $Icode^{\Psi}$. Yet, if our 
 	  trips represent movements of single users in a transportation network, we could expect to observe two or more periods 
@@ -345,11 +345,11 @@
 	The binary code-assignment to the source symbols $t_i \in I$ and that obtained after applying Hu-Tucker encoding
 	algorithm~\cite{hu1971optimal} are also included in the figure.
 	
-	Since the most useful operation of these two structures for our application, by far, is the $\cnt(i,j,\alpha,\beta)$, we will proceed to explain in detail how the efficiency of that operation has influenced our choice of structures. Just as proven in Section~\ref{sec:wt} with \gls{wt}, both \gls{htwt} and \gls{wm} implement the $\cnt$ operation in $O(\log\sigma)$ time on average. This is easy to prove for \gls{htwt} as each node will contain entries from a lexicographically contiguous subrange from the alphabet $\Sigma$, making the same properties seen for \gls{wt} hold. The main difference is that Hu-Tucker codes will reshape the tree, making the leaves containing the least frequent symbols deeper than the leaves with the more frequent symbols, which may theoretically produce a tree of height $\sigma-1$\footnote{Imagine a vocabulary $\Sigma=\{s_1..s_\sigma\}$, where the probability of appearance of the symbol $s_i$ in the text $S$ turned out to be $2^{-i}$.}, which will obviously affect the worst-case performance, in exchange of a very large compression ratio.
+	Since the most useful operation of these two structures for our application, by far, is the $\cnt_{a,b}(Icode^{\Psi},i,j)$, we will proceed to explain in detail how the efficiency of that operation has influenced our choice of structures. Just as proven in Section~\ref{sec:wt} with \gls{wt}, both \gls{htwt} and \gls{wm} implement the $\cnt_{a,b}(Icode^{\Psi},i,j)$ operation in $O(\log\sigma)$ time on average. This is easy to prove for \gls{htwt} as each node will contain entries from a lexicographically contiguous subrange from the alphabet $\Sigma$, making the same properties seen for \gls{wt} hold. The main difference is that Hu-Tucker codes will reshape the tree, making the leaves containing the least frequent symbols deeper than the leaves with the more frequent symbols, which may theoretically produce a tree of height $\sigma-1$\footnote{Imagine a vocabulary $\Sigma=\{s_1..s_\sigma\}$, where the probability of appearance of the symbol $s_i$ in the text $S$ turned out to be $2^{-i}$.}, which will obviously affect the worst-case performance, in exchange of a very large compression ratio.
 
-	The complexity may initially seem harder to analyze for \gls{wm}, as its ``nodes'' are delimited implicitly: the symbols with a code starting in 0 will find their second bit in an implicit node delimited by the subrange $B_2[1..z]$ (for some $1 \leq z < n$), while the symbols with a code starting in 1 will correspond to $B_2[z+1..n]$. Generalizing this idea, we can assert that symbols with the same \textit{context} of $\alpha$ starting bits in their codes will find their next $\alpha+1$ bit in some subrange $B_{\alpha+1}[i..j]$ with $1 \leq i \leq j \leq n$. Therefore, the same properties from \gls{wt} can be exploited for a $\cnt$ operation in \gls{wm} as well, allowing us to solve it in $O(\log\sigma)$ worst-case time.
+	The complexity may initially seem harder to analyze for \gls{wm}, as its ``nodes'' are delimited implicitly: the symbols with a code starting in 0 will find their second bit in an implicit node delimited by the subrange $B_2[1..z]$ (for some $1 \leq z < n$), while the symbols with a code starting in 1 will correspond to $B_2[z+1..n]$. Generalizing this idea, we can assert that symbols with the same \textit{context} of $\alpha$ starting bits in their codes will find their next $\alpha+1$ bit in some subrange $B_{\alpha+1}[i..j]$ with $1 \leq i \leq j \leq n$. Therefore, the same properties from \gls{wt} can be exploited for a $\cnt_{a,b}(Icode^{\Psi},i,j)$ operation in \gls{wm} as well, allowing us to solve it in $O(\log\sigma)$ worst-case time.
 
-	While it would also be possible to build \gls{wm} using canonical Huffman codes, it is unfortunately impossible guarantee the $O(\log\sigma)$ bound on $\cnt$ on such \gls{wm}, as the symbols lose their original lexicographic proximity, meaning that symbols which would appear on the same node of \gls{wt} due to the common most significant bits in their original codes, would get different Huffman codes based on their frequency of appearance in the text, ending up in separate nodes. On the other hand, to our best knowledge, there is no practical way of building \gls{wm} with Hu-Tucker codes.
+	While it would also be possible to build \gls{wm} using canonical Huffman codes, it is unfortunately impossible guarantee the $O(\log\sigma)$ bound on $\cnt_{a,b}(Icode^{\Psi},i,j)$ on such \gls{wm}, as the symbols lose their original lexicographic proximity, meaning that symbols which would appear on the same node of \gls{wt} due to the common most significant bits in their original codes, would get different Huffman codes based on their frequency of appearance in the text, ending up in separate nodes. On the other hand, to our best knowledge, there is no practical way of building \gls{wm} with Hu-Tucker codes.
 
 	\subsubsection{Implementation details} 
 	\label{sec:ctr:str:time:imp}
@@ -370,7 +370,7 @@
 
 	In advance, when presenting results for \gls{htwt} and \gls{wm} we will consider the four bitvector configurations
 	above. Regarding our implementations of \gls{wm} and \gls{htwt}, note that we reused the same implementation of \gls{wm} from \cite{CNO15}, 
-	and we created our custom \gls{htwt} implementation, paying special focus at solving $\cnt$ efficiently.
+	and we created our custom \gls{htwt} implementation, paying special focus at solving $\cnt_{a,b}(Icode^{\Psi},i,j)$ efficiently.
 
 \section{Algorithms} \label{sec:ctr:alg}
 	In these section, we are going to discuss how our previously described structures can solve the queries proposed in Section~\ref{sec:ctr:desc}. We are also going to include a brief complexity analysis for some of the cases.
@@ -384,18 +384,18 @@
 	\begin{itemize}
 	\item {\em Number of trips starting at node $X$ (\startX).}
 	Because $\Psi$ was cyclically built in such a way that every $\$$ symbol is followed by the first node 
-	of its trip, this query is solved by $[l..r]~\leftarrow~\bsearch(\$X)$ over the \gls{csa}, 
-	which results on a binary search for the pattern $\$X$ over the section $\Psi[2,|\mathcal{T}|]$ corresponding to $\$$ symbols. 
+	of its trip, this query is solved by $[l..r]~\leftarrow~\bsearch(\Psi,\$X)$ over the \gls{csa}, 
+	which results on a binary search for the pattern $\$X$ over the section $\Psi[2..|\mathcal{T}|]$ corresponding to $\$$ symbols. 
 	Then $r-l+1$ gives the number of trips starting at $X$.
 	Applying the backward search algorithm for \gls{csa}, this query involves two $\select_1$ operations over $D$ in order to delimit the region $\Psi[l_x..r_x]$ for $X$\footnote{Assuming that $X$ is at position $p$ in the vocabulary $V$ of \gls{ctr} ($V[p]=X$), its region in $\Psi[l_x..r_x]$ is obtained as $l_x \leftarrow \select_1(D,p)$,  $r_x \leftarrow \select_1(D,p+1)$. If $p$ is the last entry in $V$, we set $r_x \leftarrow n$.} and binary search in the $\$$ region to find the subrange for $\$X$. Since $\select_1$ on $D$ are $O(1)$, the temporal complexity of this query is $O(\log|\mathcal{T}|)$, omitting a constant factor due to the compression of $\Psi$.
 
-	\item {\em Number of trips ending at node $X$ (\endX).} In a similar way to the previous query, this one can be answered with $\bsearch(X\$)$. It will require four $\select_1$ operations (still $O(1)$) and a binary search over the $X$ region, giving a total worst-case complexity of $O(\log (n - |\mathcal{T}|)) \subset O(\log n)$.
+	\item {\em Number of trips ending at node $X$ (\endX).} In a similar way to the previous query, this one can be answered with $\bsearch(\Psi,X\$)$. It will require four $\select_1$ operations (still $O(1)$) and a binary search over the $X$ region, giving a total worst-case complexity of $O(\log (n - |\mathcal{T}|)) \subset O(\log n)$.
 
 	\item {\em Number of trips starting at $X$ and ending at $Y$ (\XtoY).}
-	Combining both ideas from above, and thanks to the cyclical construction of $\Psi$, this query is solved using $\bsearch(Y\$X)$. As it requires both binary searches, the total complexity is $O(\log n)$.
+	Combining both ideas from above, and thanks to the cyclical construction of $\Psi$, this query is solved using $\bsearch(\Psi,Y\$X)$. As it requires both binary searches, the total complexity is $O(\log n)$.
 
 	\item {\em Number of trips using node $X$ (\loadX).}
-	Even though we could solve this query with $\bsearch(X)$, it is more efficient to solve it by directly operating on $D$, finding the region $\Psi[l..r]$ for $X$ and calculating $r-l+1$. All the operations involved are $O(1)$.
+	Even though we could solve this query with $\bsearch(\Psi,X)$, it is more efficient to solve it by directly operating on $D$, finding the region $\Psi[l..r]$ for $X$ and calculating $r-l+1$. All the operations involved are $O(1)$.
 	 %Assuming that $X$ is at position $p$ in the vocabulary $V$ of  \gls{ctr} ($V[p]=X$), its total frequency is obtained by $occs_X \leftarrow select_1(D,p+1) - select_1(D,p)$. %That is, we find the range in $D$ corresponding to the node $X$.
 	%If $p$ is the last entry in $V$, we set $occs_X \leftarrow n+1-select_1(D,p)$.
 
@@ -420,14 +420,14 @@
 	frequency distribution for the nodes that trips traverse.  Working over $D$ and $V$, we 
 	recursively split $D$  into two segments after each iteration. 
 	If possible, we leave the same number of different nodes in each side of the partition. 
-	Initially, we start considering the range in $D[l..r] \leftarrow D[\select_1(D,2),n]=D[|\mathcal{T}|+2,n]$ 
+	Initially, we start considering the range in $D[l..r] \leftarrow D[\select_1(D,2)..n]=D[|\mathcal{T}|+2..n]$ 
 	which corresponds to the nodes that appear in 
 	$V$ from positions $i=2$ to $j=|V|$.\footnote{We skip the $\$$ at the first entry of $V$ and its corresponding 
-	entries in $D$; that is, $D[1,\select_1(D,2)-1]$.}
+	entries in $D$; that is, $D[1..\select_1(D,2)-1]$.}
 	%	$D$ (without its initial range 	%of $|V|$ $\$$ symbols).
 	We use a priority queue that is initialized as $Q \leftarrow (\langle i,j\rangle, \langle l,r\rangle)$.
 	Then, assuming $m=i + \frac{j-i+1}{2}$ and $q=\select_1(D,m)$, we create two partitions 
-	$D[l, q-1]$ and  $D[q, r]$, which correspond respectively to the nodes in $V[i,m-1]$ and $V[m, j]$.
+	$D[l..q-1]$ and  $D[q..r]$, which correspond respectively to the nodes in $V[i..m-1]$ and $V[m..j]$.
 	These  segments created after the partitioning step are
 	pushed into  $Q$. %, storing the initial and the final positions of the segment in $D$,
 	%and also the initial and final corresponding positions in $V$. 
@@ -439,11 +439,11 @@
 	that node is returned as a result of the top-k algorithm (we return $V[i]$). The algorithm stops when the first $k$ nodes are found.
 
 	For example, when searching for the top-1 most used nodes in the example from Figure~\ref{fig:tcsa}, $Q$ is initialized with
-	the segment $[8, 28]$, corresponding to nodes from~1~to~10 (positions from~2~to~11 in $V$). Note
+	the segment $[8..28]$, corresponding to nodes from~1~to~10 (positions from~2~to~11 in $V$). Note
 	that the entries of $D$ from~1~to~7 and $V[1]$ represent the $\$$ symbol. Since it is not an actual node, it
-	 must be skipped. Then $[8, 28]$ is split producing the segments $[8, 20]$ for nodes 1~to~5 ($V[2,6]$)
-	and $[21, 28]$ for nodes~6~to~10 ($V[7,11]$). After three more iterations, we extract
-	$(\langle 3,3\rangle, \langle 14,18\rangle)$, hence obtaining the segment $[14, 18]$ for
+	 must be skipped. Then $[8..28]$ is split producing the segments $[8..20]$ for nodes 1~to~5 ($V[2..6]$)
+	and $[21..28]$ for nodes~6~to~10 ($V[7..11]$). After three more iterations, we extract
+	$(\langle 3,3\rangle, \langle 14,18\rangle)$, hence obtaining the segment $[14..18]$ for
 	the single node 3 (position $4$ in $V$), concluding that the  {\em Top-1 most used node} is 
 	$\mathbf{3}=V[4]$ with a frequency equal to $5=18-14$.
 	
@@ -518,12 +518,12 @@
 
 	\item {\em Top-k most used nodes to start a trip (\topK$_s$).}
 	Both \topK\ approaches above can be adapted for answering \topK$_s$.
-	However, unlike its simpler variant, it requires performing $\bsearch(\$X)$ over $\Psi$ (rather than a $\select_1$ on $D$) at
+	However, unlike its simpler variant, it requires performing $\bsearch(\Psi,\$X)$ over $\Psi$ (rather than a $\select_1$ on $D$) at
 	each iteration, hence increasing the temporal complexity of the operation.
 
 	The implementation of the linear approach is straightforward. The binary-partition approach differs slightly 
 	from the Algorithm~\ref{alg:topk_nieves}: in (l.2) we insert $(\langle 2, |V| \rangle, \langle 2,z+1 \rangle)$ into $Q$, and we 
-	replace (l.11) with $[x,y]~\leftarrow~\bsearch(\$V[m])$; $q \leftarrow x$. This increases the temporal complexity of \topK$_s$ by a factor of $O(\log n)$ over the complexities discussed for the original \topK\ queries.
+	replace (l.11) with $[x..y]~\leftarrow~\bsearch(\Psi,\$V[m])$; $q \leftarrow x$. This increases the temporal complexity of \topK$_s$ by a factor of $O(\log n)$ over the complexities discussed for the original \topK\ queries.
 	\end{itemize}
 
 	\subsection{Temporal queries}
@@ -536,23 +536,23 @@
 	%then we subtract $\rank_t(z+1)$, where $|\mathcal{T}|$ is the number of trips.
 
 	\item {\em Number of trips starting during the time interval $[t_1..t_2]$ (\startT).} Since we keep the
-	starting time of each trip within $Icode^{\Psi}[2,|\mathcal{T}|+1]$, we can efficiently solve this query 
-	by simply computing $\cnt(2,|\mathcal{T}|+1,t_1,t_2)$ in $O(\log|I|)$ time.
+	starting time of each trip within $Icode^{\Psi}[2..|\mathcal{T}|+1]$, we can efficiently solve this query 
+	by simply computing $\cnt_{t_1,t_2}(Icode^{\Psi},2,|\mathcal{T}|+1)$ in $O(\log|I|)$ time.
 
 	\item  {\em Total usage of network nodes during the time interval $[t_1..t_2]$ (\loadT).} This query
 	can be seem as the sum of the number of trips that traversed each network node during $[t_1..t_2]$.
-	We can solve this query by computing $\cnt(|\mathcal{T}|+2,n,t_1,t_2)$, in $O(\log|I|)$ time.
+	We can solve this query by computing $\cnt_{t_1,t_2}(Icode^{\Psi},|\mathcal{T}|+2,n)$, in $O(\log|I|)$ time.
 
 	\item {\em Number of trips performed during the time interval $[t_1..t_2]$ (\tripT).} This is also an interesting query that measures the actual number of trips started or completed within the queried time interval. 
 	To solve this query
 	we could compute {\em \tripT} by subtracting the number of trips that started after $t_2$  and the number of trips that ended 	before $t_1$ from the total number of trips ($|\mathcal{T}| - \startT(t_2+1,|I|) - \endT(1,t_1-1)$). 
 	However, recall that
-	$Icode^{\Psi}[2,|\mathcal{T}|+1]$ has the starting time of each trip, but we do not keep their ending time.
+	$Icode^{\Psi}[2..|\mathcal{T}|+1]$ has the starting time of each trip, but we do not keep their ending time.
 	We could solve $\endT(1,t_1-1)$ by taking the first node ($X$) of each trip starting
 	before $t_1$, then applying $\Psi$ until reaching the ending node ($Y$), and finally getting the ending
 	time of that trip associated to node $Y$. However, this would be rather inefficient.
 	A possible solution to efficiently solve $\endT(1,t_1-1)$, would require to augment our temporal
-	component, in parallel with $Icode^{\Psi}[2,|\mathcal{T}|+1]$, with another \gls{wt}-based representation of the 
+	component, in parallel with $Icode^{\Psi}[2..|\mathcal{T}|+1]$, with another \gls{wt}-based representation of the 
 	ending times for our $|\mathcal{T}|$ trips. This would permit to report the number of trips
 	ending before $t_1$ as $\cnt'(2,|\mathcal{T}|+1,0,t_1-1)$, but would increase the overall size of \gls{ctr}.
 	Yet, note that even without keeping ending-times, we could 
@@ -589,10 +589,10 @@
 		\item {\em Number of trips starting at node $X$ during time interval $[t_1..t_2]$ (\startX$_T$).}
 		Recall that in the time sequence we also included timestamps associated with the area of $\$$-symbols in $\Psi[1..|\mathcal{T}|+1]$.
 		Particularly, for each $\$$ at $\Psi[i+1]$, we keep the time of the first node of its trip $\mathcal{T}_i$. Therefore, 
-		we can perform $[l..r]~\leftarrow~\bsearch(\$X)$ as in a regular spatial query to find the
+		we can perform $[l..r]~\leftarrow~\bsearch(\Psi,\$X)$ as in a regular spatial query to find the
 		range $\Psi[l..r]$ ($[l..r]\subseteq [2..|\mathcal{T}|+1]$) that corresponds to $\$$ symbols that end a trip which started at node $X$. Then, since the time sequence $Icode^{\Psi}$ 
 		(represented with either a \gls{htwt} or \gls{wm}) is
-		 aligned with $\Psi$, we can filter out those trips that started within $[t_1..t_2]$ performing operation $\cnt(l,r,t_1,t_2)$. Because both $\bsearch$ and $\cnt$ are used, the time complexity for the whole query is $O(\log n + \log|I|)$. In Figure~\ref{fig:ctr:search2} (steps \textcircled{1} and \textcircled{2}) we illustrate steps involved.
+		 aligned with $\Psi$, we can filter out those trips that started within $[t_1..t_2]$ performing operation $\cnt_{t_1,t_2}(Icode^{\Psi},l,r)$. Because both $\bsearch$ and $\cnt$ are used, the time complexity for the whole query is $O(\log n + \log|I|)$. In Figure~\ref{fig:ctr:search2} (steps \textcircled{1} and \textcircled{2}) we illustrate steps involved.
 
 	\begin{figure}[th]
 		\begin{center}
@@ -604,11 +604,11 @@
 		
 		\item {\em Number of trips ending at node $X$ during the time interval $[t_1..t_2]$ (\endX$_T$). }
 		As above, we initially perform the spatial query $[l..r]~\leftarrow~\bsearch(X\$)$ to 
-		obtain the range in $\Psi[l..r]$ that corresponds to the pattern $X\$$ (trips ending at node $X$). Then, we use  $\cnt(l,r,t_1,t_2)$ operation to count how many of those trips match the temporal constraint. See steps \textcircled{3} and \textcircled{4} in Figure~\ref{fig:ctr:search2}.
+		obtain the range in $\Psi[l..r]$ that corresponds to the pattern $X\$$ (trips ending at node $X$). Then, we use  $\cnt_{t_1,t_2}(Icode^{\Psi},l,r)$ operation to count how many of those trips match the temporal constraint. See steps \textcircled{3} and \textcircled{4} in Figure~\ref{fig:ctr:search2}.
 		
 		\item {\em Number of trips using node $X$ during the time interval $[t_1..t_2]$ (\loadX$_T$).}
 		As in the corresponding spatial query, the range $\Psi[l..r]$  is obtained with two $\select_1$ operations on $D$.
-		Finally, $\cnt(l,r,t_1,t_2)$ finds the occurrences within the time interval $[t_1..t_2]$, thus solving this query in $O(log|I|)$ time.
+		Finally, $\cnt_{t_1,t_2}(Icode^{\Psi},l,r)$ finds the occurrences within the time interval $[t_1..t_2]$, thus solving this query in $O(log|I|)$ time.
 		See steps \textcircled{5} and \textcircled{6} in Figure~\ref{fig:ctr:search2}.
 
 
@@ -625,7 +625,7 @@
 		that start and end within  $[t_1..t_2]$. Whereas, a query with  {\em weak semantics} will obtain trips whose time intervals overlap  $[t_1..t_2]$ and, therefore, they could actually start before $t_1$ or end after $t_2$.
 		
 		In Figure~\ref{fig:ctr:search}, we show the step-by-step process to solve this type of queries.
-		As in a spatial query, we start by searching for the range $[l..r] \leftarrow \bsearch(Y\$X)$ in $\Psi$ corresponding 
+		As in a spatial query, we start by searching for the range $[l..r] \leftarrow \bsearch(\Psi,Y\$X)$ corresponding 
 		to trips starting at $Y$ and ending at $X$ ({\em step-\textcircled{1}}). Next, due to our sorting of trips, the range for $Y\$X$ in $\Psi[l..r]$
 		can be mapped to a continuous range $\Psi[\alpha..\beta]$ of the same size in the $\$X$ region of $\Psi$\footnote{As the trips were sorted by the key $s_1,s_n,t_1,s_{2..n-1}$, and we positioned each $\$_i$ according to the order of their trip $\mathcal{T}_i$, the region $Y\$X$ will be conveniently sorted by the key $s_n,\$,s_1,s_n,t_1,s_{2..n-1}$ within $\Psi$, thus delimiting an equivalent region $\Psi[\alpha..\beta]$ in $\$X$ where each entry corresponds to a trip that also ends in $Y$.}. 
 		We compute $\alpha \leftarrow \Psi[l], 
@@ -638,31 +638,31 @@
 		increasing ($Icode^{\Psi}[i] \leq Icode^{\Psi}[i+1], \forall \alpha \leq i < \beta$), as long as they are within the region $\Psi[\alpha..\beta]$, which corresponds to trips with the same starting-node $X$ and ending-node $Y$.
 		Therefore, we can find the continuous subrange $[\alpha'..\beta'] \subseteq [\alpha..\beta] $ corresponding to trips
 		that start within $[t_1..t_2]$ ({\em step-\textcircled{3}}).
-		%We refer to this operation as $\cnt_{LR}$ in Figure~\ref{fig:ctr:search}.
-		This operation was defined as $\cnt_{LR}$ in the Section~\ref{sec:wt}.
+		%We refer to this operation as $\cnt^{LR}$ in Figure~\ref{fig:ctr:search}.
+		This operation was defined as $\cnt^{LR}_{a, b}(i,j)$ in the Section~\ref{sec:wt}.
 		Thus, that assuming $Icode^{\Psi}[\alpha..\beta]$ are increasing,  
-		$[\alpha'..\beta'] \leftarrow countLR(\alpha,\beta,t_1,t_2)$ would report the 
+		$[\alpha'..\beta'] \leftarrow \cnt^{LR}_{t_1,t_2}(\alpha,\beta)$ would report the 
 		positions $[\alpha'..\beta'] \subseteq [\alpha..\beta]$ such that $\alpha' = argmin_{x} (Icode^{\Psi}[x] \geq t_1)$ and
 		$\beta' = argmax_{x} (Icode^{\Psi}[x] \leq t_2)$.
 		
-		%Using a \gls{wt}, a simple way to implement $\cnt_{LR}$  consists in performing two binary searches within $[\alpha..\beta]$ to find $[\alpha'..\beta']$, where at each step we would use $\access$ operation. This would cost $O(\log n \log \sigma)$. 
-		%Yet, we could also regard on $\cnt$ operation to obtain a more efficient and also rather straightforward implementation of $\cnt_{LR}$ so that we set $\alpha' \leftarrow count(\alpha,\beta,-1,t_1-1)$ and $\beta' \leftarrow \alpha'+ count(\alpha,\beta,t_1,t_2)$. It costs $O(\log\sigma)$.
+		%Using a \gls{wt}, a simple way to implement $\cnt^{LR}$  consists in performing two binary searches within $[\alpha..\beta]$ to find $[\alpha'..\beta']$, where at each step we would use $\access$ operation. This would cost $O(\log n \log \sigma)$. 
+		%Yet, we could also regard on $\cnt$ operation to obtain a more efficient and also rather straightforward implementation of $\cnt^{LR}$ so that we set $\alpha' \leftarrow count(\alpha,\beta,-1,t_1-1)$ and $\beta' \leftarrow \alpha'+ count(\alpha,\beta,t_1,t_2)$. It costs $O(\log\sigma)$.
 		
 		The last step will differ on whether the query is implementing strong or weak semantics:
 		
 		\begin{itemize}
 			\item {\em Strong semantics (\XtoY$_{Ts}$).} Note that the subrange $[\alpha'..\beta']$ (containing trips starting within $[t_1..t_2]$) 
 			has a matching subrange $[l'..r'] = [l+\alpha'-\alpha..l+\beta'-\alpha] \subseteq [l..r]$ ({\em step-\textcircled{4}}), where some of the ending times of these trips will fall inside 
-			$[t_1..t_2]$, allowing us to check the ending time constraint. By performing  $\cnt(l',r',t_1,t_2]$  we get the final result 
+			$[t_1..t_2]$, allowing us to check the ending time constraint. By performing  $\cnt_{t_1,t_2}(Icode^{\Psi},l',r']$  we get the final result 
 			({\em step-\textcircled{5}}). 
 			To sum up, answering this query  requires: one $\bsearch$ over $\Psi$ (to find $[l..r]$), one $\access$ to $\Psi$ to obtain
-			 $\alpha$ (since $\beta = \alpha+r-l$), one $\cnt_{LR}$ to find $[\alpha'..\beta']$, and one final $\cnt$ to count the valid ending times in $[l'..r']$, amounting in a total of $O(\log n + \log|I|)$ time.
+			 $\alpha$ (since $\beta = \alpha+r-l$), one $\cnt^{LR}$ to find $[\alpha'..\beta']$, and one final $\cnt$ to count the valid ending times in $[l'..r']$, amounting in a total of $O(\log n + \log|I|)$ time.
 			
 			
 			\item {\em Weak semantics (\XtoY$_{Tw}$).}
 			The size of $[\alpha'..\beta']$ ($\beta' - \alpha' + 1$) is already a partial answer. To get the final result, we need to add 
 			also the occurrences of those trips starting before $t_1$ that end at $t_1$ or later, which can only exist if $\alpha<\alpha'$. 
-			To do so, we need to obtain $l'~\leftarrow~l+\alpha'-\alpha$ as done in \XtoY$_{Ts}$, and compute $\cnt(l,l'-1, t_1, |I|)$. This gives us the number of time instants in the range $[l,l')$ of  $Icode^{\Psi}$ that fall inside $[t_1, |I|]$. 
+			To do so, we need to obtain $l'~\leftarrow~l+\alpha'-\alpha$ as done in \XtoY$_{Ts}$, and compute $\cnt_{t_1, |I|}(Icode^{\Psi},l,l'-1)$. This gives us the number of time instants in the range $[l..l')$ of  $Icode^{\Psi}$ that fall inside $[t_1..|I|]$. 
 			That is, ending times equal or after $t_1$. Yet again, the time complexity for this query is $O(\log n + \log|I|)$.
 		\end{itemize}
 		
@@ -677,18 +677,18 @@
 
 	\begin{itemize}
 		\item In the {\em sequential approach (\topK$_{Tseq}$)}, given a node whose corresponding range
-		in $\Psi[l..r]$, we compute its frequency using $\cnt(l,r,t_1,t_2)$ instead of simply using  $r-l+1$. 
+		in $\Psi[l..r]$, we compute its frequency using $\cnt_{t_1,t_2}(Icode^{\Psi},l,r)$ instead of simply using  $r-l+1$. 
 		The rest of the process is exactly as discussed for the pure spatial \topK$_{seq}$\ query. The time complexity is increased by a factor of $O(\log|I|)$ over the spatial \topK$_{seq}$\ variant, resulting in $O(|S|\log k\log|I|)$.
 		
 		\item In the {\em binary-partition approach (\topK$_{Tbin}$)}, we have to consider the priority of a
 		given segment as the number of trips covered by that segment that occurred during $[t_1..t_2]$. Again, given
-		a segment $[l..r]$ in $\Psi$ we compute that priority as $p_{l..r} \leftarrow \cnt(l,r,t_1,t_2)$ instead of 
+		a segment $[l..r]$ in $\Psi$ we compute that priority as $p_{l..r} \leftarrow \cnt_{t_1,t_2}(Icode^{\Psi},l,r)$ instead of 
 		$p_{l..r} \leftarrow  r-l+1$. Apart from
 		that, the only modifications that we must consider over the pure spatial \topK$_{bin}$\ Algorithm~\ref{alg:topk_nieves} are:
-		we replace (l.2) by $p_{l..r} \leftarrow \cnt(\select_1(D,2),n,t_1,t_2)$; $Q.push(\langle2, |V|\rangle, \langle \select_1(D,2), n\rangle, \underline{p_{l..r}})$,
+		we replace (l.2) by $p_{l..r} \leftarrow \cnt_{t_1,t_2}(Icode^{\Psi},\select_1(D,2),n)$; $Q.push(\langle2, |V|\rangle, \langle \select_1(D,2), n\rangle, \underline{p_{l..r}})$,
 		and we replace  (l.12) and (l.13), respectively, by 
-		   $ Q.push(\langle i, m-1 \rangle, \langle l, q-1 \rangle, \underline{\cnt(l,q-1,t_1,t_2)})$ and
-		   $ Q.push(\langle m,   j \rangle, \langle q,   r \rangle, \underline{\cnt(q,r,t_1,t_2)})$. Due to these modifications, the overall time complexity for this variant is $O(|S|\log|S|\log|I|)$
+		   $ Q.push(\langle i, m-1 \rangle, \langle l, q-1 \rangle, \underline{\cnt_{t_1,t_2}(Icode^{\Psi},l,q-1)})$ and
+		   $ Q.push(\langle m,   j \rangle, \langle q,   r \rangle, \underline{\cnt_{t_1,t_2}(Icode^{\Psi},q,r)})$. Due to these modifications, the overall time complexity for this variant is $O(|S|\log|S|\log|I|)$
 		
 	\end{itemize}
 
@@ -1071,7 +1071,7 @@
 	For these generated datasets, we have built the \gls{htwt} and the \gls{wm} considering two different granularities for the discretization of times: 
 	five-minute and thirty-minute intervals. Then, we generated $10,\!000$ random intervals of times $[t_1..t_2]$ over the whole 
 	time sequence of the dataset considering interval widths of five minutes, one hour, and six hours.  
-	Finally, we run $10,\!000$  $\cnt(|\mathcal{T}|+2,n,t_1,t_2)$ queries (we show average times) from each query set over 
+	Finally, we run $10,\!000$  $\cnt_{t_1,t_2}(Icode^{\Psi},|\mathcal{T}|+2,n)$ queries (we show average times) from each query set over 
 	the six configurations of \gls{htwt} and \gls{wm}  
 	(2 different granularities for the time discretization and 3 datasets).
 
@@ -1227,8 +1227,8 @@
 	using $5$-min intervals. And finally, the best query times (below $1.2\mu$s) are obtained for Porto dataset with 
 	$30$-min intervals.
 
-	Regarding $\startT$, recall that it also performs a $\cnt$ operation, but within a smaller range ($[2,|\mathcal{T}+1|]$) in comparison with the range
-	$[|\mathcal{T}|+2,n]$ where  $\cnt$ is performed for \loadT. We can see that, whereas the \gls{wm} obtains similar times to those of 
+	Regarding $\startT$, recall that it also performs a $\cnt$ operation, but within a smaller range ($[2..|\mathcal{T}+1|]$) in comparison with the range
+	$[|\mathcal{T}|+2..n]$ where  $\cnt$ is performed for \loadT. We can see that, whereas the \gls{wm} obtains similar times to those of 
 	$\loadT$ query,  \startT\ performs clearly faster than \loadT\ over the \gls{htwt}.
 	
 	While query times are bound by $O(\log|I|)$, as seen in Section~\ref{sec:ctr:alg:tq}, it is observed that, in some cases, \startT\ is answered considerably faster than \loadT. This occurs because our randomly queried time intervals are small enough (up to two hours) so that there are no trips starting around that queried time, allowing the $\cnt$ operation to be cut short before reaching the leaves of the \gls{htwt} or the last level of the \gls{wm}. The difference is obviously accentuated in the case of \gls{htwt}, as the tree is not uniform.
@@ -1300,12 +1300,12 @@
 	faster (from $1$ to $25$\%) than its \gls{wm} counterpart.
 
 	For queries \XtoY$_{Ts}$\ and \XtoY$_{Tw}$\ we can see a big gap between the times reported by \gls{htwt} and \gls{wm}.
-	This gap arises because in \gls{wm} we have used the $\cnt_{LR}$ operation discussed in Section~\ref{sec:ctr:alg:stq}
+	This gap arises because in \gls{wm} we have used the $\cnt^{LR}$ operation discussed in Section~\ref{sec:ctr:alg:stq}
 	that was implemented with two additional upward traversals for the \gls{wm}\footnote{We used the exact same \gls{wm} 
-		implementation as in \cite{CNO15} and simply added the new operation $\cnt_{LR}$ that calls the underlying $\cnt$ from the
+		implementation as in \cite{CNO15} and simply added the new operation $\cnt^{LR}$ that calls the underlying $\cnt$ from the
 		\gls{wm} and traverses up from the bottom level by using the $\select$ operation over its bitvectors. In later works, we have optimized this operation.}  
 	However, in our implementation of
-	\gls{htwt} we have engineered an improved version of $\cnt_{LR}$ where, during the execution of $\cnt$, we also report $\alpha'$ and  $\beta'$, hence avoiding extra operations.
+	\gls{htwt} we have engineered an improved version of $\cnt^{LR}$ where, during the execution of $\cnt$, we also report $\alpha'$ and  $\beta'$, hence avoiding extra operations.
 	
 
 	%%%%%%%%%%% MADRID -SPATIO-TEMPORAL - TOP-K %%%%%%%%%%%%%

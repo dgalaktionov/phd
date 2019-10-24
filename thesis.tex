@@ -245,7 +245,7 @@
     \cnt_{a,b}(v,i,j) = &\cnt_{a,b'}(v_0,\rank_0(B_v,i),\rank_0(B_v,j))\\
     &+~\cnt_{a',b}(v_1,\rank_1(B_v,i),\rank_1(B_v,j))
     \end{align*}
-    , recursively. The recursion on each node $v$ stops when $a \leq \alpha_v$ and $\omega_v \leq b$, in which case the count for that node is reported as $j-i+1$. Finally, all the counts are summed and the total amount of occurrences is obtained. While it may look as if the worst case would imply traversing every of the $\sigma$ internal nodes, it is avoided by stopping the recursion when $a \leq \alpha_v$ and $\omega_v \leq b$, thus requiring us to visit only $O(\log\sigma)$ nodes\footnote{In fact, the best case is $cnt_{1,\sigma}(S,i,j) = j-i+1$, which is solved without traversing at all!}. In the \gls{wt} from Figure~\ref{fig:wt}, we have marked the considered ranges for solving $\cnt_{3,3}(S,5,10)$.
+    , recursively. The recursion on each node $v$ stops when $a \leq \alpha_v$ and $\omega_v \leq b$, in which case the count for that node is reported as $j-i+1$. Finally, all the counts are summed and the total amount of occurrences is obtained. While it may look as if the worst case would imply traversing every of the $\sigma$ internal nodes, it is avoided by stopping the recursion when $a \leq \alpha_v$ and $\omega_v \leq b$, thus requiring us to visit only $O(\log\sigma)$ nodes\footnote{In fact, the best case is $cnt_{1,\sigma}(S,i,j) = j-i+1$, which is solved without traversing at all!}. In the \gls{wt} from Figure~\ref{fig:wt}, we have marked the considered ranges for solving $\cnt_{3,3}(S,5,10)$. Additionally, when the subsequence $S[i..j]$ is sorted, we can define $[l..r]~\leftarrow~\cnt^{LR}_{a,b}(S,i,j)$, which returns the upper and lower limits $S[l..r]$ of the occurrences of the symbols $[a..b]$. Naturally, $S[l..r] \subseteq S[i..j]$.
     
     \subsection{Hu-Tucker Wavelet Tree}
     A straightforward way of reducing the size of a \gls{wt} is to use compressed bitvectors, as discussed in \cite{CNspire08.1}, allowing to represent a \gls{wt} in $nH_0(S) + o(n\log\sigma) + O(\sigma\log n)$ bits \cite{WT03}. There is, however, a different approach to achieve similar space requirements is to use a prefix-free variable-length encoding for the symbols.
@@ -318,7 +318,7 @@
 	Given a sequence $S[1..n]$ built over an alphabet $\Sigma$ of length
     $\sigma$, the {\em suffix array} $A[1..n]$ is built over $S$ \cite{MM93}
     as a permutation of the positions $i \in [1..n]$ of all the suffixes $S[i..n]$, so that
-    $S[A[i],n] \prec S[A[i+1],n]$ for all $1 \le i < n$
+    $S[A[i]..n] \prec S[A[i+1]..n]$ for all $1 \le i < n$
     %, being $\prec$ the lexicographic ordering. 
     Because $A$ contains all the suffixes of $S$ in lexicographic order,
     we can use this structure to search for any pattern $P[1..m] \in S$ in time
@@ -343,7 +343,7 @@
     another permutation $\Psi[1..n]$ defined in \cite{GV00}, where $\Psi[i] = A^{-1}[A[i]+1]$. That is, for every $A[i]=k$ and $A[j]=k+1$, $\Psi[i]=j$.
     %For each position $j$ in $S$ pointed from $A[i]=j$, $\Psi[i]$ gives the position $z$ such that $A[z]$ points to $j+1$. 
     The special case when $A[i]=n$\footnote{$i=1$ if we use the unique terminator $\$$.} is handled as $\Psi[i]=A^{-1}[1]$, making a cycle.
-    Therefore, the \gls{csa} is formed by $\Psi$, $D$, and $V$, which are sufficient to simulate binary searches of the interval $A[l,r]$ for the occurrences of $P$ without the need of accessing $A$ nor $S$. 
+    Therefore, the \gls{csa} is formed by $\Psi$, $D$, and $V$, which are sufficient to simulate binary searches of the interval $A[l..r]$ for the occurrences of $P$ without the need of accessing $A$ nor $S$. In this work, we define that operation as $[l..r]~\leftarrow~\bsearch(\Psi,P)$.
     The symbol $S[A[i]]$ pointed by $A[i]$ can be obtained as
     $V[\rank_1(D,i)]$. We can also easily obtain the following symbol from the source sequence  $S[A[i]+1]$ as
     $V[\rank_1(D, \Psi[i])]$, $S[A[i]+2]$ can be obtained as $V[\rank_1(D, \Psi[\Psi[i]])]$, and so on.
