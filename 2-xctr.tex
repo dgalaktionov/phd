@@ -9,7 +9,7 @@
 	
 \section{Description}
     \label{sec:newctr:desc}
-	Speak about how our network is, why another representation would lead to redundancy.
+	While in theory we could use the \gls{ctr} introduced in Chapter~\ref{sec:ctr} to also represent trips over a subway or bus network, such representation would be very redundant. If we defined our \gls{ctr} nodes as stops or stations, making two of them connected if there exists a line or route that stops at each, we would find out that a commuter will board at a stop and follow only one route (line), passing through all its stops consecutively until the alighting stop, either to switch lines or end the trip. Furthermore, a single vehicle (such as a bus or a train) will be shared by several commuters at the same time, thus also producing trips that visit the same nodes at the same times. Because simply listing every node traversed introduces all these kinds of redundancy for public transportation networks, we state that \gls{ctr} is more adequate for urban street networks.
 	
 	Therefore, in order to better capture the information of trips over a public transportation network, and exploit this information in order to find a representation that avoids redundancy, we propose an ER model for the demand information for a public transportation network, as seen in the Figure~\ref{fig:er}.
 	
@@ -42,7 +42,15 @@
     
     A user trip can be represented by the stops from the transportation system that were boarded by a user, so from now on we will consider a trip as a sequence of triplets $<s,l,j>$, where $s$, $l$ are, respectively, stop and line identifiers, while $j$ are the journey codes corresponding to the journeys that compose the trip. These triplets describe a trip in a consecutive fashion, on the same order as the stops were boarded. Additionally, as we are interested in knowing where the trips end, we also represent the last stop where the user has alighted, which line and journey will logically match the line and journey of the last boarding stop. Although it is generally hard to obtain information about the last destination stop of a trip, many transportation companies are investing effort in providing it, either by implementing systems to keep track of users as they leave their system or estimating it based on previous trips made by that user \cite{alsger2016validating}.
     
-    Example!
+    \begin{example}
+    The arrows arrows in Figure~\ref{fig:example_trips_ttctr} are examples of five user trips done along the network.
+    For example, there is a user trip (dashed arrow from $S3$) that starts at stop $S3$ at 06:25am on {\em day-1}, 
+    %(6:20am + 305 sec.), 
+    following the journey $1$ of line $1$ until $S10$, where the user switches to line $2$ at time 6:35am 
+    %(6:30am + 300 sec.)
+    and continues by the journey $2$ of line $2$ (the one started as 06:30h in $S13$) up to stop $S12$. Consequently, this trip includes two stages.
+    \qed
+    \end{example}
     
     In our first representation, \gls{ttctr}, we encode all valid $<s,l>$ pairs into a vocabulary $V$, with every trip as a concatenation of $<s,l>$ pairs for boarded stops, ended by the final destination stop, which will be alighting. We build a \gls{csa} over the concatenation of these trips, and a parallel \gls{wm} with the journey codes of the boarded stops, as previously done for \gls{ctr} in Chapter~\ref{sec:ctr}, but with a temporal component represented by line-dependant journey codes instead of explicit time intervals. For our alternative representation, \gls{xctr}, we only encode the sequence of boarded stops, while the lines go into a parallel \gls{wm}, and the journey codes are in a second \gls{wm} that is aligned to the last level of the first one, allowing us to have more flexibility for some queries, while sacrificing efficiency in others. Finally, \gls{tm} represents a matrix for each line of \texttt{stops x journeys} with the number of boardings (or alightings) performed in each cell.
 	
