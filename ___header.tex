@@ -1,11 +1,13 @@
 % Packages --------------------------------------------------------------------
 
-\usepackage{booktabs,multirow,multicol,array,colortbl,makecell,tabularx} % tablas
+\usepackage{booktabs,multirow,multicol,array,colortbl,makecell,tabularx,threeparttable} % tablas
 \newcommand{\STAB}[1]{\begin{tabular}{@{}c@{}}#1\end{tabular}}
 
 \usepackage[width=127mm,height=191mm,includehead,hcentering,vcentering]{geometry}
-\usepackage{graphicx,subfigure}				% Include graphics
+\usepackage{graphicx}				% Include graphics
 \usepackage{caption}	% Customize captions
+\usepackage[margin=0pt,skip=1pt]{subcaption}
+\captionsetup{compatibility=false}
 \usepackage[T1]{fontenc} 			% Extended character set
 \usepackage{lmodern, microtype}		% Load vector fonts; better text formatting
 \usepackage{amsmath,amssymb,amsfonts,amsthm}	% Math support, example environment
