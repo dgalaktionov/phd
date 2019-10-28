@@ -196,7 +196,7 @@
 	A great amount of works in compact data structures involves the use of bitvectors, both compressed and uncompressed. A bitvector $B[1..n]$ is a sequence of $n$ bits, for which the following operations are expected to be supported:
 
     \begin{itemize}
-        \item $\rank_1(B,i)$ is the number of set bits in $B[1..i]$. Alternatively, $\rank_0(B,i)~\leftarrow~i - \rank_1(B,i)$. Consequently, it also holds that the bit from the position $i$ can be retrieved as $B[i] = \rank_1(B,i-1) - \rank_1(B,i)$.
+        \item $\rank_1(B,i)$ is the number of set bits in $B[1..i]$. Alternatively, $\rank_0(B,i)~\leftarrow~i - \rank_1(B,i)$. Consequently, it also holds that the bit from the position $i$ can be retrieved as $B[i] = \rank_1(B,i) - \rank_1(B,i-1)$.
         \item $\select_1(B,i)$ is the position in $[1..n]$ where the $i$th 1 occurs. Therefore, $\rank_1(B,\select_1(B,i)) = i$. An equivalent version for 0 bits may be defined as $\select_1(B,i)$, although, unlike with $\rank_0$, there does not exist a direct way of obtaining it from the previously defined operations.
     \end{itemize}
     
@@ -364,11 +364,9 @@
     compression of $\Psi$ was obtained by combining differential encoding of runs with Huffman and
     run-length encoding.
 
-\include{1-ctr}
+%\include{1-ctr}
 	
-\chapter{Our representation for trips over public transportation networks}
-\label{sec:newctr}
-\input{2-xctr.tex}
+\include{2-xctr}
 	
 \part{GIS interface}
 \chapter{Previous concepts}

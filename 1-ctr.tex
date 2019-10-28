@@ -1,4 +1,5 @@
 \chapter{Our representation for trips over urban streets}
+\label{sec:ctr}
 	As explained in Section~\ref{sec:pd}, we have identified two contexts for public transportation systems according to their networks, which can be based on urban streets or public transportation. While the proposed structure in this chapter is capable of operating within both contexts, it will not take public transportation elements (routes and vehicles) into account and lead to a more redundant representation than the one later proposed in Chapter~\ref{sec:newctr}, that is more adequate for public transportation networks.
 	
 	The work in this chapter proposes a new structure named \gls{ctr} that answers  counting-based queries and uses compact self-indexed data structures to represent the large amount of trips in a compact space.
@@ -140,7 +141,7 @@
 
 	\begin{figure}[ht]
 		\begin{center}
-			{\includegraphics[width=1\textwidth]{figures/network.eps}}
+			{\includegraphics[width=1\textwidth]{figures/network_ctr.eps}}
 		\end{center}
 		\caption{A set of trips over a network with 10 nodes.}
 		\label{fig:network}
