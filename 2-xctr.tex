@@ -1,11 +1,11 @@
 \chapter{Our representation for trips over public transportation networks}
 \label{sec:newctr}
 
-	This is about a representation that was designed for buses.
+	After \gls{ctr} from Chapter~\ref{sec:ctr} was introduced as a representation oriented for trips over urban street networks, in this chapter we introduce two alternative representations, called \gls{ttctr} and \gls{xctr}, that will be more adequate for trips over public transportation networks, since it will make possible to query about network concepts such as line and schedules, and also use them in order to reduce the size of our structures.
 	
-	Here we speak about \gls{ttctr} and \gls{xctr}, where we have a network description and index journeys instead of explicit times. \gls{tm} as a DW-like structure.
+	Both \gls{ttctr} and \gls{xctr} are based on the \gls{csa}  and the \gls{wm}, although they rely on other common structures for a network representation, that do not need to be compact due to their already small size. However, we have found out that while these representations excel at many of our proposed queries related to trip patterns, they can be quite inefficient for other kinds of aggregation queries about the load of a network. For this reason, we have also introduced \gls{tm}, a \gls{sat}-based structure designed to accelerate this second kind of queries.
 	
-	We also have lots of experimental results! Briefly mention how this is going to be plugged into the next part.
+	We have implemented and evaluated all of our structures, over the current bus network of Madrid, thus analyzing, both theoretically and experimentally, the fitness of each representation for every use case. Additionally, in the later the Chapter~\ref{sec:gis}, we will show how these representations can be integrated into a GIS application, usable for a transportation network administrator.
 	
 \section{Description}
     \label{sec:newctr:desc}
@@ -94,7 +94,9 @@
         \item $initialTime_i(k)$ is the starting time of the journey $j_k$ for line $l_i$
     \end{itemize}
     
-    With the exception of $initialTime$, all these structures are small enough to be represented using plain fixed-length integer arrays. In the case of $initialTime$, its size naturally grows with the amount of trips that are indexed, thus there is a motivation to reduce its size, which can be easily achieved with any technique that works on posting lists or sequences of strictly increasing numbers. In our work we used a simplified Vbyte+ANS compression described in \cite{moffat2017ans} using the Zstd library\footnote{https://github.com/facebook/zstd}. In order to facilitate searches and random access, we introduced fixed-length samples on configurable intervals.
+    With the exception of $initialTime$, all these structures are considered small enough to be represented using plain fixed-length integer arrays. In the case of $initialTime$, its size naturally grows with the amount of trips that are indexed, thus there is a motivation to reduce its size, which can be easily achieved with any technique that works on posting lists or sequences of strictly increasing numbers. In our work we've used a simplified Vbyte+ANS compression described in \cite{moffat2017ans} using the Zstd library\footnote{https://github.com/facebook/zstd}. In order to facilitate searches and random access, we introduced fixed-length samples on configurable intervals.
+    
+    Examples of these sequences may be found in the Figure~\ref{fig:example_trips_ttctr}, where we indicate the sequence of stops for each line ($lineStop$), the average estimated times ($avgTime$), the initial times of each journey ($initialTime$) and finally the inverted lists of lines per stop ($stopLine$).
     
     An example of these structures interacting together can be found at the Algorithm~\ref{alg:jcodes}, the the function \FuncSty{lower\_bound} is a binary search that returns the index of the first occurrence that is no lesser than the queried value, while \FuncSty{upper\_bound} returns the index of the last no greater occurrence.
     
@@ -116,9 +118,9 @@
     \end{algorithm}
     
     \subsection{TTCTR}
-    \ttctr~was introduced in \cite{brisaboa2018new}, where the spatial component (the pairs $(s,l)$ for the stops and lines of a trip) is represented with a \texttt{CSA} where each valid pair $(s,l)$ is encoded as an integer $id$ in the input sequence $T[1..n]$ that is used to build the \texttt{CSA}.
+    \gls{ttctr}~was introduced in \cite{brisaboa2018new}, where the spatial component (the pairs $(s,l)$ for the stops and lines of a trip) is represented with a \texttt{CSA} where each valid pair $<s,l>$ is encoded as an integer $id$ in the input sequence $T[1..n]$ that is used to build the \texttt{CSA}.
 
-    In this work, \ttctr~is built first by sorting all trips. If we consider that a trip is composed by $n$ of the $<s_i,l_i,j_i>,~1\leq i\leq n$ triplets previously described, where the first triplet corresponds to the first boarded stop and the last triplet corresponds to the last alighted stop (final destination), then the collection of trips is sorted by the key $s_1,s_n,l_1,j_1$. That is, trips are initially sorted by the first boarded stop identifier. If these are equal, they are then sorted by their last stop identifier, analogously followed by the line identifier and journey code of the first stop. Figure~\ref{fig:example_trips} displays an example of a correct sorting of trips.
+    In this work, \gls{ttctr}~is built first by sorting all trips. If we consider that a trip is composed by $n$ of the $<s_i,l_i,j_i>,~1\leq i\leq n$ triplets previously described, where the first triplet corresponds to the first boarded stop and the last triplet corresponds to the last alighted stop (final destination), then the collection of trips is sorted by the key $s_1,s_n,l_1,j_1$. That is, trips are initially sorted by the first boarded stop identifier. If these are equal, they are then sorted by their last stop identifier, analogously followed by the line identifier and journey code of the first stop. Figure~\ref{fig:example_trips} displays an example of a correct sorting of trips.
     
     We also need an injective function to encode the pairs $(s,l)$. Consider a vocabulary $V$ such that:
     \begin{itemize}
@@ -142,15 +144,15 @@
     Finally, $Jcodes^{\Psi}$ is represented with a \texttt{WM}, to support the operations we need to evaluate our proposed queries while avoiding the overhead of other types of indices that are not based in compact representations.
     
     \subsection{XCTR}
-    A fundamental weakness of \ttctr~is that it requires several binary search operations over the \texttt{CSA} in the following cases:
+    A fundamental weakness of \gls{ttctr}~is that it requires several binary search operations over the \texttt{CSA} in the following cases:
     \begin{itemize}
-        \item We are interested in the number of passengers that started their trip at a stop $s$ and a time window $t_a...t_z$, but from \textbf{any line} (\texttt{start\_X$_{T}$} from Section~\ref{sec:rq}). As $jcodes$ are relative to lines, we must make a separate query for each possible pair $(X, l_i) \forall l_i \in L$.
-        \item We need to restrict the line of a final stop, in queries such as \texttt{end\_X$_{L}$} or \texttt{from\_X\_to\_Y$_{L}$} (and similar variations). Because the final stops belong to separate entries of the vocabulary that do not encode line identifiers, to restrict a stop $Y\in S$ to a line $l\in L$ we need to search for every possible expanded pattern $W_l,Y...$, for every stop $W$ from the line $l$ that could have been boarded before alighting at $Y$. While it looks tempting to address this issue by modifying the design of \ttctr~so that final stops also encode line identifiers, this would in turn make queries that do not restrict the line of the final stop inefficient, and we would need to perform a new query for every combination of $(Y, l_i) \forall l_i \in L$, as in the previous case. \marginpar{\tiny Viendo los experimentos, uno se puede preguntar si no habria quedado mejor meter lineas en paradas finales...}
+        \item We are interested in the number of passengers that started their trip at a stop $s$ and a time window $t_a..t_z$, but from \textbf{any line} (\texttt{\startX$_{T}$} from Section~\ref{sec:newctr:desc}). As $jcodes$ are relative to lines, we must make a separate query for each possible pair $(X, l_i) \forall l_i \in L$.
+        \item We need to restrict the line of a final stop, in queries such as \texttt{\endX$_{L}$} or \texttt{from\_X\_to\_Y$_{L}$} (and similar variations). Because the final stops belong to separate entries of the vocabulary that do not encode line identifiers, to restrict a stop $Y\in S$ to a line $l\in L$ we need to search for every possible expanded pattern $W_l,Y...$, for every stop $W$ from the line $l$ that could have been boarded before alighting at $Y$. While it looks tempting to address this issue by modifying the design of \gls{ttctr}~so that final stops also encode line identifiers, this would in turn make queries that do not restrict the line of the final stop inefficient, and we would need to perform a new query for every combination of $(Y, l_i) \forall l_i \in L$, as in the previous case. \marginpar{\tiny Viendo los experimentos, uno se puede preguntar si no habria quedado mejor meter lineas en paradas finales...}
     \end{itemize}
     
-    These weaknesses motivated us to develop a second version, \ctr, which reduces the complexity of the queries that restrict the final line, and delegates line checks on a new WM, allowing a better space-time trade-off. As in \ttctr, the input trips need to be sorted by the same criteria, but in \ctr~we use three complementary structures to represent each component of the sequence, as shown in Figure~\ref{fig:example_xctr}:
+    These weaknesses motivated us to develop a second version, \gls{xctr}, which reduces the complexity of the queries that restrict the final line, and delegates line checks on a new WM, allowing a better space-time trade-off. As in \gls{ttctr}, the input trips need to be sorted by the same criteria, but in \gls{xctr}~we use three complementary structures to represent each component of the sequence, as shown in Figure~\ref{fig:example_xctr}:
     \begin{enumerate}[(i)]
-        \item An adapted Compressed Suffix Array (\texttt{CSA}) over the stop identifiers of all trips, concatenated into a string with additional terminator symbols $\$$ appended at the end of each trip. As in the \texttt{CSA} from \ttctr, we make these $\$$ symbols maintain the order of the trips and cyclical in $\Psi$. Because this time we do not encode line and stop identifiers together and \texttt{CSA} only encodes stops, there is no need for a complex vocabulary anymore.
+        \item An adapted Compressed Suffix Array (\texttt{CSA}) over the stop identifiers of all trips, concatenated into a string with additional terminator symbols $\$$ appended at the end of each trip. As in the \texttt{CSA} from \gls{ttctr}, we make these $\$$ symbols maintain the order of the trips and cyclical in $\Psi$. Because this time we do not encode line and stop identifiers together and \texttt{CSA} only encodes stops, there is no need for a complex vocabulary anymore.
         \item \texttt{WML}: Aligned to the entries of (i) there is a Wavelet Matrix (WM) for the line identifiers of each stop. Aligned to the $\$$ section we duplicate the starting lines of each trip. As a trivial optimization, we build a separate WM for every stop, allowing us to save space due to the fact that a single stop does not usually belong to many lines, thus the average height of these WM is no larger (and usually smaller) than the height of a single WM.
         \item \texttt{WMJ}: A WM of jcodes aligned to the leaves of (ii). Note that this makes this structure dependant on (ii), which is coherent with the fact that journey codes themselves are relative to the line identifier. In case (ii) implements the optimization described, the entries of the WM must also be rearranged to match the delimited stops.
     \end{enumerate}
@@ -158,7 +160,7 @@
     \begin{figure}[ht]
     \begin{center}
     \includegraphics[width=0.8\textwidth]{figures/example_xctr.eps}
-    \caption{An example of five trips represented on \ctr~with the optimizations for \texttt{WML} and \texttt{WMJ}, and sections for each stop delimited by dotted lines}
+    \caption{An example of five trips represented on \gls{xctr}~with the optimizations for \texttt{WML} and \texttt{WMJ}, and sections for each stop delimited by dotted lines}
     \label{fig:example_xctr}
     \end{center}
     \end{figure}
@@ -201,7 +203,7 @@
 	Introduce jcode and \gls{tm} algorithms here!!
 	
 	\subsection{Solving trip pattern queries}
-	With \ttctr~we obtain a clear separation between the spatial representation of the trips (\texttt{CSA}) and the temporal representation (\texttt{WM} of $jcodes$), where the former can be used to address queries such as ``number of passengers that started their trip from a stop $X\in S$ and a line $l\in L$'' (\texttt{start\_X$_{L}$} from Section~\ref{sec:rq}) with a binary search of the pattern $\$,X_l$, while the later can be used to filter down these results to a time window (\texttt{start\_X$_{LT}$}) with a $range_{a,b}(S,i,j)$ operation over the \texttt{WM}, where $a$ and $b$ are $jcodes$ obtained from Algorithm~\ref{alg:jcodes} and $i$ and $j$ delimit the range of the results obtained in $\Psi$. Because the $\$$ symbols were made cyclical in $\Psi$, it is also possible to answer \texttt{from\_X\_to\_Y} queries by searching for a pattern $Y,\$,X_l$ instead.
+	With \gls{ttctr}~we obtain a clear separation between the spatial representation of the trips (\texttt{CSA}) and the temporal representation (\texttt{WM} of $jcodes$), where the former can be used to address queries such as ``number of passengers that started their trip from a stop $X\in S$ and a line $l\in L$'' (\texttt{\startX$_{L}$} from Section~\ref{sec:rq}) with a binary search of the pattern $\$,X_l$, while the later can be used to filter down these results to a time window (\texttt{\startX$_{LT}$}) with a $range_{a,b}(S,i,j)$ operation over the \texttt{WM}, where $a$ and $b$ are $jcodes$ obtained from Algorithm~\ref{alg:jcodes} and $i$ and $j$ delimit the range of the results obtained in $\Psi$. Because the $\$$ symbols were made cyclical in $\Psi$, it is also possible to answer \texttt{from\_X\_to\_Y} queries by searching for a pattern $Y,\$,X_l$ instead.
 	
 	As \gls{xctr} is also a complete representation of the collection of trips, we are able to extract any trip using the structures described. \marginpar{The idea here is that explaining how to extract will help understand the more complex FromXtoY query later} The algorithm to extract a trip is shown in the Algorithm~\ref{alg:extract}, where \FuncSty{Rank} and \FuncSty{Select} operate over the bitvector $D$ from our \texttt{CSA}, \FuncSty{WML}{(s$_a$)} is the WM corresponding to the stop \DataSty{s$_a$} in the optimized version of \texttt{WML} and \FuncSty{TrackDown} returns the leaf index of a WM given a root index. In a practical implementation, it is not needed to access \texttt{WML} and \texttt{WMJ} for the line identifier and jcode of the last stop of the trip, as they will always match the previous ones.
 	
@@ -230,11 +232,11 @@
      \Return{\trip}\;
      }
      
-     \caption{Extracting the trip \DataSty{i} from \ctr, where \FuncSty{CSA}, \FuncSty{WML} and \FuncSty{WMJ} are the structures previously described in (i), (ii) and (iii), respectively}
+     \caption{Extracting the trip \DataSty{i} from \gls{xctr}, where \FuncSty{CSA}, \FuncSty{WML} and \FuncSty{WMJ} are the structures previously described in (i), (ii) and (iii), respectively}
      \label{alg:extract}
     \end{algorithm}
     
-    An example of a complex query that we can solve with \ctr~is ``number of trips that started from a stop \DataSty{s$_a$} and ended at a stop \DataSty{s$_z$}'', which can be further restricted to specific starting and ending lines and a time window (\texttt{from\_X$_{LT}$\_to\_Y$_{LT}$} in Section~\ref{sec:rq}). The pseudocode for the full version of such query can be found at the Algorithm~\ref{alg:xy}. This algorithm relies heavily on the abstract function \FuncSty{GetRange}, which when applied to a CSA, delimits the range of entries of $\Psi$ that match a queried string pattern, while on a WM it works as the $range$ operation defined in Section~\ref{sec:wm}, also reporting the range in the last level of a WM corresponding to the entries of a single queried symbol within a range in the encoded sequence (equivalent to two \FuncSty{TrackDown} operations on the first and last occurrence of the queried symbol, but more time efficient).
+    An example of a complex query that we can solve with \gls{xctr}~is ``number of trips that started from a stop \DataSty{s$_a$} and ended at a stop \DataSty{s$_z$}'', which can be further restricted to specific starting and ending lines and a time window (\texttt{from\_X$_{LT}$\_to\_Y$_{LT}$} in Section~\ref{sec:rq}). The pseudocode for the full version of such query can be found at the Algorithm~\ref{alg:xy}. This algorithm relies heavily on the abstract function \FuncSty{GetRange}, which when applied to a CSA, delimits the range of entries of $\Psi$ that match a queried string pattern, while on a WM it works as the $range$ operation defined in Section~\ref{sec:wm}, also reporting the range in the last level of a WM corresponding to the entries of a single queried symbol within a range in the encoded sequence (equivalent to two \FuncSty{TrackDown} operations on the first and last occurrence of the queried symbol, but more time efficient).
     
     \begin{algorithm}[ht]
     \SetKwData{la}{$l_a$}\SetKwData{lz}{$l_z$}\SetKwData{sa}{s$_a$}\SetKwData{sz}{s$_z$}\SetKwData{ta}{t$_a$}\SetKwData{tz}{t$_z$}\SetKwData{pattern}{pattern}\SetKwData{left}{left}\SetKwData{right}{right}\SetKwData{csa}{CSA}\SetKwData{wmj}{WMJ}\SetKwData{leftzero}{left$_0$}\SetKwData{rightzero}{right$_0$}\SetKwData{a}{a}\SetKwData{z}{z}\SetKwData{ja}{j$_a$}\SetKwData{jz}{j$_z$}\SetKwData{n}{n}\SetKwData{ap}{a'}\SetKwData{zp}{z'}\SetKwData{offset}{offset}
@@ -263,7 +265,7 @@
      \Return{\GetCount{\wmj,\offset~+~\a,\offset~+~\z,\ja,\jz}}\;
      }
      
-     \caption{Querying for all features on \ctr}
+     \caption{Querying for all features on \gls{xctr}}
      \label{alg:xy}
     \end{algorithm}
     
@@ -273,7 +275,7 @@
         
         \item In \textbf{lines 4-6} we obtain the corresponding range in the section of $\$$ by accessing \FuncSty{$\Psi$}. Note that because of how the sorting of the $\$$ symbols was altered during the construction of the suffix array, these two ranges are equal in size, as the comment in line 6 points out.
         
-        \item In \textbf{line 7} we query \texttt{WML} in the $\$$ section, within the range previously obtained, for the queried starting line \DataSty{l$_a$}, obtaining the range of its occurrences in the last level, delimited by \DataSty{a} and \DataSty{z}. Note that if the \ctr~was constructed without the optimization that separates \texttt{WML} in sections, this line would be exactly the same, save for the query being on a \DataSty{WML} that would encode the whole sequence of lines instead of just the \DataSty{WML}{(0)} for $\$$.
+        \item In \textbf{line 7} we query \texttt{WML} in the $\$$ section, within the range previously obtained, for the queried starting line \DataSty{l$_a$}, obtaining the range of its occurrences in the last level, delimited by \DataSty{a} and \DataSty{z}. Note that if the \gls{xctr}~was constructed without the optimization that separates \texttt{WML} in sections, this line would be exactly the same, save for the query being on a \DataSty{WML} that would encode the whole sequence of lines instead of just the \DataSty{WML}{(0)} for $\$$.
         
         \item In \textbf{line 8} we obtain the range of jcodes for the journeys from the line \DataSty{l$_a$} that would pass through the stop \DataSty{s$_a$} within the time window delimited by \DataSty{t$_a$} and \DataSty{t$_z$}, using the function \FuncSty{GetJCodes} from Algorithm~\ref{alg:jcodes}.
         
@@ -293,12 +295,12 @@
     
     It is trivial to reuse the Algorithm~\ref{alg:xy} to answer queries with less constrains. For example, if we were only interested in restricting the starting line, we could return \DataSty{z}-\DataSty{a} after line 7. Or if we only wanted to restrict the ending line and time, we can do it by skipping the lines 4-12, and using directly \FuncSty{GetRange}{(\FuncSty{WML}{(s$_z$)},left-offset,right-offset,l$_z$)} in line 14. The complexity would increase if we restricted by a time window but not by lines, as would need to iterate through all possible lines for \DataSty{s$_a$} and \DataSty{s$_z$} to obtain the jcodes for each line and perform these operations on \texttt{WML} and \texttt{WMJ}. Fortunately, the number of lines that a single stop can belong to tends to be rather small in practice, thus with a careful implementation that avoids repeating computation the performance of such query scales well, as will be shown later in Section~\ref{sec:exp}. Finally, to obtain only the trips that started on a given stop we would simply need to set \DataSty{pattern} to $\{0,s_a\}$ in line 2, or alternatively to $\{s_z,0\}$ for the final stop, and skipping the operations on the sections of \DataSty{s$_z$} or $\$$, respectively.
     
-    Of course, \ctr~can also be used to efficiently obtain other interesting information about trips, such as the top k most boarded stops, 
+    Of course, \gls{xctr}~can also be used to efficiently obtain other interesting information about trips, such as the top k most boarded stops, 
     %as shown in \cite{brisaboa2018compact} \ojo{NO}, 
-    with the possibility of differentiating stops that are only used to switch lines in \ctr. However, to the best of our knowledge, there is no known way of using this representation to obtain other kinds of information efficiently (e.g. the number of passengers in a journey between two stops).
+    with the possibility of differentiating stops that are only used to switch lines in \gls{xctr}. However, to the best of our knowledge, there is no known way of using this representation to obtain other kinds of information efficiently (e.g. the number of passengers in a journey between two stops).
 	
 	\subsection{Analyzing our representations}
-	To illustrate the application of each representation, as well as highlight the motivation for the development of \ctr, in this section we discuss in detail the worst case time complexities of each query described in Section~\ref{sec:rq}. 
+	To illustrate the application of each representation, as well as highlight the motivation for the development of \gls{xctr}, in this section we discuss in detail the worst case time complexities of each query described in Section~\ref{sec:rq}. 
 
     Being $l$ the number of lines we restrict to, $|L|$ the total number of lines represented, $|S|$ the number of stops in the line L and $\bar{|J^l|}$ is the average number of jcodes per line.
     
@@ -309,24 +311,24 @@
     \label{tab:queries}
     \begin{tabular}{|l|l|l|l|}
     \hline
-    Query &  \acumm & \ttctr & \ctr\\
+    Query &  \gls{tm} & \gls{ttctr} & \gls{xctr}\\
     \hline
-    \texttt{board\_X$_{LT}$} & $O(l)$ & $O(l\times \log(\bar{|J^l|}))$\tnote{$\otimes$} & \ctrq\tnote{$\otimes$} \\
-    \texttt{alight\_X$_{LT}$} & $O(l)$ & Hard\tnote{$\ddagger$$\diamondsuit$} & Hard\tnote{$\ddagger$$\diamondsuit$} \\
-    \texttt{use\_L$_T$} & O(1) & $O(|S|\times \log(\bar{|J^l|}))$\tnote{$\otimes$} \hspace{0.4cm} & $O(|S| \times \ctrq)$\tnote{$\otimes$} \\
-    %\texttt{alight\_L$_T$} & O(1) & $O(|S|\times \log(\bar{|J^l|}))$\tnote{$\otimes$$\ddagger$} & $O(|S| \times \ctrq)$\tnote{$\otimes$$\ddagger$} \\
-    \texttt{board\_T} & $O(|L|)$ & Hard\tnote{$\diamondsuit$} & Hard\tnote{$\diamondsuit$} \\
-    \texttt{alight\_T} & $O(|L|)$ & Hard\tnote{$\ddagger$$\diamondsuit$} & Hard\tnote{$\ddagger$$\diamondsuit$} \\
+    \texttt{\boardX$_{LT}$} & $O(l)$ & $O(l\times \log(\bar{|J^l|}))$\tnote{$\otimes$} & \gls{xctr}q\tnote{$\otimes$} \\
+    \texttt{\alightX$_{LT}$} & $O(l)$ & Hard\tnote{$\ddagger$$\diamondsuit$} & Hard\tnote{$\ddagger$$\diamondsuit$} \\
+    \texttt{\useL$_T$} & O(1) & $O(|S|\times \log(\bar{|J^l|}))$\tnote{$\otimes$} \hspace{0.4cm} & $O(|S| \times \gls{xctr}q)$\tnote{$\otimes$} \\
+    %\texttt{alight\_L$_T$} & O(1) & $O(|S|\times \log(\bar{|J^l|}))$\tnote{$\otimes$$\ddagger$} & $O(|S| \times \gls{xctr}q)$\tnote{$\otimes$$\ddagger$} \\
+    \texttt{\boardT} & $O(|L|)$ & Hard\tnote{$\diamondsuit$} & Hard\tnote{$\diamondsuit$} \\
+    \texttt{\alightT} & $O(|L|)$ & Hard\tnote{$\ddagger$$\diamondsuit$} & Hard\tnote{$\ddagger$$\diamondsuit$} \\
     \texttt{load\_X$_{LT}$} & $O(l)$ & Hard\tnote{$\ddagger$$\diamondsuit$} & Hard\tnote{$\ddagger$$\diamondsuit$} \\
     \hline
-    \texttt{start\_X$_{LT}$} & - & \ttctrq\tnote{$\otimes$} & \ctrq\tnote{$\otimes$} \\
-    \texttt{end\_X$_{LT}$} & - & $O(|S|\times \ttctrq)$\tnote{$\otimes$} & \ctrq\tnote{$\otimes$} \\
-    \texttt{switch\_X$_{LT}$} & - & \ttctrq\tnote{$\otimes$} & \ctrq\tnote{$\otimes$} \\
-    \texttt{from\_X$_{LT}$\_to\_Y$_{LT}$} & - & $O(|S|\times \ttctrq)$\tnote{$\otimes$} & \ctrq\tnote{$\otimes$} \\
-    \texttt{start\_L$_T$} & - & $O(|S|\times \ttctrq)$\tnote{$\otimes$}~~~ & $O(\log(|L|\times\bar{|J^l|}))$ \\
-    \texttt{end\_L$_T$} & - & Hard\tnote{$\diamondsuit$} & $O(|S| \times \ctrq)$\tnote{$\otimes$} \\
-    \texttt{start\_T} & - & Hard\tnote{$\diamondsuit$} & $O(|L| \times \log(|L|\times\bar{|J^l|}))$~~ \\
-    \texttt{end\_T} & - & Hard\tnote{$\diamondsuit$} & Hard\tnote{$\diamondsuit$} \\
+    \texttt{\startX$_{LT}$} & - & \gls{ttctr}q\tnote{$\otimes$} & \gls{xctr}q\tnote{$\otimes$} \\
+    \texttt{\endX$_{LT}$} & - & $O(|S|\times \gls{ttctr}q)$\tnote{$\otimes$} & \gls{xctr}q\tnote{$\otimes$} \\
+    \texttt{\switchX$_{LT}$} & - & \gls{ttctr}q\tnote{$\otimes$} & \gls{xctr}q\tnote{$\otimes$} \\
+    \texttt{from\_X$_{LT}$\_to\_Y$_{LT}$} & - & $O(|S|\times \gls{ttctr}q)$\tnote{$\otimes$} & \gls{xctr}q\tnote{$\otimes$} \\
+    \texttt{\startL$_T$} & - & $O(|S|\times \gls{ttctr}q)$\tnote{$\otimes$}~~~ & $O(\log(|L|\times\bar{|J^l|}))$ \\
+    \texttt{\endL$_T$} & - & Hard\tnote{$\diamondsuit$} & $O(|S| \times \gls{xctr}q)$\tnote{$\otimes$} \\
+    \texttt{\startT} & - & Hard\tnote{$\diamondsuit$} & $O(|L| \times \log(|L|\times\bar{|J^l|}))$~~ \\
+    \texttt{\endT} & - & Hard\tnote{$\diamondsuit$} & Hard\tnote{$\diamondsuit$} \\
     \hline
     \end{tabular}
     
@@ -342,28 +344,28 @@
     \end{threeparttable}
     
     \medskip
-    Before explaining the details of how each of these operations would be implemented in our representations, it is worth noting that the complexity of \ctrq~will depend on the restrictions that are applied, as they will yield different variations of Algorithm~\ref{alg:xy}, as explained by the end of the Section~\ref{sec:ctr}. Generally, the time complexity of \ctrq~with all the restrictions is bounded by one \FuncSty{GetRange} operation on \FuncSty{CSA} to restrict by a stop id, one on \FuncSty{WML} to restrict by a line id and finally another one on \FuncSty{WMJ} to restrict by jcodes, with a total complexity of $O(\log(n\times|L|\times\bar{|J^l|}))$, being $n$ the size of the represented sequences\footnote{While theoretically locating a pattern of length $m$ in a Suffix Array takes $O(m \log n)$ time, in our case $m$ is bounded to 2 or 3 (in case of \texttt{from\_X\_to\_Y}). Furthermore, with a backward search implementation, only $m-1$ binary searches are needed.}.
-    However, when only the time is restricted, every line that the queried stop belongs to must be considered, thus increasing the worst-case complexity to $O(\log(n) + |L|\times \log(|L|\times\bar{|J^l|}))$. Similarly, the complexity of \ttctrq~is normally a search in the \texttt{CSA} and a \FuncSty{GetRange} on the \texttt{WM} (if time is restricted), which would amount to $O(\log(n) + \log(bar{|J^l|}))$, although when only the time and not the line is restricted, we must perform a new query for every possible line, and the complexity increases to $O(|L|\times (\log(n) + \log(bar{|J^l|})))$, which is generally higher than the one from \ctrq.
+    Before explaining the details of how each of these operations would be implemented in our representations, it is worth noting that the complexity of \gls{xctr}q~will depend on the restrictions that are applied, as they will yield different variations of Algorithm~\ref{alg:xy}, as explained by the end of the Section~\ref{sec:ctr}. Generally, the time complexity of \gls{xctr}q~with all the restrictions is bounded by one \FuncSty{GetRange} operation on \FuncSty{CSA} to restrict by a stop id, one on \FuncSty{WML} to restrict by a line id and finally another one on \FuncSty{WMJ} to restrict by jcodes, with a total complexity of $O(\log(n\times|L|\times\bar{|J^l|}))$, being $n$ the size of the represented sequences\footnote{While theoretically locating a pattern of length $m$ in a Suffix Array takes $O(m \log n)$ time, in our case $m$ is bounded to 2 or 3 (in case of \texttt{from\_X\_to\_Y}). Furthermore, with a backward search implementation, only $m-1$ binary searches are needed.}.
+    However, when only the time is restricted, every line that the queried stop belongs to must be considered, thus increasing the worst-case complexity to $O(\log(n) + |L|\times \log(|L|\times\bar{|J^l|}))$. Similarly, the complexity of \gls{ttctr}q~is normally a search in the \texttt{CSA} and a \FuncSty{GetRange} on the \texttt{WM} (if time is restricted), which would amount to $O(\log(n) + \log(bar{|J^l|}))$, although when only the time and not the line is restricted, we must perform a new query for every possible line, and the complexity increases to $O(|L|\times (\log(n) + \log(bar{|J^l|})))$, which is generally higher than the one from \gls{xctr}q.
     
     \begin{itemize}
-        \item \texttt{board\_X$_{LT}$} This can be solved easily in the \acumm, as there are aggregated matrices for boarding stops, even though it is necessary to access a separate matrix for every line queried, hence $O(l)$. For \ttctr, the number of occurrences for the stop X is counted by delimiting its range on \FuncSty{D} (with a constant time $select$ operation) and filtering down the \texttt{WM} if needed. For \ctr, the filtering is done through \FuncSty{WML} and \FuncSty{WMJ}, and after that we must subtract the occurrences of final stops, obtained by one \texttt{end\_X$_{LT}$} with the same restrictions.
-        \item \texttt{alight\_X$_{LT}$} Both in \ttctr~and \ctr, the only alighting stops that are explicitly represented are the final stops. To obtain an approximated count of the rest of them, we would need to extract and examine all the occurrences for \texttt{board\_W$_{LT}$} for every stop W that could have been boarded before X, as the worst-case time complexity of solving with their index operations is prohibitive. On the other hand, it can be solved much faster in \acumm~by accessing the alighting matrices.
-        \item \texttt{use\_L$_T$} Straightforward in \acumm, as it only needs to access one matrix. For \ttctr~we must filter through the \texttt{WM} for every stop from L. While in \ctr~the total number of occurrences of line L can be calculated in one $O(\log|L|)$ operation (with additional filtering through \FuncSty{WMJ} if needed), we need to subtract the occurrences of start\_L$_T$ and end\_L$_T$, the later having a greater complexity of $O(|S| \times \ctrq)$.
-        %\item \texttt{alight\_L$_T$} Can be approximated both in \ttctr~and \ctr~with board\_L$_T$, given that every user that boards on a line is expected to alight from it within a reasonable time.
-        \item \texttt{board\_T} and \texttt{alight\_T} Although \acumm, \ttctr~and \ctr~could solve it by applying use\_L$_T$ $|L|$ times, this would imply a prohibitive cost for both \ttctr~and \ctr, where extracting all the trips would be preferred in practice.
+        \item \texttt{\boardX$_{LT}$} This can be solved easily in the \gls{tm}, as there are aggregated matrices for boarding stops, even though it is necessary to access a separate matrix for every line queried, hence $O(l)$. For \gls{ttctr}, the number of occurrences for the stop X is counted by delimiting its range on \FuncSty{D} (with a constant time $select$ operation) and filtering down the \texttt{WM} if needed. For \gls{xctr}, the filtering is done through \FuncSty{WML} and \FuncSty{WMJ}, and after that we must subtract the occurrences of final stops, obtained by one \texttt{\endX$_{LT}$} with the same restrictions.
+        \item \texttt{\alightX$_{LT}$} Both in \gls{ttctr}~and \gls{xctr}, the only alighting stops that are explicitly represented are the final stops. To obtain an approximated count of the rest of them, we would need to extract and examine all the occurrences for \texttt{board\_W$_{LT}$} for every stop W that could have been boarded before X, as the worst-case time complexity of solving with their index operations is prohibitive. On the other hand, it can be solved much faster in \gls{tm}~by accessing the alighting matrices.
+        \item \texttt{\useL$_T$} Straightforward in \gls{tm}, as it only needs to access one matrix. For \gls{ttctr}~we must filter through the \texttt{WM} for every stop from L. While in \gls{xctr}~the total number of occurrences of line L can be calculated in one $O(\log|L|)$ operation (with additional filtering through \FuncSty{WMJ} if needed), we need to subtract the occurrences of \startL$_T$ and \endL$_T$, the later having a greater complexity of $O(|S| \times \gls{xctr}q)$.
+        %\item \texttt{alight\_L$_T$} Can be approximated both in \gls{ttctr}~and \gls{xctr}~with board\_L$_T$, given that every user that boards on a line is expected to alight from it within a reasonable time.
+        \item \texttt{\boardT} and \texttt{\alightT} Although \gls{tm}, \gls{ttctr}~and \gls{xctr}~could solve it by applying \useL$_T$ $|L|$ times, this would imply a prohibitive cost for both \gls{ttctr}~and \gls{xctr}, where extracting all the trips would be preferred in practice.
         \item \texttt{load\_X$_{LT}$} It is possible to solve this kind of query using both, alighting and boarding matrices. Knowing how many travelers got on and off the vehicle previously to one particular point makes trivial to determine how many of them are in the vehicle at each tract. This method is easily adapted to measure the average number through an interval of time.
-        \item \texttt{start\_X$_{LT}$} Cannot be solved in \acumm. In the two other representations, we need to the range for the pattern $\$X$ in the \FuncSty{CSA} and filtering down \FuncSty{WML} and \FuncSty{WMJ} if needed.
-        \item \texttt{end\_X$_{LT}$} In \ctr~it is solved similarly to \texttt{start\_X$_{LT}$}, by delimiting the range for the pattern $X\$$ in the \FuncSty{CSA} and filtering down \FuncSty{WML} and \FuncSty{WMJ} if needed. It can be much more complex for \ttctr, where the only way to restrict a line is to make a new query for every stop that could have been boarded before X in that line, which is a problem detailed at the start of Section~\ref{sec:ctr}.
-        \item \texttt{switch\_X$_{LT}$} Calculated as board\_X$_{LT}$ - start\_X$_{LT}$.
-        \item \texttt{from\_X$_{LT}$\_to\_Y$_{LT}$} Explained in detail in Algorithm~\ref{alg:xy}. In \ttctr~the $|S|$ factor only takes effect if the line (or time) for Y must be restricted, as for \texttt{end\_X$_{LT}$}.
-        \item \texttt{start\_L$_T$} Trivially solved in \ctr, by filtering down \FuncSty{WML} and \FuncSty{WMJ}, if needed, over the $\$$ section of the \FuncSty{CSA}. On the other hand, for \ttctr~the \texttt{CSA} needs to be queried with the $\$X$ pattern for every stop X from line $l$.
-        \item \texttt{end\_L$_T$} Can be solved in \ctr, by performing a end\_X$_{LT}$ for every stop X from the line $l$. If we did the same for \ttctr, we would end up with a complexity of $O(|S|^2\times\ttctrq)$, which we consider prohibitive.
-        \item \texttt{start\_T} Solved in the \ctr~by applying \texttt{start\_X$_{LT}$} $|L|$ times.
-        \item \texttt{end\_T} None of our representations can solve this query efficiently, although it could be approximated by \texttt{start\_T} in CTR.
+        \item \texttt{\startX$_{LT}$} Cannot be solved in \gls{tm}. In the two other representations, we need to the range for the pattern $\$X$ in the \FuncSty{CSA} and filtering down \FuncSty{WML} and \FuncSty{WMJ} if needed.
+        \item \texttt{\endX$_{LT}$} In \gls{xctr}~it is solved similarly to \texttt{\startX$_{LT}$}, by delimiting the range for the pattern $X\$$ in the \FuncSty{CSA} and filtering down \FuncSty{WML} and \FuncSty{WMJ} if needed. It can be much more complex for \gls{ttctr}, where the only way to restrict a line is to make a new query for every stop that could have been boarded before X in that line, which is a problem detailed at the start of Section~\ref{sec:ctr}.
+        \item \texttt{\switchX$_{LT}$} Calculated as \boardX$_{LT}$ - \startX$_{LT}$.
+        \item \texttt{from\_X$_{LT}$\_to\_Y$_{LT}$} Explained in detail in Algorithm~\ref{alg:xy}. In \gls{ttctr}~the $|S|$ factor only takes effect if the line (or time) for Y must be restricted, as for \texttt{\endX$_{LT}$}.
+        \item \texttt{\startL$_T$} Trivially solved in \gls{xctr}, by filtering down \FuncSty{WML} and \FuncSty{WMJ}, if needed, over the $\$$ section of the \FuncSty{CSA}. On the other hand, for \gls{ttctr}~the \texttt{CSA} needs to be queried with the $\$X$ pattern for every stop X from line $l$.
+        \item \texttt{\endL$_T$} Can be solved in \gls{xctr}, by performing a \endX$_{LT}$ for every stop X from the line $l$. If we did the same for \gls{ttctr}, we would end up with a complexity of $O(|S|^2\times\gls{ttctr}q)$, which we consider prohibitive.
+        \item \texttt{\startT} Solved in the \gls{xctr}~by applying \texttt{\startX$_{LT}$} $|L|$ times.
+        \item \texttt{\endT} None of our representations can solve this query efficiently, although it could be approximated by \texttt{\startT} in CTR.
     \end{itemize}
 	
 \section{Experiments}
-	In this section we discuss the practical performance of our structures. To evaluate them, we have run randomly generated queries against \acumm, \ttctr~and \ctr~built over a dataset of user trips over a real transportation network (Section~\ref{sec:data}), with several configurations to study the trade-off between compression (Section~\ref{sec:space}) and query efficiency (Section~\ref{sec:time}), and testing different configurations for each individual structure.
+	In this section we discuss the practical performance of our structures. To evaluate them, we have run randomly generated queries against \gls{tm}, \gls{ttctr}~and \gls{xctr}~built over a dataset of user trips over a real transportation network (Section~\ref{sec:data}), with several configurations to study the trade-off between compression (Section~\ref{sec:space}) and query efficiency (Section~\ref{sec:time}), and testing different configurations for each individual structure.
 
     \subsection{Experimental dataset}
     \label{sec:ctr:exp:data}
@@ -382,9 +384,9 @@
     
     \subsection{Space requirements}
     \label{sec:space}
-    We have measured the sizes of all the individual components of our representation in memory built over the experimental dataset. We present the sizes of our common structures, followed by the \acumm. After that, we compare the compression achieved with \ttctr~and \ctr.
+    We have measured the sizes of all the individual components of our representation in memory built over the experimental dataset. We present the sizes of our common structures, followed by the \gls{tm}. After that, we compare the compression achieved with \gls{ttctr}~and \gls{xctr}.
     
-    For the \texttt{CSA} structures from \ttctr~and \ctr, we experiment with the $t_\Psi$ (sampling interval) factors of 32, 128 and 512. For the \texttt{WM} present in \ttctr, as well as in the two \texttt{WM} from \ctr, we analyze the space required by the \texttt{RRR} bitvector described in \cite{Raman:2002:SID:545381.545411}, using block sizes of 32, 64 and 128, and compare it against a plain bitvector with a rank structure, which we call \texttt{RG32}.
+    For the \texttt{CSA} structures from \gls{ttctr}~and \gls{xctr}, we experiment with the $t_\Psi$ (sampling interval) factors of 32, 128 and 512. For the \texttt{WM} present in \gls{ttctr}, as well as in the two \texttt{WM} from \gls{xctr}, we analyze the space required by the \texttt{RRR} bitvector described in \cite{Raman:2002:SID:545381.545411}, using block sizes of 32, 64 and 128, and compare it against a plain bitvector with a rank structure, which we call \texttt{RG32}.
     
     The space occupied by the common structures is reflected in Table~\ref{tab:commons}. These were represented using plain fixed bit length integers with the exception of $initialTime$, where we used the compression approach discussed in Section~\ref{sec:cs} with a sampling interval of 512. This has allowed us to represent all required network information in a negligible space of less than 1 MiB.
     
@@ -401,11 +403,11 @@
         \end{tabular}
     \end{table}
     
-    To measure the sizes occupied by the different variants of \acumm~that were presented in Section~\ref{sec:acumm}, we have summed the total space required by each line matrix. These results, which can be found in Table~\ref{tab:acuum}, helped us prove that \texttt{Blocks} is an effective strategy to reduce the size of the accumulated values. While \texttt{Diff} is also able to reduce the total space, it's fundamentally constrained by the shape of our matrices, making it less desirable in this context.
+    To measure the sizes occupied by the different variants of \gls{tm}~that were presented in Section~\ref{sec:acumm}, we have summed the total space required by each line matrix. These results, which can be found in Table~\ref{tab:acuum}, helped us prove that \texttt{Blocks} is an effective strategy to reduce the size of the accumulated values. While \texttt{Diff} is also able to reduce the total space, it's fundamentally constrained by the shape of our matrices, making it less desirable in this context.
     
     \begin{table}
         \centering
-        \caption{Sizes of the different variants from \acumm}
+        \caption{Sizes of the different variants from \gls{tm}}
         \label{tab:acuum}
         \begin{tabular}{|c|c|c|c|}
         \hline
@@ -416,10 +418,10 @@
         \end{tabular}
     \end{table}
     
-    In Table~\ref{tab:ttctr} we analyze the space occupied by the two structures of \ttctr: a \texttt{CSA} that encodes stops and their lines, and a \texttt{WM} that encodes journey codes.
+    In Table~\ref{tab:ttctr} we analyze the space occupied by the two structures of \gls{ttctr}: a \texttt{CSA} that encodes stops and their lines, and a \texttt{WM} that encodes journey codes.
     
     \begin{table}
-        \caption{Space requirements for the \texttt{CSA} (a) and the \texttt{WM} (b) from \ttctr}
+        \caption{Space requirements for the \texttt{CSA} (a) and the \texttt{WM} (b) from \gls{ttctr}}
         \label{tab:ttctr}
         \begin{subtable}[t]{.30\linewidth}
         \vspace{-12pt}
@@ -456,10 +458,10 @@
     
     We were not able to achieve such compression for the \texttt{WM}, where compressing the bitvectors with \texttt{RRR} results in a \texttt{WM} that is only slightly smaller than the baseline with the plain bitvector. This sequence is indeed hard to compress, given than it was rearranged to be aligned to the entries of our \texttt{CSA}, which nullifies any local redundancy that other kinds of arrangements may obtain.
     
-    We also measured the occupied space of \ctr~in Table~\ref{tab:ctr}, where three structures must be taken in consideration: a \texttt{CSA} that only encodes stop identifiers, and two \texttt{WM}: one for line identifiers (\texttt{WML}) and one for journey codes (\texttt{WMJ}).
+    We also measured the occupied space of \gls{xctr}~in Table~\ref{tab:ctr}, where three structures must be taken in consideration: a \texttt{CSA} that only encodes stop identifiers, and two \texttt{WM}: one for line identifiers (\texttt{WML}) and one for journey codes (\texttt{WMJ}).
     
     \begin{table}
-        \caption{Space requirements for the \texttt{CSA} (a), the \texttt{WMJ} (b) and the \texttt{WML} (c) from \ctr}
+        \caption{Space requirements for the \texttt{CSA} (a), the \texttt{WMJ} (b) and the \texttt{WML} (c) from \gls{xctr}}
         \label{tab:ctr}
         \begin{subtable}[t]{.28\linewidth}
         \vspace{-12pt}
@@ -507,19 +509,19 @@
         \end{subtable}%
     \end{table}
     
-    When comparing to the structures of \ttctr, we can observe that \texttt{WMJ} of \ctr, despite achieving a marginally better compression than the \texttt{WM} from \ttctr, requires considerably more space, as the sequence of jcodes from \ctr~includes final stops, while in \ttctr~they are skipped.
+    When comparing to the structures of \gls{ttctr}, we can observe that \texttt{WMJ} of \gls{xctr}, despite achieving a marginally better compression than the \texttt{WM} from \gls{ttctr}, requires considerably more space, as the sequence of jcodes from \gls{xctr}~includes final stops, while in \gls{ttctr}~they are skipped.
     
-    Contrary to the case of \texttt{WMJ} or the \texttt{WM} from \ttctr, we are able to achieve significant compression with \texttt{WML}. When using the baseline bitvector \texttt{RG32}, we are already obtaining a very compact representation, due to the optimization discussed in Section~\ref{sec:ctr}, where we keep a separate \texttt{WM} aligned to each stop from the \texttt{CSA}, resulting in much shorter \texttt{WM}s. The further compression achieved with the \texttt{RRR} bitvectors is possible because the stop entries in the \texttt{CSA} are sorted by either the final stop the user alights to or the next stop to board, making the aligned sequence of lines very predictable. Additionally, as our \texttt{CSA} maintains the order of trips from the original text in the $\$$ section, leading to the formation of clusters in the first \texttt{WML}.
+    Contrary to the case of \texttt{WMJ} or the \texttt{WM} from \gls{ttctr}, we are able to achieve significant compression with \texttt{WML}. When using the baseline bitvector \texttt{RG32}, we are already obtaining a very compact representation, due to the optimization discussed in Section~\ref{sec:ctr}, where we keep a separate \texttt{WM} aligned to each stop from the \texttt{CSA}, resulting in much shorter \texttt{WM}s. The further compression achieved with the \texttt{RRR} bitvectors is possible because the stop entries in the \texttt{CSA} are sorted by either the final stop the user alights to or the next stop to board, making the aligned sequence of lines very predictable. Additionally, as our \texttt{CSA} maintains the order of trips from the original text in the $\$$ section, leading to the formation of clusters in the first \texttt{WML}.
     
-    In Table~\ref{tab:comp}~we also evaluate the compression of the overall \ttctr~and \ctr~representations with respect to a plain representation of the user trips that we use as input, which are the triplets $<s,l,j>$ seen in Section~\ref{sec:ttctr}, where the stop identifiers, line identifiers and journey codes had to be represented with 14, 11 and 14 bit integers, respectively. We only show the compression ratios for the four configurations that will be tested in the following Section~\ref{sec:time}, combining two $t_{\Psi}$ and two \texttt{WM} configurations\footnote{In case of \ctr, this refers to bitvectors from both \texttt{WML} and \texttt{WMJ}.}. A more realistic baseline would be a relational database representation, where additional fixed-width integers would be needed to maintain foreign key relations, thus requiring much more space than our chosen baseline.
+    In Table~\ref{tab:comp}~we also evaluate the compression of the overall \gls{ttctr}~and \gls{xctr}~representations with respect to a plain representation of the user trips that we use as input, which are the triplets $<s,l,j>$ seen in Section~\ref{sec:ttctr}, where the stop identifiers, line identifiers and journey codes had to be represented with 14, 11 and 14 bit integers, respectively. We only show the compression ratios for the four configurations that will be tested in the following Section~\ref{sec:time}, combining two $t_{\Psi}$ and two \texttt{WM} configurations\footnote{In case of \gls{xctr}, this refers to bitvectors from both \texttt{WML} and \texttt{WMJ}.}. A more realistic baseline would be a relational database representation, where additional fixed-width integers would be needed to maintain foreign key relations, thus requiring much more space than our chosen baseline.
     
     \begin{table}
         \centering
-        \caption{Compression of \ttctr~and \ctr~when compared to a plain representation of the user trips with fixed-width integeres}
+        \caption{Compression of \gls{ttctr}~and \gls{xctr}~when compared to a plain representation of the user trips with fixed-width integeres}
         \label{tab:comp}
         \begin{tabular}{|c|c|c|c|c|c|c|c|}
         \cline{3-8}
-        \multicolumn{2}{c}{} & \multicolumn{2}{|c|}{plain} & \multicolumn{2}{|c|}{\ttctr} & \multicolumn{2}{|c|}{\ctr} \\
+        \multicolumn{2}{c}{} & \multicolumn{2}{|c|}{plain} & \multicolumn{2}{|c|}{\gls{ttctr}} & \multicolumn{2}{|c|}{\gls{xctr}} \\
         \hline
         $t_{\Psi}$ & \texttt{WM} & Size & Comp. (\%) & Size & Comp. (\%) & Size & Comp. (\%) \\
         \hline
@@ -531,13 +533,13 @@
         \end{tabular}
     \end{table}
     
-    It is clear to see that when compared to the same baseline, the compression ratios of \ctr~are inferior to the ones of \ttctr, for any configuration tested. This result is not surprising considering that \ctr~separates the line identifiers into a separate \texttt{WM}, that is proven less compressible than a \texttt{CSA} for repetitive sequences, although we have also observed that although the \texttt{CSA} is slightly smaller in \ctr, the compression ratios are worse than the ones in \ttctr~when we compare to a smaller baseline that only represents the sequence of stops, with no information about lines. In the next section we will demonstrate the advantages of this separation of line identifiers in query performance.
+    It is clear to see that when compared to the same baseline, the compression ratios of \gls{xctr}~are inferior to the ones of \gls{ttctr}, for any configuration tested. This result is not surprising considering that \gls{xctr}~separates the line identifiers into a separate \texttt{WM}, that is proven less compressible than a \texttt{CSA} for repetitive sequences, although we have also observed that although the \texttt{CSA} is slightly smaller in \gls{xctr}, the compression ratios are worse than the ones in \gls{ttctr}~when we compare to a smaller baseline that only represents the sequence of stops, with no information about lines. In the next section we will demonstrate the advantages of this separation of line identifiers in query performance.
     
     \subsection{Query performance}
     \label{sec:time}
-    We have implemented the most adequate queries for \ttctr~and \ctr~from those described in Section~\ref{sec:rq}, and measured their average execution time from 100.000 randomly generated queries on a Intel Xeon E5-2620v4@2.1 GHz machine. In this section we will only discuss four of the possible configurations tested for both \ttctr~and \ctr, with t$_{\Psi}$ values of 32 and 512 combining with \texttt{WM} using either uncompressed bitvectors (\texttt{RG32}) or the most compressed (\texttt{RRR128}). These four configurations should be illustrative enough to provide an understanding of the space-time trade-offs of our approaches, although the execution times for all tested configurations can be found in the Appendix A.
+    We have implemented the most adequate queries for \gls{ttctr}~and \gls{xctr}~from those described in Section~\ref{sec:rq}, and measured their average execution time from 100.000 randomly generated queries on a Intel Xeon E5-2620v4@2.1 GHz machine. In this section we will only discuss four of the possible configurations tested for both \gls{ttctr}~and \gls{xctr}, with t$_{\Psi}$ values of 32 and 512 combining with \texttt{WM} using either uncompressed bitvectors (\texttt{RG32}) or the most compressed (\texttt{RRR128}). These four configurations should be illustrative enough to provide an understanding of the space-time trade-offs of our approaches, although the execution times for all tested configurations can be found in the Appendix A.
     
-    We demonstrate the main advantage of \ctr~over the older \ttctr~ in the Figure~\ref{fig:start}b, where restricting a line or a time interval for an \texttt{end\_X} query is very expensive for \ttctr~ due to its separate vocabulary for final stops, requiring to query the \texttt{CSA} for every possible stop that could have been boarded before X to restrict a line. In the Figure~\ref{fig:start}a it is also possible to see how the performance of \ctr~degrades less with a highly compressed \texttt{CSA} for the query \texttt{start\_X$_T$}, where even queries over a compressed \texttt{WML} are faster than queries over the \texttt{CSA}.
+    We demonstrate the main advantage of \gls{xctr}~over the older \gls{ttctr}~ in the Figure~\ref{fig:start}b, where restricting a line or a time interval for an \texttt{\endX} query is very expensive for \gls{ttctr}~ due to its separate vocabulary for final stops, requiring to query the \texttt{CSA} for every possible stop that could have been boarded before X to restrict a line. In the Figure~\ref{fig:start}a it is also possible to see how the performance of \gls{xctr}~degrades less with a highly compressed \texttt{CSA} for the query \texttt{\startX$_T$}, where even queries over a compressed \texttt{WML} are faster than queries over the \texttt{CSA}.
     
     \marginpar{Consider changing the order of the bars}
     
@@ -554,13 +556,13 @@
     \caption{}
     \vspace{-12pt}
     \end{subfigure}
-    \caption{Comparison of \texttt{start\_X$_{LT}$} (a) and \texttt{end\_X$_{LT}$} (b) queries, with all variants. Note the logarithmic scale for the y axis in (b)}
+    \caption{Comparison of \texttt{\startX$_{LT}$} (a) and \texttt{\endX$_{LT}$} (b) queries, with all variants. Note the logarithmic scale for the y axis in (b)}
     \label{fig:start}
     \end{figure}
     
     Remember that restricting both the line and time is always cheaper than only restricting the time, as for the later more operations need to be performed to filter every line. This explains why $T$ queries are always slower than $LT$ queries. This is true for both representations, with any configuration and query.
     
-    We can see more examples of this difference in performance between these two representations with the \texttt{from\_X\_to\_Y} queries in the Figure~\ref{fig:xy0}, whenever the end lines or times are restricted. Additionally, we can yet again observe how using the most sparse sampling of $\Psi$ affects much more the \ttctr~than the \ctr, with the performance of \texttt{from\_X$_{T}$\_to\_Y} consistent with the \texttt{start\_X$_T$} shown in Figure~\ref{fig:start}a.
+    We can see more examples of this difference in performance between these two representations with the \texttt{from\_X\_to\_Y} queries in the Figure~\ref{fig:xy0}, whenever the end lines or times are restricted. Additionally, we can yet again observe how using the most sparse sampling of $\Psi$ affects much more the \gls{ttctr}~than the \gls{xctr}, with the performance of \texttt{from\_X$_{T}$\_to\_Y} consistent with the \texttt{\startX$_T$} shown in Figure~\ref{fig:start}a.
     
     \begin{figure}[ht]
     \begin{subfigure}{0.5\linewidth}
@@ -581,7 +583,7 @@
     
     The performance of both representations can sometimes improve  when more selective restrictions are added, where the execution is cut short when no matching trips are found, before evaluating further restrictions. For this reason, the average times for \texttt{from\_X$_{T}$\_to\_Y$_{L}$} and \texttt{from\_X$_{LT}$\_to\_Y$_{L}$} are shorter than those of \texttt{from\_X\_to\_Y$_{L}$} and \texttt{from\_X$_{L}$\_to\_Y$_{L}$}.
     
-    When restricting to the end time, \ctr~consistently outperforms \ttctr, as shown in the Figure~\ref{fig:xy2}. which is to be expected considering the large number of times that the \texttt{CSA} from \ttctr~needs to be queried, yielding results similar to those from the Figure~\ref{fig:start}b where the end time is also restricted.
+    When restricting to the end time, \gls{xctr}~consistently outperforms \gls{ttctr}, as shown in the Figure~\ref{fig:xy2}. which is to be expected considering the large number of times that the \texttt{CSA} from \gls{ttctr}~needs to be queried, yielding results similar to those from the Figure~\ref{fig:start}b where the end time is also restricted.
     
     \begin{figure}[ht]
     \begin{subfigure}{0.5\linewidth}
@@ -600,9 +602,9 @@
     \label{fig:xy2}
     \end{figure}
     
-    The high selectivity of time restrictions explain why \ttctr~appears to become more competitive with the most restrictive queries of Figure~\ref{fig:xy2}b. However, its query time still increases several times when the \texttt{CSA} is highly compressed.
+    The high selectivity of time restrictions explain why \gls{ttctr}~appears to become more competitive with the most restrictive queries of Figure~\ref{fig:xy2}b. However, its query time still increases several times when the \texttt{CSA} is highly compressed.
     
-    The only query for which \ttctr~is clearly preferred over \ctr~is \texttt{board\_X}, with any restriction, as can be seen in the Figure~\ref{fig:board}a. Both for \texttt{board\_X} and \texttt{board\_X$_{L}$}, \ttctr~takes on average less than one microsecond per query, as the only operations needed are two constant time $select$ over the bitvector \texttt{D} from the \texttt{CSA}, while \ctr~needs to subtract the occurrences of $X\$$ (as those are alighting stops, not boarding), for which $\Psi$ must be accessed. This advantage is carried on the queries with time restrictions as well.
+    The only query for which \gls{ttctr}~is clearly preferred over \gls{xctr}~is \texttt{\boardX}, with any restriction, as can be seen in the Figure~\ref{fig:board}a. Both for \texttt{\boardX} and \texttt{\boardX$_{L}$}, \gls{ttctr}~takes on average less than one microsecond per query, as the only operations needed are two constant time $select$ over the bitvector \texttt{D} from the \texttt{CSA}, while \gls{xctr}~needs to subtract the occurrences of $X\$$ (as those are alighting stops, not boarding), for which $\Psi$ must be accessed. This advantage is carried on the queries with time restrictions as well.
     
     \begin{figure}[ht]
     \begin{subfigure}{0.5\linewidth}
@@ -617,10 +619,10 @@
     \caption{}
     \vspace{-12pt}
     \end{subfigure}
-    \caption{Comparison of \texttt{board\_X$_{LT}$} queries, with all variants (a) and also with all variants of \acumm~(b). Note the logarithmic scale in (b), as well as the measurements in nanoseconds}
+    \caption{Comparison of \texttt{\boardX$_{LT}$} queries, with all variants (a) and also with all variants of \gls{tm}~(b). Note the logarithmic scale in (b), as well as the measurements in nanoseconds}
     \label{fig:board}
     \end{figure}
     
-    When comparing the best performing configuration of \ttctr~to the different variants of \acumm~discussed in Section~\ref{sec:acumm}, we can observe wildly different results in Figure~\ref{fig:board}b depending on the variant of the \texttt{board\_X} query used. The biggest difference is observed when comparing queries that filter by time, which use the \textt{WM} in \ttctr, while for any variant of \acumm~solves it in a small number of constant time operations. Another evident difference occurs within each \acumm~variant, where the queries that are restricted to a single line are significantly faster than those that consider every line, as the later must query a different matrix for every line that the stop appears in. It was also expected to see the compressed variants \texttt{Diff} and \texttt{Blocks} perform slower than the uncompressed \texttt{Sum}, as the two former store relative values that must be resolved, increasing the number of memory accesses, although still by a constant factor. This also hints for a reason why the queries \texttt{board\_X} and \texttt{board\_X$_{L}$} seem to be slightly faster in \ttctr~than any of the \acumm, as a higher number of accesses over larger memory regions in \acumm~makes cache misses more frequent. Nevertheless, the difference is very small, within the same microsecond.
+    When comparing the best performing configuration of \gls{ttctr}~to the different variants of \gls{tm}~discussed in Section~\ref{sec:acumm}, we can observe wildly different results in Figure~\ref{fig:board}b depending on the variant of the \texttt{\boardX} query used. The biggest difference is observed when comparing queries that filter by time, which use the \textt{WM} in \gls{ttctr}, while for any variant of \gls{tm}~solves it in a small number of constant time operations. Another evident difference occurs within each \gls{tm}~variant, where the queries that are restricted to a single line are significantly faster than those that consider every line, as the later must query a different matrix for every line that the stop appears in. It was also expected to see the compressed variants \texttt{Diff} and \texttt{Blocks} perform slower than the uncompressed \texttt{Sum}, as the two former store relative values that must be resolved, increasing the number of memory accesses, although still by a constant factor. This also hints for a reason why the queries \texttt{\boardX} and \texttt{\boardX$_{L}$} seem to be slightly faster in \gls{ttctr}~than any of the \gls{tm}, as a higher number of accesses over larger memory regions in \gls{tm}~makes cache misses more frequent. Nevertheless, the difference is very small, within the same microsecond.
     
-    Obviously, \acumm~may be used to solve a grater number of queries in much faster time than either \ttctr~or \ctr. We did not find it interesting to report the run times for those queries as they are mostly equal to those shown in Figure~\ref{fig:board}b, due to being resolved with the same CPU operations. Refer to the complexities Table~\ref{tab:queries} to obtain an accurate estimate of the time that it would take for \acumm~to solve each of the supported queries.
+    Obviously, \gls{tm}~may be used to solve a grater number of queries in much faster time than either \gls{ttctr}~or \gls{xctr}. We did not find it interesting to report the run times for those queries as they are mostly equal to those shown in Figure~\ref{fig:board}b, due to being resolved with the same CPU operations. Refer to the complexities Table~\ref{tab:queries} to obtain an accurate estimate of the time that it would take for \gls{tm}~to solve each of the supported queries.
