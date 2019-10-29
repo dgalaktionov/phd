@@ -379,7 +379,7 @@
 	In this section we discuss the practical performance of our structures. To evaluate them, we have run randomly generated queries against \gls{tm}, \gls{ttctr}~and \gls{xctr}~built over a dataset of user trips over a real transportation network (Section~\ref{sec:data}), with several configurations to study the trade-off between compression (Section~\ref{sec:space}) and query efficiency (Section~\ref{sec:time}), and testing different configurations for each individual structure.
 
     \subsection{Experimental dataset}
-    \label{sec:ctr:exp:data}
+    \label{sec:newctr:exp:data}
     Using real GTFS\footnote{\url{https://developers.google.com/transit/gtfs/}} descriptions of bus routes and schedules, we generated a synthetic dataset of user trips that aims to realistically imitate real user behaviour over a month. In this work, we have combined the GTFS obtained for the networks of urban\footnote{Provided by EMT \url{http://www.emtmadrid.es}} and interurban\footnote{Provided by CRTM \url{http://www.crtm.es}} buses for the city of Madrid. The network model was extracted and user trips were generated with the following general steps:
     
     \begin{enumerate}

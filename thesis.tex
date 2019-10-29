@@ -262,6 +262,7 @@
 	In order to support $\cnt_{a,b}(S,i,j)$ more efficiently, Hu-Tucker codes \cite{hu1971optimal} can be used instead. While the compression achieved by a \gls{htwt} \cite{barbay2009compressed} degreades slightly with respect to using Huffman coding, yielding a bound of $n(H_0(S)+2) + o(n(H_0(S)+1)) +  O(\sigma \log n)$\footnote{This can be reduced to  $nH_0(S) + o(n(H_0(S)+1)) +  O(\sigma \log n)$ by using compressed bitvectors as well.}, the codes for adjacent symbols are lexicographically contiguous. Therefore, we can guarantee a bound of $O(\log\sigma)$ for $\cnt_{a,b}(S,i,j)$ again. An example of a \gls{htwt} in practice can be found in the Figure~\ref{fig:wtwm}.
 	
 	\subsection{Wavelet Matrix}
+	\label{sec:wm}
 	For large alphabets, the size of the \gls{wt} is affected by the term $ O(\sigma \log n)$. A {pointerless}
     \gls{wt} \cite{CNspire08.1} permits to remove\footnote{In a pointerless Huffman-shaped \gls{wt}  a
     term $O(\sigma \log\log n)$ still remains due to the need of storing the canonical Huffman model.} 
@@ -364,7 +365,7 @@
     compression of $\Psi$ was obtained by combining differential encoding of runs with Huffman and
     run-length encoding.
 
-%\include{1-ctr}
+\include{1-ctr}
 	
 \include{2-xctr}
 	
