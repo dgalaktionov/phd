@@ -555,7 +555,7 @@
 	A possible solution to efficiently solve $\endT(1,t_1-1)$, would require to augment our temporal
 	component, in parallel with $Icode^{\Psi}[2..|\mathcal{T}|+1]$, with another \gls{wt}-based representation of the 
 	ending times for our $|\mathcal{T}|$ trips. This would permit to report the number of trips
-	ending before $t_1$ as $\cnt'(2,|\mathcal{T}|+1,0,t_1-1)$, but would increase the overall size of \gls{ctr}.
+	ending before $t_1$ as $\cnt^{LR}(2,|\mathcal{T}|+1,0,t_1-1)$, but would increase the overall size of \gls{ctr}.
 	Yet, note that even without keeping ending-times, we could 
 	provide rather accurate estimations of \tripT\ for a system administrator. For example, using \loadT\
 	to compute the number of times each trip went through any node during the time interval $[t_1..t_2]$, 
