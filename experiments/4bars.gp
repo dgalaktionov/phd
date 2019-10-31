@@ -5,7 +5,7 @@ set terminal epscairo size 5,2.75 font 'Helvetica, 12'
 #set output
 set encoding utf8
 
-set xrange [-0.5:3.5]
+set xrange [-0.5:2.5]
 set style line 2 lc rgb 'black' lt 1 lw 1
 set style data histogram
 set style histogram cluster gap 1
