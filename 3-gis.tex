@@ -99,14 +99,116 @@
     \subsubsection{\bf Map viewer.}
     The Map viewer in Trippy makes up the user interface. It is in charge of visualizing the elements of the network, and handles users’ interaction. Apart from typical functions to move around a map (i.e. zoom in/out, span, etc.), the user can interact with the elements within the map (e.g. a stop or a set of stops within a region) and access functions related to them. Those functions are supported by our backend.
     
-    The Map viewer was built with a web map using the {\em Leaflet} library\footnote{\url{https://leafletjs.com}} . With this library, it is simple to make an interactive map consisting of several interchangeable WMS and vector layers, and also to efficiently represent thousands of points or other vector-type elements.
+    The Map viewer was built with a web map using the {\em Leaflet} library\footnote{\url{https://leafletjs.com}} . With this library, it is simple to make an interactive map consisting of several interchangeable \gls{wms} and vector layers, and also to efficiently represent thousands of points or other vector-type elements.
     For additional controls, communication with the backend, state synchronization among our implemented controls and the map, we have used Vue.js\footnote{\url{https://vuejs.org}}, which is a popular web framework based on components.
 
 	
 	\section{API}
 	\label{sec:api}
-	A nice and easy way to make queries and return data.
+    As previously seen in the Section~\ref{sec:newctr:algo:analysis}, by basing our interface on \gls{xctr} we are able to solve a broad range of transport-related queries, including but not limiting to:
+
+    \begin{itemize}
+    %\item[\textbf{Transport Load Queries}]
+    %\item How many passengers boarded or alighted on a particular stop?
+    \item How many passengers boarded or alighted on a particular stop during a specific time interval (e.g. this evening, yesterday)?
+    %\item How many passengers were on a given bus in a particular moment?
+    %\item At what time is a specific stop more crowded?
+    %\item[\textbf{Travel Pattern Queries}]
+    \item How frequently is a stop X used to switch lines during rush hours?
+    \item How many passengers started/ended their trips at a specific stop X?
+    \item How many passengers started their trips at stop X and ended them at stop Y during a given time interval?
+    \item How many travelers had to switch lines to get to their destination during a given time interval?
+    \item How many times a line is used as a start or end of a trip? Alternatively, how many times is the line used to switch between two other lines, but not as an origin nor final destination?
+    %\item Calculate the arithmetic mean \ojo{llenar con algo verídico}
+    \end{itemize}
+    
+    Along with these basic queries supported originally by \gls{xctr}, in this work, we have extended its functionality to also support a range of more complex queries that were  solved as a combination of the previous ones:
+    
+    \begin{itemize}
+        \item How many passengers traveled from area A to area B during a time interval? 
+        \item At what time is a specific stop more crowded?
+        \item At what time does a line get more crowded?
+        %\item What extent of the city can be reached within one hour from a certain residential area during the morning rush hour?
+    \end{itemize}
+    
+    To support these queries, we have developed API Endpoints that we are going to discuss in the rest of this section. Note that a single request will frequently be responsible for more than one kind of query, as we it is often more practical and efficient to perform multiple types queries over the same element in \gls{xctr} for one single API request.
+    
+    \subsection{Stops endpoint}
+    This endpoint is implemented as an {\em HTTP GET} request with the format \texttt{/stop/X}, where \texttt{X} corresponds to the queried stop identifier. This request returns the following information of the stop \texttt{X}:
+    
+    \begin{itemize}
+        %\item The name of the stop.
+        %\item The identifiers of the lines this stop belongs to.
+        \item Number of passengers that had boarded.
+        \item Number of times the stop was used to start a trip.
+        \item Number of times the stop was used to end a trip.
+    \end{itemize}
+    
+    Additionally, this request accepts parameters to restrict the \textit{line identifier}, \textit{lower time limit} and \textit{upper time limit}, which will filter the numerical results mentioned above.
+    
+    When this endpoint is queried with no parameters (\texttt{/stop/}), it will return the list of all the stops in the network, which is needed to display them on a map and initialize the interface components. Consequently, the information for each stop returned by this query will consist of the following fields:
+    
+    \begin{itemize}
+        \item Identifier.
+        \item Name of the stop.
+        \item Identifiers of the lines this stop belongs to.
+        \item Geographical coordinates of the location of the stop.
+    \end{itemize}
+    
+    \subsection{Lines endpoint}
+    As with stops, there also exists a line endpoint that accepts {\em HTTP GET} requests of \texttt{/line/X}, being \texttt{X} the identifier of a line. The information returned is also the equivalent of the one returned by the stop endpoint, but concerning a whole line instead of a single stop:
+    
+    \begin{itemize}
+        \item Number of passengers that had boarded (and alighted).
+        \item Number of times the line was used to start a trip.
+        \item Number of times the line was used to end a trip.
+    \end{itemize}
+    
+    This endpoint accepts filtering by a time interval with the parameters of \textit{upper and lower time limits}.
+    
+    There is also the listing request \texttt{/line/}, to obtain a list of existing lines with the following fields:
+    
+    \begin{itemize}
+        \item Identifier.
+        \item Name of the line.
+        \item Identifiers of the stops this line contains, in order.
+        \item If exists, the path of the line, encoded as a sequence of coordinates\footnote{This information is optional, without it a line on the map can be displayed by simply connecting points with a straight line (which may not follow any road or track) or using an existing \gls{wms} layer with lines.}.
+    \end{itemize}
+    
+    \subsection{Trips endpoint}
+    This endpoint is dedicated to return one single field: the number of trips that have started at any of the stops from \texttt{X$^*$} to finally end at any stop from \texttt{Y$^*$}, where both \texttt{X$^*$} and \texttt{Y$^*$} can be either a single stop or a collection of them. Due to technical reasons\footnote{The requests my contain thousands of stops, surpassing the length limits of {\em GET} requests in many web servers, proxies and even browsers.}, this requests are implemented using the {\em POST} method over the \texttt{/trip} endpoint.
+    
+    Both \texttt{X$^*$} and \texttt{Y$^*$} can be restricted by a \textit{line} parameter (one line for starting stops and another for ending) and also \textit{lower and upper times} (starting or ending times of the trip contained within the limits). These requests can be noticeably slow when the number of queried stops is very high (in the order of thousands).
+    
+    \subsection{Histograms endpoints}
+    These are two endpoints that handle {\em HTTP GET} requests about time series of boarding events either for a stop (\texttt{/hstop/X}) or a line (\texttt{/hline/X}). The returned data is a sequence of pairs $<t,n>$, where $t$ is a timestamp and $n$ is the number of boardings for that timestamp.
+    
+    There request may be bound to a time window (by specifying \textit{lower and upper time limits}, as in the other endpoints) and also accepts an additional parameter of \textit{sampling} that, if present, will group the number boardings by a set number of seconds $s$ into bins, each time $t$ delimiting the start of a new bin that will correspond to the period $[t..t+s)$. A reasonably large sampling parameter may not only save bandwidth as less information needs to be transmitted, but also speed up the request\footnote{In \gls{xctr}, a large sampling value may translate into more than one journey code for a line, thus making it possible to return a result before reaching the last level of the \texttt{WMJ} in the $\cnt$ operation.}.
 	
 	\section{User Interface}
 	\label{sec:ui}
 	With a lot of screencaps that are going to take like 10 pages! Maybe even an evaluation section (which would require me to make it actually work well!).
+	
+	We aimed at providing an accessible and intuitive user interface for Trippy. Its main view is presented in Figure~\ref{fig:genericLines} (in the following examples we show some screenshots from the case study in Section~\ref{proof}; i.e. trips on bus in Madrid). % it is shown a generic view of the interface. \ojo{Decir que en la genérica se puden pinchar las líneas para tener alguna info o algo así / en caso contrario sacarla porque no aporta demasiado esta figura}
+    The interface of Trippy consists of a map with all the {\em bus stops} represented as blue points and the different {\em bus lines}  represented as colored lines. The user can select those elements to obtain related information. In addition, Four spatial/temporal filters allow the user to refine the displayed data, filtering by stops or time and one additional filter enables the user to refine results by line. The {\em filtering-by-stop} area allows to restrict queries to a given starting or ending stop (we can either look for their name in the filtering boxes or select them within the map). Besides, we can also provide a {\em filtering-by-datetime} which restricts also those queries to the specified starting and ending timestamps. For example, in Figure~\ref{fig:trippyIntDesc} we are querying the number of users that ``{\em boarded into a vehicle; switched-line; started a trip; ended a trip}" at the stop named {\em ``Juan de Toledo - Estaci\'on de buses"} from {\em `2019-03-12@16:00h'} to {\em `2019-03-13@16:00h'} searching on any line going through this point.
+    
+    Trippy\ supports all the interesting transport managing queries described in the Section~\ref{sec:api}. Among them, we have also given support for new aggregation queries not defined in \cite{daniil18} such as ``\textit{How many passengers moved from one region to another}".
+     %
+    %The interesting transport managing queries that supports Trippy\ where described in Section~\ref{ourQueries}. Among all the queries supported, b
+    Below we discuss how an user could invoke three representative queries and how they would be executed on the viewer:
+    
+    \begin{itemize}
+        \item \textbf{Stop information:} This query can be made either by selecting a point directly on the map or by searching for the name of a particular bus stop on the first assisted search text box (i.e. filter by starting start/stop area). As a result, a pop up box is immediately displayed over the selected point. This pop up shows the name of the stop, the number of passengers that boarded there, the number of passengers that switched bus in that stop and the amount of people that started or ended their trip at this location. It also includes average number of times the stop was boarded, trips were started and ended per bus journey (that is, for each time a bus stops at that stop).
+        
+        Below this information it also appears a button that allow to display another pop-up window with a breakdown of this information by journey, making it possible to analyze the load of a particular stop over the different hours of the day.
+    
+        Optionally, these results can be constrained to time interval by applying the time filters as shown in Figure~\ref{fig:trippyIntDesc}. 
+        
+        
+        \item \textbf{Trajectories/Trips between two stops:} In this case our goal is to solve the queries responsible for counting the number of trips done between two bus stops. The user just needs to type the name of both stops on the text boxes and a line describing the trajectory will appear joining the starting point and the final one going through all the intermediate stops. As it is shown in \ref{fig:traj}, this line can have \textit{blank spaces} as it considers switches between lines that could not be at the same stop (i.e., a passenger gets off in one stop, crosses the street and gets on in a bus from another line). A pop up also appears near the line showing the total amount of trips that meet the requirements. In addition, those results can also be filtered out by time.
+        
+        
+        \item \textbf{Displacements between areas:} Even though in \cite{daniil18} \gls{xctr}\ was not including the possibility of aggregating the number of users that started a trip in a spatial region and ended such trip in another region, we have now included this new query in Trippy.  Note that since the operation is not directly supported by \gls{xctr}, we are forced to obtain the number of trips for each pair of stops $\langle s_i,s_e\rangle$, where $s_i$ is a stop within the starting region (with $n$ stops), and $s_e$ is a stop within the ending region (with $m$ stops). Even though we have to perform $n \times m$ of those queries, the efficiency of \gls{xctr}\ at solving such queries ensured reduced response times.  %One of the main contributions of this study. This query was not possible in the previous work where the structures used in the lower level were described.
+        
+        Recall that the goal of this operation is to find the number of passengers that have traveled from one area or neighborhood to another. For that purpose, the user just needs to press the  {\sc shift-key} on the keyboard and select with the pointer the areas of interest, first the origin and then the destination. An arrow joining the two areas will appear, and a a pop-up showing the number of trips that fulfill the criteria will be displayed. Once again, this query can be refined with the time filters. A visual example is shown in Figure~\ref{fig:areas}.
+    \end{itemize}
