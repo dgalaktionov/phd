@@ -9,11 +9,12 @@
 \label{sec:gis}
 	While in the previous part of this work we have presented compact representations that are capable of efficiently handling large collections of trips over both streets and public transportation networks, in order for it to be actually usable by city management and network administrators a front-end interface must be conceived.
 	
-	In order to facilitate this kind of analysis, we have developed a proof-of-concept map-based interface based on \gls{gis} and web technologies, that allows to exploit some of the capabilities of \gls{xctr} to visualize and query transport demand information over a real transportation network. This constitutes a tool is designed to aid the decision-making process for a public transportation company, and can be easily adapter for different networks and use cases.
+	In order to facilitate this kind of analysis, we have developed a proof-of-concept map-based interface based on \gls{gis} and web technologies called \textbf{Trippy}, that allows to exploit some of the capabilities of \gls{xctr} to visualize and query transport demand information over a real transportation network. This constitutes a tool is designed to aid the decision-making process for a public transportation company, and can be easily adapter for different networks and use cases.
 	
 	In this chapter, we will begin by contextualizing the use case in more detail. After that, we provide an overview of our architecture, both from a functional perspective and a technical one. After that, we will present our API for querying the underlying structure, and finally our prototype user interface.
 	
 	\section{Motivation}
+	\label{sec:gis:intro}
     Collecting historic locations and movement patterns is currently a hot topic, as more mobile phone corporations, car companies, and other organizations are trying to get advantage on the market through these modern initiatives. While users are tracked and benefit of their services (avoiding traffic congestion, locating restaurants and monuments, etc. on Google Maps; getting the best route on public transport to go somewhere or getting real-time schedule for a bus/train line, etc) those companies are also obtaining valuable data that can be exploited to obtain a profit or to improve the assignment of their resources (e.g., personalized recommendations and advertising, estimating the number of passengers and consequently the number of trains or buses that are required to support all the passengers that will use a line today, etc).
     
     If we focus in public transport, such as buses or trains, we find that most transport companies have been focused mainly on providing helpful information to their passengers regarding the existing offer, hence providing non only information related to their transport network (e.g. maps with the lines, their schedule, etc.) but also, in many cases, real-time information with the actual position of a vehicle, remaining time to destination, remaining time until next vehicle arrives, etc. 
@@ -47,10 +48,65 @@
     Given that we are focusing on a tool specifically for public transportation networks, our interface is built over the \gls{xctr} (introduced in the Section~\ref{sec:newctr:str:xctr}), which has allowed us to achieve fast response times in our tested use cases. In any case, our proposed tool is flexible enough to allow data to be represented in a more traditional way, such as with a relational \gls{dbms}.
 	
 	\section{Architecture}
-	From a functional perspective and then a technological one.
+	In this section we discuss the overall architecture of Trippy, our interface based on \gls{xctr}. We start by describing it from the functional perspective, following the data flow from the data sources until the presentation in the user interface. We complement this description with a technical architecture overview, speaking about how the individual components are integrated together and facilitate an understanding of the decisions behind the technological choices.
+	
+	\subsection{Functional architecture}
+	We have designed Trippy to be as flexible as possible, ensuring that it can operate with any network and trip descriptions that can be adapted to the model from the Figure~\ref{fig:er}, which is elementary enough to apply to most of the current transportation systems. For an overview of this data flow, refer to the diagram in the Figure~\ref{fig:arch:functional}.
+	
+	\begin{figure}[ht]
+		\begin{center}
+			{\includegraphics[width=0.75\textwidth]{figures/funcional_trippy.eps}}
+		\end{center}
+		\caption{Functional architecture of Trippy.}
+		\label{fig:arch:functional}
+	\end{figure}
+	
+	Although our system is oblivious to the specific data sources, we have successfully experimented adapting information collected from \gls{gtfs} sources, as well as OpenStreetMap, to obtain a description of a public transportation network. Each different source or format would require a custom conversion to adapt it to our model, which is one of the reasons that we had for standing against overcomplicating our model. As for the passenger trips, they must be described in terms of stages (boarding and alighting pairs) that are related to stops and journeys. The amount of preprocessing needed will depend on the source of the data, as most \gls{afc} systems do not directly record the alightings and the specific journey within the day will have to be estimated based on timestamps.
+	
+	We have also opted for different persistence options for the network description and the passenger trips, as we are interested in using our \gls{xctr} for the later, while the former does not pose any technological challenges that would warrant the use of a compact representation.
+	
+	Finally, these two data repositories are used to feed an API over which requests can be made, which is going to be exploited by the user interface. The specific supported requests are discussed in the Section~\ref{sec:api}.
+	
+	\subsection{Technical architecture}
+	We have designed and implemented the infrastructure needed to solve our query needs, which are focused on the usage of network elements, as previously explained in Section~\ref{sec:gis:intro}. 
+	%It is also worth highlighting that apart from that main target of Trippy, the second challenge addressed in our system is to efficiently represent massive datasets of trajectories formed by user's trips along a public transportation network. 
+	To visualize and query on these network elements, we need to work with a representation of the network itself. Specifically, we represent the model for trips over a public transport network shown in the Figure~\ref{fig:er}, extended with spatial attributes (gps coordinates) for the stops and lines. Implementing this model for networks does not pose any challenge, as this information is rather static (it is not expected to grow significantly) and only requires a small amount of space in comparison to passenger trips. Therefore, a \gls{rdbms} representation can be used  to represent the elements of the network. On the other hand, we use our compact representation \gls{xctr} for the trips, that we are going to rely on for most of our queries. The reduced size of this autoindexed representation allows us to keep it in primary memory, making it outperform any traditional indexing alternative that is based on secondary memory.
+
+    The overall technical architecture of our proposal is presented in Figure~\ref{fig:arch:real}. In the bottom part, we can find the backend
+    %Before we explain each component in detail, we present a diagram for the overall architecture in Figure~\ref{fig:arch}. It is based on 
+    that includes two sources of information: the former one includes the network representation and relies on a small read-only database implemented in SQLite\footnote{\url{https://sqlite.org/index.html}}; the other source includes a \gls{xctr}, for our compact representation of the passenger trips.
+	
+	\begin{figure}[ht]
+		\begin{center}
+			{\includegraphics[width=0.5\textwidth]{figures/tview.png}}
+		\end{center}
+		\caption{Technical architecture of Trippy.}
+		\label{fig:arch:real}
+	\end{figure}
+	
+	The backend is implemented in the Go language, and provides a uniform API to query the information sources. This is accessed by our GIS frontend (top of Figure~\ref{fig:arch:real}), which is in charge of displaying the transport network on a web map and allows the final user to make queries by interacting with the elements of the map and its controls.
+
+    Further details about the elements included in both the backend and the frontend of Trippy\ are discussed below.
+    
+    \subsubsection{\bf Representing the transport network (SQLite).}
+    Since we aim at visualizing the elements of the network over a map, we need information regarding the stops and lines of the transport network, following closely the model from the Figure~\ref{fig:er}. For each physical stop, along with the GPS coordinates of its location, we store a unique numeric identifier. Regarding the lines of the transport network, we basically keep the sequence of stops each line traverses. Note that, unlike the abstractions used by most public transportation networks, we consider lines to be one-way (i.e. they have a unique direction), and consequently the reversed/returning path is treated as a different line.
+    
+    As indicated above, we have chosen  a SQLite database to represent the network because it is conveniently portable and efficient for such small datasets. No spatial database technology was required as the only spatial property we have to deal with are the GPS coordinates of the  stops.
+    
+    \subsubsection{\bf GO handler.}
+    This component has two main parts. On one hand, it implements a {\em REST API} that is used to obtain the collection of stops and lines in GeoJSON format. On the other hand, it also provides a querying interface for \gls{xctr}. While the query functions themselves are implemented in \gls{xctr} using {\em C++}, we have opted for {\em Go} as our main backend language because it is specifically oriented for web services and can be easily integrated with {\em C} code. In our case, we have implemented a thin {\em C wrapper} that interacts with the \gls{xctr} libraries to load \gls{xctr} structures (when the application is launched it loads the \gls{xctr}-based representation of the trips into memory) and handle calls to the query functions.
+    
+    \subsubsection{\bf Map viewer.}
+    The Map viewer in Trippy makes up the user interface. It is in charge of visualizing the elements of the network, and handles users’ interaction. Apart from typical functions to move around a map (i.e. zoom in/out, span, etc.), the user can interact with the elements within the map (e.g. a stop or a set of stops within a region) and access functions related to them. Those functions are supported by our backend.
+    
+    The Map viewer was built with a web map using the {\em Leaflet} library\footnote{\url{https://leafletjs.com}} . With this library, it is simple to make an interactive map consisting of several interchangeable WMS and vector layers, and also to efficiently represent thousands of points or other vector-type elements.
+    For additional controls, communication with the backend, state synchronization among our implemented controls and the map, we have used Vue.js\footnote{\url{https://vuejs.org}}, which is a popular web framework based on components.
+
 	
 	\section{API}
+	\label{sec:api}
 	A nice and easy way to make queries and return data.
 	
 	\section{User Interface}
+	\label{sec:ui}
 	With a lot of screencaps that are going to take like 10 pages! Maybe even an evaluation section (which would require me to make it actually work well!).
