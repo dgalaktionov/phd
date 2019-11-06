@@ -187,10 +187,61 @@
 	
 	\section{User Interface}
 	\label{sec:ui}
-	With a lot of screencaps that are going to take like 10 pages! Maybe even an evaluation section (which would require me to make it actually work well!).
+	Based on the API developed from Section~\ref{sec:api}, we have developed a prototype of an accessible and intuitive user interface, based on web application technologies. In the rest of this section, we are going to demonstrate the elements of this interface in what may be read as a user manual.
 	
-	We aimed at providing an accessible and intuitive user interface for Trippy. Its main view is presented in Figure~\ref{fig:genericLines} (in the following examples we show some screenshots from the case study in Section~\ref{proof}; i.e. trips on bus in Madrid). % it is shown a generic view of the interface. \ojo{Decir que en la genérica se puden pinchar las líneas para tener alguna info o algo así / en caso contrario sacarla porque no aporta demasiado esta figura}
-    The interface of Trippy consists of a map with all the {\em bus stops} represented as blue points and the different {\em bus lines}  represented as colored lines. The user can select those elements to obtain related information. In addition, Four spatial/temporal filters allow the user to refine the displayed data, filtering by stops or time and one additional filter enables the user to refine results by line. The {\em filtering-by-stop} area allows to restrict queries to a given starting or ending stop (we can either look for their name in the filtering boxes or select them within the map). Besides, we can also provide a {\em filtering-by-datetime} which restricts also those queries to the specified starting and ending timestamps. For example, in Figure~\ref{fig:trippyIntDesc} we are querying the number of users that ``{\em boarded into a vehicle; switched-line; started a trip; ended a trip}" at the stop named {\em ``Juan de Toledo - Estaci\'on de buses"} from {\em `2019-03-12@16:00h'} to {\em `2019-03-13@16:00h'} searching on any line going through this point.
+    The interface of Trippy consists of a map as shown in the Figure~\ref{fig:ui:overall}, where have set up a study case with the same bus networks from Madrid used in the Section~\ref{sec:newctr:exp:data}. Every bus stop is represented by a stop and we are using the underlying Thunderforest\footnote{\url{https://www.thunderforest.com}} WMS layer to display the bus lines that connect them. Additionally, the interface has stop and line selectors, and also time filters that allow a user to query for information.
+    
+    \begin{figure}[ht]
+		\begin{center}
+			{\includegraphics[width=0.9\textwidth]{screens/overall.png}}
+		\end{center}
+		\caption{overall bla}
+		\label{fig:ui:overall}
+	\end{figure}
+	
+	By clicking on a stop, a popup is revealed with the stop name, the lines that the stop belongs to, and also the number of users . In addition, we have spatial/temporal filters allow the user to refine the displayed data, filtering by stops or time and one additional filter enables the user to refine results by line. The {\em filtering-by-stop} area allows to restrict queries to a given starting or ending stop (we can either look for their name in the filtering boxes or select them within the map). Besides, we can also provide a {\em filtering-by-datetime} which restricts also those queries to the specified starting and ending timestamps. For example, in Figure~\ref{fig:trippyIntDesc} we are querying the number of users that ``{\em boarded into a vehicle; switched-line; started a trip; ended a trip}" at the stop named {\em ``Juan de Toledo - Estaci\'on de buses"} from {\em `2019-03-12@16:00h'} to {\em `2019-03-13@16:00h'} searching on any line going through this point.
+	
+	\begin{figure}[ht]
+		\begin{center}
+			{\includegraphics[width=0.49\textwidth]{screens/stop_fix.png}}
+			{\includegraphics[width=0.49\textwidth]{screens/rclick_cut.png}}
+		\end{center}
+		\caption{overall bla}
+		\label{fig:ui:stop}
+	\end{figure}
+	
+	\begin{figure}[ht]
+		\begin{center}
+			{\includegraphics[width=0.49\textwidth]{screens/stop-select_cut.png}}
+			{\includegraphics[width=0.49\textwidth]{screens/lines-select_cut.png}}
+		\end{center}
+		\caption{overall bla}
+		\label{fig:ui:select}
+	\end{figure}
+	
+	\begin{figure}[ht]
+		\begin{center}
+			{\includegraphics[width=0.5\textwidth]{screens/date_cut.png}}
+		\end{center}
+		\caption{overall bla}
+		\label{fig:ui:date}
+	\end{figure}
+	
+	\begin{figure}[ht]
+		\begin{center}
+			{\includegraphics[width=0.9\textwidth]{screens/xy.png}}
+		\end{center}
+		\caption{overall bla}
+		\label{fig:ui:xy}
+	\end{figure}
+	
+	\begin{figure}[ht]
+		\begin{center}
+			{\includegraphics[width=0.9\textwidth]{screens/xy_area.png}}
+		\end{center}
+		\caption{overall bla}
+		\label{fig:ui:xyarea}
+	\end{figure}
     
     Trippy\ supports all the interesting transport managing queries described in the Section~\ref{sec:api}. Among them, we have also given support for new aggregation queries not defined in \cite{daniil18} such as ``\textit{How many passengers moved from one region to another}".
      %
