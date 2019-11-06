@@ -189,77 +189,79 @@
 	\label{sec:ui}
 	Based on the API developed from Section~\ref{sec:api}, we have developed a prototype of an accessible and intuitive user interface, based on web application technologies. In the rest of this section, we are going to demonstrate the elements of this interface in what may be read as a user manual.
 	
-    The interface of Trippy consists of a map as shown in the Figure~\ref{fig:ui:overall}, where have set up a study case with the same bus networks from Madrid used in the Section~\ref{sec:newctr:exp:data}. Every bus stop is represented by a stop and we are using the underlying Thunderforest\footnote{\url{https://www.thunderforest.com}} WMS layer to display the bus lines that connect them. Additionally, the interface has stop and line selectors, and also time filters that allow a user to query for information.
+    The interface of Trippy consists of a map as shown in the Figure~\ref{fig:ui:overall}, where have set up a study case with the same bus networks from Madrid used in the Section~\ref{sec:newctr:exp:data}. Every bus stop is represented by a stop and we are using the underlying Thunderforest\footnote{\url{https://www.thunderforest.com}} WMS layer to display the bus lines that connect them. Additionally, the interface presents stop selectors \textcircled{1}, line selectors \textcircled{2} and also date \textcircled{3} and time \textcircled{4} filters that allow a user to query the \gls{xctr} for information.
     
     \begin{figure}[ht]
 		\begin{center}
 			{\includegraphics[width=0.9\textwidth]{screens/overall.png}}
 		\end{center}
-		\caption{overall bla}
+		\caption{Overall interface of Trippy.}
 		\label{fig:ui:overall}
 	\end{figure}
 	
-	By clicking on a stop, a popup is revealed with the stop name, the lines that the stop belongs to, and also the number of users . In addition, we have spatial/temporal filters allow the user to refine the displayed data, filtering by stops or time and one additional filter enables the user to refine results by line. The {\em filtering-by-stop} area allows to restrict queries to a given starting or ending stop (we can either look for their name in the filtering boxes or select them within the map). Besides, we can also provide a {\em filtering-by-datetime} which restricts also those queries to the specified starting and ending timestamps. For example, in Figure~\ref{fig:trippyIntDesc} we are querying the number of users that ``{\em boarded into a vehicle; switched-line; started a trip; ended a trip}" at the stop named {\em ``Juan de Toledo - Estaci\'on de buses"} from {\em `2019-03-12@16:00h'} to {\em `2019-03-13@16:00h'} searching on any line going through this point.
+	As the interface shown is still in a prototype phase, it does not yet incorporate all the planned features. Concretely, we are not yet displaying the geometries of the lines nor making them interactive, and there is yet no way to make requests over the line or histogram endpoints from the previous Section~\ref{sec:api} using the graphic interface. However, we consider it complete enough to be representative of the utility that such an interface can have when powered by \gls{xctr}.
+	
+	By clicking on a stop, a popup is revealed with the stop name, the lines that the stop belongs to, and also the number of users that used that stop for boarding, starting or ending a trip or as a switch stop\footnote{The number of boardings must be equal to the number of starts added to the number of switches.}, as shown in the Figure~\ref{fig:ui:stop} (left). These usage numbers will only be considered within the time window specified by the filter, if any. It is also possible to open a context menu for the stop with a right click, as done in the Figure~\ref{fig:ui:stop} (right), and is one of the ways to specify a starting or ending stop for an X to Y query (from the trip endpoint).
+	
+	A future feature is planned to query the line endpoint in a similar way, in order to display usage statistics for a whole line instead of single stops. Since several line paths may overlap each other, the interface must provide a way to disambiguate the selection. The navigation among stops and lines may also be helped by providing links in the corresponding popups.
+	
+	%In addition, we have spatial/temporal filters allow the user to refine the displayed data, filtering by stops or time and one additional filter enables the user to refine results by line. The {\em filtering-by-stop} area allows to restrict queries to a given starting or ending stop (we can either look for their name in the filtering boxes or select them within the map). Besides, we can also provide a {\em filtering-by-datetime} which restricts also those queries to the specified starting and ending timestamps. For example, in Figure~\ref{fig:trippyIntDesc} we are querying the number of users that ``{\em boarded into a vehicle; switched-line; started a trip; ended a trip}" at the stop named {\em ``Juan de Toledo - Estaci\'on de buses"} from {\em `2019-03-12@16:00h'} to {\em `2019-03-13@16:00h'} searching on any line going through this point.
 	
 	\begin{figure}[ht]
 		\begin{center}
 			{\includegraphics[width=0.49\textwidth]{screens/stop_fix.png}}
 			{\includegraphics[width=0.49\textwidth]{screens/rclick_cut.png}}
 		\end{center}
-		\caption{overall bla}
+		\caption{Stop popup showing the information and usage of a single stop (left), as well as its context menu (right).}
 		\label{fig:ui:stop}
 	\end{figure}
+	
+	In the upper part of the screen we include stop and line selectors, which are implemented as custom dropdown components with a search field, as exposed in the Figure~\ref{fig:ui:select}, where on the left we are looking for stops containing \textit{Bilbao} in their names, and on the right we are checking lines from \textit{Leganés}, from the partial query \textit{legan}.
 	
 	\begin{figure}[ht]
 		\begin{center}
 			{\includegraphics[width=0.49\textwidth]{screens/stop-select_cut.png}}
 			{\includegraphics[width=0.49\textwidth]{screens/lines-select_cut.png}}
 		\end{center}
-		\caption{overall bla}
+		\caption{The stop (left) and line (right) selectors.}
 		\label{fig:ui:select}
 	\end{figure}
+	
+	As in Madrid it is frequent to have several bus stops with the exact same name for different physical stop locations, either because it is used by different lines or by the reversed direction of the same lines (as such, they tend to be located on the opposite direction of the same street), we display the lines that each stop belongs to, in order to help distinguish between these cases. Note that in the displayed version we do not distinguish the direction of the line in the interface, although we do keep track of the directions internally, and consider the reverse direction to be a separate line. These two selectors are also correlated: selecting a stop in the starting (or ending) field will restrict the starting (or ending) line selector to only those lines that the selected stop belongs to, and vice versa.
+	
+	The date and time filters affect all the displayed results, and can be edited with their corresponding components from the Figure~\ref{fig:ui:date}. We also ensure that the selected starting and ending dates and times do not overlap: in our example only the dates starting from \texttt{2019-03-11} are available, since that is the selected starting date. If a popup is displayed while these filters are changed, the contents of the popup are dynamically updated.
 	
 	\begin{figure}[ht]
 		\begin{center}
 			{\includegraphics[width=0.5\textwidth]{screens/date_cut.png}}
 		\end{center}
-		\caption{overall bla}
+		\caption{The date and time filters.}
 		\label{fig:ui:date}
 	\end{figure}
+	
+	The trip endpoint (which returns number of trips performed starting with a stop X and ending with a stop Y) may be queried by either using the starting and ending stop selectors or the context menu of the stops accessible with the right click, which also fills the selected stop into the corresponding stop selector. A straight arrow will be displayed connecting the starting and the ending stops, as can be seen in the Figure~\ref{fig:ui:xy}, and a popup with the total number of trips will be shown over that arrow.
 	
 	\begin{figure}[ht]
 		\begin{center}
 			{\includegraphics[width=0.9\textwidth]{screens/xy.png}}
 		\end{center}
-		\caption{overall bla}
+		\caption{Querying for the number of displacements between a starting and an ending stop.}
 		\label{fig:ui:xy}
 	\end{figure}
+	
+	Additionally, we allow both of these stops be be filtered by line, and the results filtered by a time window. These controls may be interacted with while the popup is open, and the number of results will be updated.
+	
+	We can also perform the generalized version of this query, and obtain the number of movements between a starting and a final areas, as done in the Figure~\ref{fig:ui:xyarea}.
 	
 	\begin{figure}[ht]
 		\begin{center}
 			{\includegraphics[width=0.9\textwidth]{screens/xy_area.png}}
 		\end{center}
-		\caption{overall bla}
+		\caption{Querying for the number of displacements between two areas.}
 		\label{fig:ui:xyarea}
 	\end{figure}
-    
-    Trippy\ supports all the interesting transport managing queries described in the Section~\ref{sec:api}. Among them, we have also given support for new aggregation queries not defined in \cite{daniil18} such as ``\textit{How many passengers moved from one region to another}".
-     %
-    %The interesting transport managing queries that supports Trippy\ where described in Section~\ref{ourQueries}. Among all the queries supported, b
-    Below we discuss how an user could invoke three representative queries and how they would be executed on the viewer:
-    
-    \begin{itemize}
-        \item \textbf{Stop information:} This query can be made either by selecting a point directly on the map or by searching for the name of a particular bus stop on the first assisted search text box (i.e. filter by starting start/stop area). As a result, a pop up box is immediately displayed over the selected point. This pop up shows the name of the stop, the number of passengers that boarded there, the number of passengers that switched bus in that stop and the amount of people that started or ended their trip at this location. It also includes average number of times the stop was boarded, trips were started and ended per bus journey (that is, for each time a bus stops at that stop).
-        
-        Below this information it also appears a button that allow to display another pop-up window with a breakdown of this information by journey, making it possible to analyze the load of a particular stop over the different hours of the day.
-    
-        Optionally, these results can be constrained to time interval by applying the time filters as shown in Figure~\ref{fig:trippyIntDesc}. 
-        
-        
-        \item \textbf{Trajectories/Trips between two stops:} In this case our goal is to solve the queries responsible for counting the number of trips done between two bus stops. The user just needs to type the name of both stops on the text boxes and a line describing the trajectory will appear joining the starting point and the final one going through all the intermediate stops. As it is shown in \ref{fig:traj}, this line can have \textit{blank spaces} as it considers switches between lines that could not be at the same stop (i.e., a passenger gets off in one stop, crosses the street and gets on in a bus from another line). A pop up also appears near the line showing the total amount of trips that meet the requirements. In addition, those results can also be filtered out by time.
-        
-        
-        \item \textbf{Displacements between areas:} Even though in \cite{daniil18} \gls{xctr}\ was not including the possibility of aggregating the number of users that started a trip in a spatial region and ended such trip in another region, we have now included this new query in Trippy.  Note that since the operation is not directly supported by \gls{xctr}, we are forced to obtain the number of trips for each pair of stops $\langle s_i,s_e\rangle$, where $s_i$ is a stop within the starting region (with $n$ stops), and $s_e$ is a stop within the ending region (with $m$ stops). Even though we have to perform $n \times m$ of those queries, the efficiency of \gls{xctr}\ at solving such queries ensured reduced response times.  %One of the main contributions of this study. This query was not possible in the previous work where the structures used in the lower level were described.
-        
-        Recall that the goal of this operation is to find the number of passengers that have traveled from one area or neighborhood to another. For that purpose, the user just needs to press the  {\sc shift-key} on the keyboard and select with the pointer the areas of interest, first the origin and then the destination. An arrow joining the two areas will appear, and a a pop-up showing the number of trips that fulfill the criteria will be displayed. Once again, this query can be refined with the time filters. A visual example is shown in Figure~\ref{fig:areas}.
-    \end{itemize}
+	
+	In order to select the stops within a rectangular area, the user must press the  {\sc shift-key} on the keyboard and select the area of interest, by dragging the cursor. The first selected area will be considered the origin area, while the second are will be the destination. An arrow joining the two areas will appear, and a a pop-up showing the number of trips that fulfill the criteria will be displayed. Once again, this query can be refined with the time filters.
+	
+	While in this prototype we require the use of a keyboard to perform this query, an interactive control is planned to be able to select the starting and ending areas, with the goal of improving the accessibility of the interface.
+	
