@@ -1,6 +1,33 @@
 \part{GIS interface}
 \chapter{Previous concepts}
     In order to develop a usable interface, we must rely on a map based representation that works with geographic information. Therefore, in this chapter we shall introduce the basic concepts of \gls{gis} in order to provide a context for this part of our contribution.
+    
+    While there exist several complimentary definitions for \gls{gis} in the literature, from the point of view of the current work we will regard a \gls{gis} as an application designed to assist a decision making process related to spatial or geographical information \cite{harmon2003design,longley2015geographic}.
+    
+    BRIEF OUTLINE.
+    
+    \section{Spatial information features}
+    One of the main challenges in \gls{gis} is the treatment of spatial information, which presents some distinctive features that make it more complicated to store, manage and visualize than the kinds managed by traditional information systems (e.g. an accounting database). We consider that the most significative features of spatial information are:
+    
+    \begin{itemize}
+        \item \textbf{Two alternative conceptual interpretations.} Geographical information may be regarded on a conceptual level from two different perspectives: as geographical objects or as geographical fields. This division on an abstract level will also propagate to the more concrete levels.
+        
+        \item \textbf{Multiple possible logical models.} The complexity of geographical information makes it so several possible and valid representations can exist for the same geographical phenomenon, each with its advantages or disadvantages depending on the context.
+        
+        \item \textbf{Data types and specific operations.} Due to the two possible conceptual interpretations and the multiple possible logical models, there are numerous possible datatype sets. Moreover, many different operations that may be defined over these datatypes, and there is no standard for a minimum amount of operations that may be used to define every other operation.
+        
+        \item \textbf{Complex and varied methods of analysis.} Depending on the field of application that the \gls{gis} is used on, there may exist a great variety of techniques to analyze geographical information that are expected to be included in the \gls{gis}.
+        
+        \item \textbf{Large datasets.} Geographical information can be quite voluminous, both in the complexity of every element as in the number of elements that must be stored. As a result, the structures used to store this information have to be specific.
+        
+        \item \textbf{Slow transactions.} The complexity of geographical information can make updating times significantly slow, which in turn can make long locking times on the stored elements. A \gls{gis} must consider updating mechanisms, since its information is naturally dynamic.
+        
+        \item \textbf{Spatial indexing}. Due to the large size of the datasets, combined with the spatial features (i.e. number of dimensions, space boundaries, etc\dots), the indexing structures that are used to provide an efficient access method to the stored information are particular to a specific use case.
+        
+        \item \textbf{Implicit hierarchy.} Unlike traditional information, geographical information is always visualized over a bounded space (the map). Because of this, the visualization scale acquires a main role in the presentation of the information and also determines an implicit hierarchy, as it is not possible to display all the information at the same time.
+        
+        \item \textbf{Special visualization techniques.} A usable interface to visualize geographical information must include commonly expected features, such as interactive controls, a layer abstraction and an acceptable performance to be considered responsive.
+    \end{itemize}
 
     \section{GIS interfaces}
 	Because I have a web interface with leaflet after all.
