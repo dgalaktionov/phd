@@ -30,6 +30,7 @@
     \end{itemize}
     
     \section{Conceptual models}
+    \label{gis:concept}
     A first step to define a conceptual model for geographical information is to define the geographic space. To achieve that, we need a mathematical definition of space and to define a \gls{crs}.
     
     \subsection{Coordinate Reference Systems}
@@ -46,7 +47,7 @@
     \subsection{Abstractions for geographical information}
     Once the \gls{crs} is defined, we must define the abstractions that will allow us to represent geographical information, which can be considered from three alternative perspectives: as geographical objects, as geographical fields or as topological networks.
     
-    Geographical objects are subsets of space that are used to represent the position or extension of spatial entities. The surface of a road or the position of a store are examples of geographical objects. The Figure~\ref{fig:geo:concept} (left) shows an example of geographical objects on a map.
+    Geographical objects are subsets of space that are used to represent the position or extension of spatial entities. The surface of a road or the position of a store are examples of geographical objects. The Figure~\ref{fig:gis:concept} (left) shows an example of geographical objects on a map.
     
     \begin{figure}[ht]
 		\begin{center}
@@ -54,12 +55,12 @@
 			{\includegraphics[width=0.45\textwidth]{figures/geo_field.png}}
 		\end{center}
 		\caption{Two of the possible abstractions for geographical information: geographical objects (left) and geographical fields (right).}
-		\label{fig:geo:concept}
+		\label{fig:gis:concept}
 	\end{figure}
     
     Note that there can be several valid representations for a geographical object, regardless of its extension in the real world. For instance, a city may be represented as a single position (point) or as a geometric surface, depending on the ultimate requirements of visualization or exploitation.
     
-    On the other hand, a geographical field is characterized as a function that associates a value for every point of space. The surface temperature or the slope of the terrain may be considered as geographical fields. An example of a geographical field can be found in the Figure~\ref{fig:geo:concept} (right), where an elevation map is shown.
+    On the other hand, a geographical field is characterized as a function that associates a value for every point of space. The surface temperature or the slope of the terrain may be considered as geographical fields. An example of a geographical field can be found in the Figure~\ref{fig:gis:concept} (right), where an elevation map is shown.
     
     Both abstractions described above (geographical objects and geographical fields) can be alternatively used to represent information of different nature. Commonly, geographical objects are used to analyze man made structures, such as roads, borders or land registry, while geographical fields are more appropriate for natural information collected by sensors, such as meteorological, geological or satellite information. However, this does not mean that, for example, a building cannot be represented as a geographical field that assigns a value of 1 for a coordinate contained within the building and 0 for every other coordinate, although such conceptual definition may be inadequate for many applications.
 
@@ -68,7 +69,38 @@
     As a special case, it is also possible to work with a topological network, where instead of using a coordinate system, we can model our space as a graph. An example of such application may be a road network used for GPS routing, where the movement is restricted by roads instead of a true Euclidean space. While there are also standards for these abstractions, it is more often to use an ad-hoc model based on vertices and edges.
     
     \section{Logical models}
-    vector and raster.
+    In the previous Section~\ref{gis:concept}, we have defined conceptual models, that work on an abstract level. However, the abstract models do not regard the limitations of a practical implementation. As such, they may assume that both the memory and arithmetic precision are infinite, and consequently a geographical object is an infinite set of points while a geographical field is a defined function for any point in space. These limitations must be addressed in order to implement a \gls{gis}, and for that purpose we must work with a logical model.
+    
+    In this section we will present two well known models used to represent geographical information, although we will not cover how the most used operations are implemented using these models or how the precision problems may be addressed. Refer to \cite{bolstad2016gis} for a more in-depth coverage on those topics.
+    
+    \subsection{Vector model}
+    This model uses numerical data types (such as integers or floating point representations) to deifne a system of coordinates over which the geographical information is represented using geometric constructions (points, segments, polygons, etc\dots). For each primitive data type defined in the geographical object conceptual model, there is a vector representation.
+    
+    The most extended vector model is the Simple Feature Specification, defined by the Open Geospatial Consortium (OGS), in which data types are defined to represent simple spatial objects defined in the ISO 19107. The simpler data types are composed to represent more complex ones, as shown in the Figure~\ref{fig:gis:sfc}, where a \textit{curve} is approximated as a \textit{LineString}, which is defined as a sequence of \textit{points}, while a \textit{surface} can be a \textit{Polygon} defined with \textit{LinearRings}, which are special cases of \textit{LineStrings} where their last \textit{point} is equal to the first one, thus enclosing a space.
+    
+    \begin{figure}[ht]
+		\begin{center}
+			{\includegraphics[width=0.98\textwidth]{figures/sfc.png}}
+		\end{center}
+		\caption{The data types of the Simple Feature Specification by the Open Geospatial Consortium}
+		\label{fig:gis:sfc}
+	\end{figure}
+	
+	This composition can be also seen in the Figure~\ref{fig:gis:sfcexample}, where six \textit{points} are used to define a \textit{LineString}, while three \textit{LinearRings} are used to define a \textit{polygon}, one for the external borders of the \textit{polygon} while the other two define the internal borders (the {\em holes}).
+	
+	\begin{figure}[ht]
+		\begin{center}
+			{\includegraphics[width=0.8\textwidth]{figures/sfc_example.png}}
+		\end{center}
+		\caption{Examples of Simple Feature Specification data types.}
+		\label{fig:gis:sfcexample}
+	\end{figure}
+    
+    \subsection{Raster model}
+    Matrix, briefly. GeoTIFF.
+
+    \subsection{Comparison of vector and raster models}
+    They are interchangeable.
     
     \section{Standards}
     WCS, GeoJSON, GTFS and (maybe) INSPIRE.
