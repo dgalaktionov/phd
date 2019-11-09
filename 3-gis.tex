@@ -71,7 +71,7 @@
     \section{Logical models}
     In the previous Section~\ref{gis:concept}, we have defined conceptual models, that work on an abstract level. However, the abstract models do not regard the limitations of a practical implementation. As such, they may assume that both the memory and arithmetic precision are infinite, and consequently a geographical object is an infinite set of points while a geographical field is a defined function for any point in space. These limitations must be addressed in order to implement a \gls{gis}, and for that purpose we must work with a logical model.
     
-    In this section we will present two well known models used to represent geographical information, although we will not cover how the most used operations are implemented using these models or how the precision problems may be addressed. Refer to \cite{bolstad2016gis} for a more in-depth coverage on those topics.
+    In this section we will present two well known models used to represent geographical information, although we will not cover how the most used operations are implemented using these models or how the precision problems may be addressed. Refer to \cite{xiao2015gis} for a more in-depth coverage on those topics.
     
     \subsection{Vector model}
     This model uses numerical data types (such as integers or floating point representations) to deifne a system of coordinates over which the geographical information is represented using geometric constructions (points, segments, polygons, etc\dots). For each primitive data type defined in the geographical object conceptual model, there is a vector representation.
@@ -97,10 +97,36 @@
 	\end{figure}
     
     \subsection{Raster model}
-    Matrix, briefly. GeoTIFF.
+    The raster model represents the spatial information using a matrix, where every cell stores a value for a portion of the space. The meaning of each value will depend on the particular case. To cite some examples, the value of the a cell may be temperature, pressure, humidity, wind speed or the color of the surface. In order to translate a cell position to coordinates in a \gls{crs} and vice versa, we need six values: the position of the origin of coordinates and how much the height and width of each pixel contribute to the x and y coordinates in the \gls{crs}. Since the raster may be oriented in any angle, a single dimension in the matrix (such as the width) may contribute to both the x and y components in the \gls{crs}.
+    
+    Rasters are frequently stored within an image format with some additional metadata for the \gls{crs} transformation. An extension of the {\em TIFF} format called {\em GeoTIFF}\footnote{\url{https://www.opengeospatial.org/standards/geotiff}} is one of the most common formats for these purposes, as it allows to define a \gls{crs} and the linear transformation parameters for coordinates. Additionally, it is possible to store several images in a single TIFF file, which is often used to store several levels of detail for the raster, allowing to speed up operations that do not require the highest resolutions.
 
     \subsection{Comparison of vector and raster models}
-    They are interchangeable.
+    In the previous section we have described two possible logical models to represent geographical information: the vector and raster models. Both models can be used to represent either geographical objects or geographical fields. As previously seen, each model has a different approach to the practical limitations when implementing a conceptual model. In this section we will show how each of the logical models can represent either geographical objects or geographical fields and also make a brief comparison of both models.
+    
+    In the vector model, geographical objects are represented as a discretization, which may lead to some precission loss in some of the shapes, as seen in the Figure~\ref{fig:gis:object} (top). In the other hand, the raster model can represent objects by a process called \textit{rasterization}, where each cell value is assigned to an object identifier, as seen in the Figure~\ref{fig:gis:object} (bottom).
+    
+    \begin{figure}[ht]
+		\begin{center}
+			{\includegraphics[width=0.8\textwidth]{figures/obj_vector.png}}
+			{\includegraphics[width=0.8\textwidth]{figures/obj_raster.png}}
+		\end{center}
+		\caption{Representing geographical objects in the vector (top) and raster (bottom) models.}
+		\label{fig:gis:object}
+	\end{figure}
+	
+	Geographical fields are also transformed when they are represented in a logical model. As such, in the vector model, these fields are represented with a polygonization of the function, as shown in the Figure~\ref{fig:gis:field} (top), while in the raster model we discretize the function, representing a value only for the cells of the matrix, as done in the Figure~\ref{fig:gis:field} (bottom).
+    
+    \begin{figure}[ht]
+		\begin{center}
+			{\includegraphics[width=0.8\textwidth]{figures/field_vector.png}}
+			{\includegraphics[width=0.8\textwidth]{figures/field_raster.png}}
+		\end{center}
+		\caption{Representing geographical fields in the vector (top) and raster (bottom) models.}
+		\label{fig:gis:field}
+	\end{figure}
+    
+    As both models are interchangeable, the best choice will depend on the specific \gls{gis} application intended. The decision can be influenced by the representation size (vector model is usually more compact), the processing efficiency (raster algorithms are often more efficient and straightforward than the vector ones), expressive capabilities, visualization (the precision of the vector model vs the efficiency of the raster one) or source of the information.
     
     \section{Standards}
     WCS, GeoJSON, GTFS and (maybe) INSPIRE.
