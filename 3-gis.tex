@@ -97,6 +97,7 @@
 	\end{figure}
     
     \subsection{Raster model}
+    \label{sec:raster}
     The raster model represents the spatial information using a matrix, where every cell stores a value for a portion of the space. The meaning of each value will depend on the particular case. To cite some examples, the value of the a cell may be temperature, pressure, humidity, wind speed or the color of the surface. In order to translate a cell position to coordinates in a \gls{crs} and vice versa, we need six values: the position of the origin of coordinates and how much the height and width of each pixel contribute to the x and y coordinates in the \gls{crs}. Since the raster may be oriented in any angle, a single dimension in the matrix (such as the width) may contribute to both the x and y components in the \gls{crs}.
     
     Rasters are frequently stored within an image format with some additional metadata for the \gls{crs} transformation. An extension of the {\em TIFF} format called {\em GeoTIFF}\footnote{\url{https://www.opengeospatial.org/standards/geotiff}} is one of the most common formats for these purposes, as it allows to define a \gls{crs} and the linear transformation parameters for coordinates. Additionally, it is possible to store several images in a single TIFF file, which is often used to store several levels of detail for the raster, allowing to speed up operations that do not require the highest resolutions.
@@ -129,8 +130,35 @@
     As both models are interchangeable, the best choice will depend on the specific \gls{gis} application intended. The decision can be influenced by the representation size (vector model is usually more compact), the processing efficiency (raster algorithms are often more efficient and straightforward than the vector ones), expressive capabilities, visualization (the precision of the vector model vs the efficiency of the raster one) or source of the information.
     
     \section{Standards}
-    WCS, GeoJSON, GTFS and (maybe) INSPIRE.
-
+    Over the years, many \gls{gis} standards have been developed and adopted by the community, making it easier to develop and integrate application using multiple data sources. In this section we are only going to cover the standards used by our developed interface.
+    
+    \subsection{TMS}
+    The Open Source Geospatial Foundation defines a standard to generate cartographic images (tiles) called \gls{tms}\footnote{\url{http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification}}, which aims to simplify and modernize some aspects of an older standard called \gls{wms}.
+    
+    A \gls{tms} service returns map parts, called \textit{tiles}, at several levels of zoom with {\em HTTP GET} requests, typically in PNG format, although other formats can be supported. With a special metadata request that returns the definition of the \gls{crs} and the parameters to translate pixel coordinates to \gls{crs} coordinates (discussed in the Section~\ref{sec:raster}) at all the supported zoom levels, it is possible to develop a web map application, loading tiles interactively as a user spans and zooms over the map.
+    
+    It is also possible to integrate \gls{tms} from several sources, as tiles can have transparent background. This could allow, for example, to paint tiles containing only bus lines over tiles showing the streets of a city. Due to its ease of implementation, both server side and for client libraries, this standard has been widely adopted and made available by operators such as OpenStreetMap, Google, Thunderforest and many others\footnote{\url{https://wiki.openstreetmap.org/wiki/Tile_servers}}.
+    
+    \subsection{GeoJSON}
+    While there is a well known web standard for accessing geographical features defined by the Open Geospatial Consortium called \gls{wfs}\footnote{\url{http://www.opengeospatial.org/standards/wfs}}, which allows to obtain, among many other kinds of information, the vector representation of the geometry for these geographical features, this standard is often found too complex for the single purpose of transmitting vector geometries.
+    
+    For this reason, custom \texttt{REST API}s that encode vector geometries in GeoJSON\footnote{\url{https://geojson.org/}} (RFC 7946) have become the most popular way of transmitting this data. This format makes it possible to encode \textit{Points},  \textit{LineStrings}, \textit{Polygons} and their multipart variants in a compact string, while also allowing to attach any arbitrary information (\textit{properties}) to these features in JSON format.
+    
+    \subsection{GTFS}
+    Developed as a standard to represent the schedules of most public transportation systems, \gls{gtfs}\footnote{\url{https://developers.google.com/transit/gtfs/}} was developed by Google and it provides a standard model to specify stops, routers, schedules and other useful information for trip planning that may be associated with a transportation system, as shown in the diagram from the Figure~\ref{fig:gis:gtfs}.
+    
+    \begin{figure}[ht]
+		\begin{center}
+			{\includegraphics[width=0.95\textwidth]{figures/gtfs.png}}
+		\end{center}
+		\caption{UML class diagram of the entities specified by \acrshort{gtfs}.}
+		\label{fig:gis:gtfs}
+	\end{figure}
+	
+	This has some resemblance to the model we have previously proposed in the Figure~\ref{fig:er} from the Section~\ref{sec:newctr:desc}, where a \texttt{stop} in \gls{gtfs} corresponds to a \texttt{stop\_place} in our model, \texttt{stoptime} to \texttt{stop\_time}, a \texttt{trip} is similar to a \texttt{journey}, while a \texttt{route} is a \texttt{line}. The largest difference, however, is that we consider that a line (route) is formed by fixed sequence of stops, while in \gls{gtfs} no such restriction exists, and every trip can theoretically have a different sequence of stops.
+	
+	There are GPS coordinates stored for a stop, and it is also possible to define a \textit{LineString} shape for a trip, which will be referenced by a \texttt{shape\_id} from a shapes definition file. The stop times for a trip are usually defined within the calendar dates, allowing this way to specify a schedule based on the day of the week or have a special consideration for selected days. Outside of the calendar definition, it is still possible to specify an expected frequency that a trip must respect.
+    
     \section{GIS interfaces}
 	Because I have a web interface with leaflet after all.
 
@@ -228,7 +256,7 @@
     \subsubsection{\bf Map viewer.}
     The Map viewer in Trippy makes up the user interface. It is in charge of visualizing the elements of the network, and handles users’ interaction. Apart from typical functions to move around a map (i.e. zoom in/out, span, etc.), the user can interact with the elements within the map (e.g. a stop or a set of stops within a region) and access functions related to them. Those functions are supported by our backend.
     
-    The Map viewer was built with a web map using the {\em Leaflet} library\footnote{\url{https://leafletjs.com}} . With this library, it is simple to make an interactive map consisting of several interchangeable \gls{wms} and vector layers, and also to efficiently represent thousands of points or other vector-type elements.
+    The Map viewer was built with a web map using the {\em Leaflet} library\footnote{\url{https://leafletjs.com}} . With this library, it is simple to make an interactive map consisting of several interchangeable \gls{tms} and vector layers, and also to efficiently represent thousands of points or other vector-type elements.
     For additional controls, communication with the backend, state synchronization among our implemented controls and the map, we have used Vue.js\footnote{\url{https://vuejs.org}}, which is a popular web framework based on components.
 
 	
@@ -301,7 +329,7 @@
         \item Identifier.
         \item Name of the line.
         \item Identifiers of the stops this line contains, in order.
-        \item If exists, the path of the line, encoded as a sequence of coordinates\footnote{This information is optional, without it a line on the map can be displayed by simply connecting points with a straight line (which may not follow any road or track) or using an existing \gls{wms} layer with lines.}.
+        \item If exists, the path of the line, encoded as a sequence of coordinates\footnote{This information is optional, without it a line on the map can be displayed by simply connecting points with a straight line (which may not follow any road or track) or using an existing \gls{tms} layer with lines.}.
     \end{itemize}
     
     \subsection{Trips endpoint}
@@ -318,7 +346,7 @@
 	\label{sec:ui}
 	Based on the API developed from Section~\ref{sec:api}, we have developed a prototype of an accessible and intuitive user interface, based on web application technologies. In the rest of this section, we are going to demonstrate the elements of this interface in what may be read as a user manual.
 	
-    The interface of Trippy consists of a map as shown in the Figure~\ref{fig:ui:overall}, where have set up a study case with the same bus networks from Madrid used in the Section~\ref{sec:newctr:exp:data}. Every bus stop is represented by a stop and we are using the underlying Thunderforest\footnote{\url{https://www.thunderforest.com}} WMS layer to display the bus lines that connect them. Additionally, the interface presents stop selectors \textcircled{1}, line selectors \textcircled{2} and also date \textcircled{3} and time \textcircled{4} filters that allow a user to query the \gls{xctr} for information.
+    The interface of Trippy consists of a map as shown in the Figure~\ref{fig:ui:overall}, where have set up a study case with the same bus networks from Madrid used in the Section~\ref{sec:newctr:exp:data}. Every bus stop is represented by a stop and we are using the underlying Thunderforest\footnote{\url{https://www.thunderforest.com}} \gls{tms} layer to display the bus lines that connect them. Additionally, the interface presents stop selectors \textcircled{1}, line selectors \textcircled{2} and also date \textcircled{3} and time \textcircled{4} filters that allow a user to query the \gls{xctr} for information.
     
     \begin{figure}[ht]
 		\begin{center}
