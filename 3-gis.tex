@@ -130,6 +130,7 @@
     As both models are interchangeable, the best choice will depend on the specific \gls{gis} application intended. The decision can be influenced by the representation size (vector model is usually more compact), the processing efficiency (raster algorithms are often more efficient and straightforward than the vector ones), expressive capabilities, visualization (the precision of the vector model vs the efficiency of the raster one) or source of the information.
     
     \section{Standards}
+    \label{sec:gis:std}
     Over the years, many \gls{gis} standards have been developed and adopted by the community, making it easier to develop and integrate application using multiple data sources. In this section we are only going to cover the standards used by our developed interface.
     
     \subsection{TMS}
@@ -160,7 +161,31 @@
 	There are GPS coordinates stored for a stop, and it is also possible to define a \textit{LineString} shape for a trip, which will be referenced by a \texttt{shape\_id} from a shapes definition file. The stop times for a trip are usually defined within the calendar dates, allowing this way to specify a schedule based on the day of the week or have a special consideration for selected days. Outside of the calendar definition, it is still possible to specify an expected frequency that a trip must respect.
     
     \section{GIS interfaces}
-	Because I have a web interface with leaflet after all.
+	In the previous sections we have discussed how to represent geographical information in conceptual and logical models, as well as what \gls{gis} standards are followed in this work. In this section we will briefly speak about how this geographical information can be presented to the user and visualized in a \gls{gis} interface, as well as introduce a web mapping library called {\em Leaflet} library\footnote{\url{https://leafletjs.com}}.
+    
+    \subsection{Data visualization}
+    The visualization of geographical information is often complex due to the special features of spatial information. In the first place, these features require a different abstraction than the ones used by traditional databases. In the second place, this information usually needs to be transformed with a projection to be able to visualize it on a flat surface. It is also necessary to define a \textit{visualization metaphor} for the user interface: the stored geographical information is presented to the user in several layers.
+    
+    A layer can be seen as a set of geographical elements that are intended to be visualized with a common style. These layers are later sorted in a stack, to determine which layers are superior or inferior to others. That way, the information of the superior layers is presented over the information of the inferior ones.
+    
+    This system of layers allows to display a digital map in a similar fashion to a paper map. However, in a \gls{gis} user interface is fundamentally different from a conventional map, as the information is never static. Hence, the interface needs to support interactive operations that can alter this visualization. Among these operations, we would like to mention the following:
+    
+    \begin{itemize}
+        \item Layer management, with the possibility of adding or removing layers, as well as reordering them in the stack.
+        \item Scrolling over the map, defining a new point of origin.
+        \item Changing the scale of the visualization, increasing or reducing the zoom level.
+        \item Invocation of processing operations over the map. These may include, among others, interactive measurements or queries about the visualized elements.
+    \end{itemize}
+    
+    Another important element in this visualization is the context information, which must be included in the user interface in order to understand the displayed information. This context information frequently includes a graphic legend, which allows to interpret and categorize every geographical element. Additionally, the interface must have means to inform the user of the current visualization scale and the center coordinates. Other information may be necessary, such as labels that identify geographical objects or present relevant information.
+    
+    \subsection{Leaflet}
+    Among the several available alternatives to develop a web based map, in this work we are using {\em Leaflet}, which is an open source \texttt{Javascript} library that can be integrated with different data sources and providers to easily develop interactive maps with the standard web technologies (\texttt{HTML}, \texttt{CSS} and \texttt{Javascript}).
+    
+    It supports both the \gls{tms} and the {\em GeoJSON} standards described in the previous Section~\ref{sec:gis:std}, among others. This combination is often used to display a base map from a tile provider with vector information layers over it obtained in {\em GeoJSON} format.
+    
+    Although this library is comparatively lacking in features when compared to other well-known alternatives such as Google Maps\footnote{\url{https://developers.google.com/maps/documentation/}} or {\em OpenLayers}\footnote{\url{https://openlayers.org/}}, it is frequently preferred due to its usability and smaller size. Due to its broad adoption, open source plugins exist for all the features offered by the other comparable solutions, including support for other data sources (such as \gls{wfs}), advanced features (such as routing) and also small interface tweaks (such as the integration of a context menu).
+    
 
 \chapter{GIS interface for public transportation networks}
 \label{sec:gis}
@@ -248,7 +273,7 @@
     \subsubsection{\bf Representing the transport network (SQLite).}
     Since we aim at visualizing the elements of the network over a map, we need information regarding the stops and lines of the transport network, following closely the model from the Figure~\ref{fig:er}. For each physical stop, along with the GPS coordinates of its location, we store a unique numeric identifier. Regarding the lines of the transport network, we basically keep the sequence of stops each line traverses. Note that, unlike the abstractions used by most public transportation networks, we consider lines to be one-way (i.e. they have a unique direction), and consequently the reversed/returning path is treated as a different line.
     
-    As indicated above, we have chosen  a SQLite database to represent the network because it is conveniently portable and efficient for such small datasets. No spatial database technology was required as the only spatial property we have to deal with are the GPS coordinates of the  stops.
+    As indicated above, we have chosen  a SQLite database to represent the network because it is conveniently portable and efficient for such small datasets. While no spatial database technology was required to deal with the GPS coordinates of the  stops, we have opted to integrate the  SpatiaLite extension\footnote{\url{https://www.gaia-gis.it/fossil/libspatialite/index}} to support storing the shapes of our lines.
     
     \subsubsection{\bf GO handler.}
     This component has two main parts. On one hand, it implements a {\em REST API} that is used to obtain the collection of stops and lines in GeoJSON format. On the other hand, it also provides a querying interface for \gls{xctr}. While the query functions themselves are implemented in \gls{xctr} using {\em C++}, we have opted for {\em Go} as our main backend language because it is specifically oriented for web services and can be easily integrated with {\em C} code. In our case, we have implemented a thin {\em C wrapper} that interacts with the \gls{xctr} libraries to load \gls{xctr} structures (when the application is launched it loads the \gls{xctr}-based representation of the trips into memory) and handle calls to the query functions.
