@@ -365,17 +365,44 @@
     compression of $\Psi$ was obtained by combining differential encoding of runs with Huffman and
     run-length encoding.
 
-\include{1-ctr}
+%\include{1-ctr}
 	
-\include{2-xctr}
+%\include{2-xctr}
 	
-\include{3-gis}
-	
-\chapter{ Conclusions and future works}
-	2-3 pages to speak about lessons learned and where is this all going.
-	
-	Also speak about improving the interface, to integrate \gls{tm}, display lines and histograms.
+%\include{3-gis}
 
+\part{Thesis summary} \label{part:final}
+\chapter{Conclusions and future works}
+\label{ch:concl}
+	In transportation systems from \textit{smart cities}, new technologies such as traffic monitoring, automatic fare collection (e.g., smartcards) and automatic passenger counting have made possible to generate a huge amount of highly detailed,
+	real-time data useful to define measures that characterize  a transportation network. This data is particularly useful because it actually consists of real trips, combining implicitly the demand of the system with either the street network or the service offered by a public transportation system with  the demand for the system.
+	
+	At the same time, analyzing these historic records about the demand of the network is within the interest of transportation agencies, as well as other entities that may be interested in studying the movements of crowds in an urban context. To make this kind of analysis possible, we have proposed powerful representations based on compact data structures that can easily be adapted for both urban transportation contexts (streets and most public transportation systems), that can handle diverse use cases with considerable memory and time efficiency.
+	
+	In addition, we have developed a \gls{gis} interface that integrates the compact representations developed, making it possible to analyze the stored information by an end user in a simple way, not requiring them to have a previous knowledge of the underlying technologies. Furthermore, this user interface further validates the use of an approach based on compact data structures, thus proving that it is possible to develop a competitive product that may be adopted by an organization.
+	
+	Finally, in the context of compact data structures research, we believe that this work may open a new field of practical applications for these structures and algorithms, as have been previously done for the fields of \textit{information retrieval} and \textit{bioinformatics}.
+	
+	\section{Contributions}
+	The following list summarizes the main contributions in our work:
+	
+	\begin{enumerate}
+	    \item In the context of trips over urban street networks, we have developed a representation based on a modified \gls{csa} and different alternatives of the \gls{wt} called \gls{ctr}, which requires as little as a 36\% of the size of an uncompressed baseline, while handling spatio-temporal queries in the order of several \micro s, while offering configurable trade-offs.
+	    
+	    \item We have proposed an extensible model for the representation of trips over a public transportation network, that may be adapted for most transportation systems of the world.
+	    
+	    \item We have developed two alternative representations for the context of trips over public transportation networks, \gls{ttctr} and \gls{xctr}, based on the same structures of \gls{ctr}, which can solve most of our proposed queries about network-aware trip patterns in the order of several \micro s, while needing only about 50\% of space compared to a plain (unindexed) representation.
+	    
+	    \item We have presented a scheme to compress \gls{sat} without affecting the temporal complexity of its operations, and we applied it in \gls{tm} as a structure to accelerate network load queries in the public transportation context.
+	    
+	    \item We have developed an user interface to analyze the demand of public transportation networks based on our proposed representations, as well as \gls{gis} technologies. 
+	\end{enumerate}
+	
+	\section{Future work}
+	While there are many possible future developments for our proposed representations for trips over public transportation networks, we are mostly concerned with finding a single representation that can efficiently handle both kinds of proposed queries in the Section~\ref{sec:newctr:desc}: the network load and the trip pattern ones. Finding such a representation is proving quite challenging, as most solutions that allow to efficiently aggregate multidimensional data (such as stops and times or journeys) cannot support most of our trip pattern queries.
+	
+	In the other hand, our proposed interface is still under development, where our most urgent goals is to support an intuitive visualization for lines that may enable the user to perform queries over them, as well as the addition of means to query the histogram endpoint, to display the usage of a stop or a line over time with dynamic charts. Finally, this interface may be improved to support different interactive visualizations for the total network usage over all the lines within a time range, in addition to reachability queries, where given a stop in the network we are interested in obtaining the average time taken to arrive to any other stop.
+	
 % \nocite{*}
 % \bibliographystyle{apalike}
 \bibliographystyle{alpha}
@@ -394,4 +421,5 @@
 % TTCTRq and XCTRq
 % remembah: you don't always have a factor of log(\bar{J^l}) for obtaining jcodes because it would be everywhere, and have little to do with the repr themselves. You did not want to use a bitvector because "space".
 % remove leaflet duplicated url, and maybe others
+% \em vs \textit
 
