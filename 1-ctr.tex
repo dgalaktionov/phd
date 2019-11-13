@@ -23,7 +23,7 @@
 
 \section{Description}
 \label{sec:ctr:desc}
-    Given a transportation network, whether it is based on urban strets or public transportation, we work with a representation of the network that is based on a directed graph. For an urban street network, a \textbf{node} represents a road segment delimited by intersections, where two nodes are connected by an edge if it is possible (i.e. legally allowed). This allows to accurately describe a trajectory by sequentially listing the road segments that were traversed, while minimizing the redundancy.
+    Given a transportation network, whether it is based on urban streets or public transportation, we work with a representation of the network that is based on a directed graph. For an urban street network, a \textbf{node} represents a road segment delimited by intersections, where two nodes are connected by an edge if it is possible (i.e. legally allowed). This allows to accurately describe a trajectory by sequentially listing the road segments that were traversed, while minimizing the redundancy.
 
 	%In the other hand, for public transportation networks we define the nodes as stops or stations, making two of them connected if there exists a line or route that stops at each, consecutively. We can represent user trajectories following the same strategy as for urban street networks, although that will lead us to redundant representations in most cases. On subway and bus networks it is common to find stops that belong to only one route, and therefore must be either the end of a trajectory or be followed by the only possible next node. Furthermore, a more minimalist representation of a trajectory with the starting, ending and route switching nodes alone would be sufficient to reconstruct the original trajectory. Such representation will be contemplated later in Chapter~\ref{sec:newctr}, while on \gls{ctr} we maintain a common representation strategy for both kinds of networks. Because listing every node traversed introduces redundancy on public transportation networks, we state that \gls{ctr} is more adequate for urban street networks.
 	
@@ -726,7 +726,8 @@
 	  Using \gls{gtfs} data obtained for the public transportation network of 
 	  {Madrid},\footnote{Data from
 	  the CRTM corporation at \url{http://www.crtm.es/}} we generated a dataset of 
-	  synthetic trips combining the subway network with the Spanish commuter rail system\footnote{Data scaped by the authors from public sources} (called {\em cercanías}).
+	  synthetic trips combining the subway network with the Spanish commuter rail system\footnote{Data manually scraped from public sources} (called {\em cercan\'ias}). 
+	  In this dataset, we define the nodes as stops or stations, making two of them connected if there exists a line or route that stops at each, consecutively, thus allowing us to represent user trajectories following the same strategy as for urban street networks.
 	  In total, there are $313$ different stations/nodes from $23$ lines.
 	 
 	We generated $10$ million trips with lengths varying from $2$ to $31$ nodes traversed. Those lengths follow a binomial 
@@ -789,6 +790,8 @@
 
 	\begin{table}[ht]
 	\begin{center}
+	\caption{Compression of \acrshort{csa} with respect to the spatial baseline.}
+	\label{table:ctr:exp:space:spat}
 	  \begin{tabular}{|l|*{3}{r}|}
 	  \cline{2-4}
 	  \multicolumn{1}{c|}{} & \multicolumn{3}{c|}{$t_{\Psi}$ } \\
@@ -798,8 +801,6 @@
 	  Porto & 23.66\% & 15.49\% & 13.37\% \\
 	  \hline
 	  \end{tabular}
-	\caption{Compression of \acrshort{csa} with respect to the spatial baseline.}
-	\label{table:ctr:exp:space:spat}
 	\end{center}
 	\end{table}
 
@@ -821,6 +822,8 @@
 
 	\begin{table}[ht]
 	\begin{center}
+	\caption{Compression of \acrshort{wm} and \acrshort{htwt} with respect to the temporal baseline.}
+	\label{table:ctr:exp:space:wt}
 	  \begin{tabular}{|l|*{4}{r}|}
 	  \cline{2-5}
 	  \multicolumn{1}{c|}{} & \multicolumn{4}{c|}{Type of bitvector in \gls{wm}/\gls{htwt}}\\
@@ -840,8 +843,6 @@
 	  \hline
 	  \cline{2-5}
 	  \end{tabular}
-	\caption{Compression of \acrshort{wm} and \acrshort{htwt} with respect to the temporal baseline.}
-	\label{table:ctr:exp:space:wt}
 	\end{center}
 	\end{table}
 
@@ -854,7 +855,11 @@
 	One important insight from these results is that in the synthetic dataset from Madrid $RRR$ bitvectors always lead to a better compression than the plain $RG$, while in the real dataset from Porto that is not always the case, and we have to use the sparsest configuration of $RRR$ to achieve similar space requirements of the uncompressed $RG$ version. Consequently, for Porto dataset, the faster plain $RG$ bitvectors are probably the best choice. In Madrid dataset, we can see an actual space/time trade-off: $RRR$ obtains better compression but will be slower, as later seen in the Section~\ref{sec:ctr:exp:queries}.
 
 	\begin{table}[ht]
+	
 	\begin{center}
+	\caption{Overall compression of \acrshort{ctr} including different configurations for both the spatial and temporal components.}
+	\label{table:ctr:exp:space:ctr}
+	
 	  \begin{tabular}{|c|l|*{4}{c}|}
 	  \cline{3-6}
 	  \multicolumn{2}{c|}{} & \multicolumn{4}{c|}{Type of bitvector in \gls{wm}/\gls{htwt}} \\
@@ -899,8 +904,6 @@
 	  %\multicolumn{1}{c|}{} & \multicolumn{4}{c|}{$t_{\Psi}=512$} \\
 	%	\cline{2-5}
 	  \end{tabular}
-	\caption{Overall compression of \acrshort{ctr} including different configurations for both the spatial and temporal components.}
-	\label{table:ctr:exp:space:ctr}
 	\end{center}
 	\end{table}
 

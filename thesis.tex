@@ -30,6 +30,7 @@
 	In the context of public transportation networks, the last several years have seen numerous advances in wireless technologies, sensor networks (especially those related to RFID) and ubiquitous computing, leading to a widespread adoption of passenger tracking technology by public transportation services, making the collection of large amounts of data about the travel habits of these passengers\footnote{Alternatively called ``users'' in the context of transportation agencies} easier than ever before.
 	This in turn has opened the door for the exploitation of this kind of information to study the demand (usage) of a network, as opposed to the well-known techniques to analyze the offer (routes, timetables, etc...). 
 	For these applications, it is not the data about individual trajectories but measures of the use of the network what matters for traffic monitoring and road planning tasks. Examples of useful measures are  accessibility and centrality indicators, referred to how easy  is to reach locations or how important certain stops are within a network~\cite{Morency2007193, El-Geneidy2011, Wang2015335}. All these measures are based on some kind of counting queries that determine the number of \textit{distinct} trips that occur within a spatial and/or temporal window.
+	
 	To enable these new kinds of demand studies, it is imperative to develop mechanisms to efficiently persist and manage these vast (and always increasing) collections of data. When we also take into account that efficient query patterns need to be supported for this data to be ``useful'', the solution clearly constitutes an emerging technological challenge, that is being approached from several different domains, and hundreds of ad-hoc solutions have been implemented by all the \textit{Smart Cities} around the globe.
 	
 	%In  transportation systems, new technologies such as automatic fare collection (e.g., smartcards) and automatic passenger counting have made possible to generate a huge amount of highly detailed,
@@ -41,12 +42,14 @@
 	
 	\section{Problem definition}
 	\label{sec:pd}
-	Considering the underlying network, we have identified two distinguishable contexts for public transportation systems:
+	Considering the underlying network, we have identified two distinguishable contexts for transportation networks:
 	\begin{itemize}
 	    \item \textbf{Networks based on urban streets}: within these networks, a trajectory can start anywhere, at any time, and follow any arbitrary path of segments along a defined road network.
 	    %, which can have two alternative graph representations: assign a vertex for each intersection and edges for road segments that connect these intersections, or alternatively, a vertex for each road segment with no intersections and edges that connect navigable road segments.
-	    Trajectories of taxis or bicycles\footnote{Rented bicycles are a public transportation method commonly managed and incentivized by city administrations} fall into this category. For these systems, queries of interest may involve points of interest around which these trajectories could end, or road segments that could be part of a path.
-	    \item \textbf{Public transportation networks}: the trajectories must start at predefined points (usually stops or stations) at set times that are defined by the vehicles that make a stop at those points. These vehicles follow a predefined paths along these points, forming routes. Therefore, a trajectory follows a path along a graph of stops as vertexes, where an edge exists if there is a route that connects two stops. This graph can be hold very little relation to a road network, and users that travel in the same vehicle would produce identical parts of trajectories. This holds for bus and metro systems, along with most of other urban transportation systems. It is expected that for a collection of trajectories from a route-based network some of the queries of interest may revolve around the main network elements, which are routes and stops.
+	    Trajectories of taxis, bicycles or vehicle fleets fall into this category. For these systems, queries of interest may involve points of interest around which these trajectories could end, or road segments that could be part of a path.
+	    \item \textbf{Public transportation networks}: the trajectories must start at predefined points (usually stops or stations) at set times that are defined by the vehicles that make a stop at those points. These vehicles follow a predefined paths along these points, forming routes,  and users that travel in the same vehicle would produce identical parts of trajectories. 
+	    %Therefore, a trajectory follows a path along a graph of stops as vertexes, where an edge exists if there is a route that connects two stops. This graph can be hold very little relation to a road network, and users that travel in the same vehicle would produce identical parts of trajectories. 
+	    This classification applies to bus and metro systems, along with most of other urban transportation systems. It is expected that for a collection of trajectories from a public transportation network some of the queries of interest may revolve around the main network elements, which are routes and stops.
 	\end{itemize}
 	
 	\begin{figure*}[t]
@@ -61,7 +64,7 @@
 		\label{fig:networks}
 	\end{figure*}
 	
-	Regardless of the working context, we will require a \textit{network} model, which tends to be quite simple in urban street networks, merely consisting of a directed graph with street segments as nodes, where connection to other street segments indicate that direct navigation is possible. For public transportation networks, as mentioned above, it could be pertinent to consider a more rich representation than a graph of stops and lines, but considering also the routes formed by transportation vehicles, such as buses or trains, visiting stops at set times and allowing commuters to board or alight at them. A well-known model that includes these network elements, among others less interesting for our problem, is \gls{gtfs}\footnote{\url{https://developers.google.com/transit/gtfs/}}, which is widely adopted by open data platforms in numerous Smart Cities.
+	Regardless of the working context, we will work with a \textit{network} model, which tends to be quite simple in urban street networks, merely consisting of a directed graph with street segments as nodes, where connection to other street segments indicate that direct navigation is possible. For public transportation networks, as mentioned above, it could be pertinent to consider a more rich representation than a graph of stops and lines, but considering also the routes formed by transportation vehicles, such as buses or trains, visiting stops at set times and allowing commuters to board or alight at them. A well-known model that includes these network elements, among others less interesting for our problem, is \gls{gtfs}\footnote{\url{https://developers.google.com/transit/gtfs/}}, which is widely adopted by open data platforms in numerous Smart Cities.
 	
 	For any kind of network, a \textit{trajectory} will be defined as a path formed by a sequence of network elements (usually stops or street segments), that was traversed by a single commuter in one trip, with an origin and a final destination. In this definition, we must consider some practical limitations to the nature of a trajectory, as one could argue whether commuters that take more than one hour to switch a line are actually switching or just finalized their trajectories and are starting second ones with some new destination. These cases are complicated to unambiguously decide in practice, and therefore our approach will tend to set hard limits on waiting times and walking distances for a single trajectory.
 	
@@ -73,7 +76,7 @@
 	A usable solution would also require a user interface that enables the exploitation of this information by researchers, transportation companies, city administrations and any other kind of end users. This interface must, at the very least, allow visualizing the network elements on a map, also granting the ability to make queries over these elements in an intuitive and responsive way, while respecting the usual quality principles of any user-oriented software of this kind.
 	
 	\section{Contributions}
-	As the two contexts from Section~\ref{sec:pd}~lead to different ways of structuring and querying the information, it is natural to expect at least two different representations, one for each context. For this reason, in this work we have applied some of compact data structures to design novel representations that are able to handle massive collections of data related to user transportation habits. Our proposed representation cover both contexts, as well as offer a fair trade-off for different query needs, while at the same time ensuring that our proposals can be implemented in a real world scenario, for which we evaluate the performance of our representations with realistic query cases over real datasets\footnote{When needed, the real data was augmented or mixed with synthetic information}.
+	As the two contexts from Section~\ref{sec:pd}~lead to different ways of structuring and querying the information, it is natural to expect at least two different representations, one for each context. For this reason, in this work we have applied compact data structures and techniques to design novel representations that are able to handle massive collections of data related to user transportation habits. Our proposed representation cover both contexts, as well as offer a fair trade-off for different query needs, while at the same time ensuring that our proposals can be implemented in a real world scenario, for which we evaluate the performance of our representations with realistic query cases over real datasets\footnote{When needed, the real data was augmented or mixed with synthetic information}.
 	
 	Furthermore, as a proof of the practicability of our approach, we have developed a user interface that is based on our representations, and allows a user to perform queries through a \gls{gis} web interface. Unlike traditional \gls{gis} interfaces, ours is focused on offering convenient methods to query past user trajectories by network elements instead of purely spatial relationships, and achieves far superior performance when compared to systems backed by traditional database systems.
 	
@@ -391,11 +394,11 @@
     compression of $\Psi$ was obtained by combining differential encoding of runs with Huffman and
     run-length encoding.
 
-%\include{1-ctr}
+\include{1-ctr}
 
-%\include{2-xctr}
+\include{2-xctr}
 	
-%\include{3-gis}
+\include{3-gis}
 
 \part{Thesis summary} \label{part:final}
 \chapter{Conclusions and future works}
