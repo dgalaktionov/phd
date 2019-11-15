@@ -178,12 +178,12 @@
     With the most direct representation of a matrix as an array of values, we are required to compute the average value of a rectangle $(a,b),(a+h,b+w)$ as:
     
     \[
-    \overline{M}_{a..a+h,b..b+w}~\leftarrow~
-    \frac{\displaystyle\sum^h_{i=0}\displaystyle\sum^w_{j=0}M_{i+a,j+b}}
+    \overline{M}[a..a+h,b..b+w]~\leftarrow~
+    \frac{\displaystyle\sum^h_{i=0}\displaystyle\sum^w_{j=0}M[i+a,j+b]}
     {(h+1)(w+1)}
     \]
     
-    Note that the summation has a time complexity of $O(hw)$, which would make this operation quite expensive for real time rendering applications. In order to improve the complexity of these calculations, the \gls{sat} precomputes the summations of $M$ in a matrix $I$, of the same size, where $I_{a,b}~\leftarrow~\displaystyle\sum^a_{i=0}\displaystyle\sum^b_{j=0}M_{i,j}$. That is, each cell of $I$ is the sum of the values within rectangle spanning from the origin of the matrix to the position of the cell. An example of a \gls{sat} can be found in the Figure~\ref{fig:sat}.
+    Note that the summation has a time complexity of $O(hw)$, which would make this operation quite expensive for real time rendering applications. In order to improve the complexity of these calculations, the \gls{sat} precomputes the summations of $M$ in a matrix $I$, of the same size, where $I[a,b]~\leftarrow~\displaystyle\sum^a_{i=0}\displaystyle\sum^b_{j=0}M[i,j]$. That is, each cell of $I$ is the sum of the values within rectangle spanning from the origin of the matrix to the position of the cell. An example of a \gls{sat} can be found in the Figure~\ref{fig:sat}.
     
     \begin{figure}[ht]
 		\begin{center}
@@ -196,13 +196,13 @@
     Having $I$, we can compute the average value of a rectangle in $O(1)$ operations as:
     
     \[
-    \overline{M}_{a..a+h,b..b+w}~\leftarrow~
-    \frac{I_{a+h,b+w} - I_{a+h,b-1} - I_{a-1,b+w} + I_{a-1,b-1}}
+    \overline{M}[a..a+h,b..b+w]~\leftarrow~
+    \frac{I[a+h,b+w] - I[a+h,b-1] - I[a-1,b+w] + I[a-1,b-1]}
     {(h+1)(w+1)}
     \]
     
     In our example from Figure~\ref{fig:sat}, to calculate the sum of the delimited $3x3$ region in the matrix, we simply operate over the four terms in \textbf{bold} from the \gls{sat}, obtaining
-    $\displaystyle\sum^4_{i=2}\displaystyle\sum^4_{j=2}M_{i,j}~=~I_{4,4}-I_{4,1}-I_{1,4}+I_{1,1}~=~84-27-18+8~=~47$.
+    $\displaystyle\sum^4_{i=2}\displaystyle\sum^4_{j=2}M[i,j]~=~I[4,4]-I[4,1]-I[1,4]+I[1,1]~=~84-27-18+8~=~47$.
     
     While with this representation we do not need to keep the original matrix\footnote{As accessing a single cell can be viewed as a special case of the computation of an average where $h=0,w=0$.}, the improved computational efficiency comes at the expense of having to represent larger numbers than the original values.
 	
