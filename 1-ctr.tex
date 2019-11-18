@@ -489,32 +489,40 @@
 	\end{itemize}
 
 
-	\begin{algorithm}[ht]
-		\begin{center}
-			\begin{minipage}{0.70\textwidth}
-				\begin{code}
-					\textbf{GetTopK\_most\_used\_nodes} $(k)$: \\
-					\>(l.1~) \> ~$ Q ~\leftarrow$ \textbf{new PriorityQueue()}; \\
-					\>(l.2~) \> ~$ Q .$\textbf{push$(\langle2, |V|\rangle, \langle\select_1(D,2), n\rangle)$}; \\
-					\>(l.3~) \> ~$ current\_k ~\leftarrow 0$; \\%\\
-					
-					\>(l.4~) \> ~\textbf{while }$current\_k < k$: \\
-					\>(l.5~) \> ~\> $ (\langle i,j\rangle, \langle l,r\rangle) ~\leftarrow ~Q.$\textbf{pop$()$}; \\%\\
-					
-					\>(l.6~) \> ~\> \textbf{if} $i = j$: \\
-					\>(l.7~) \> ~\> \> $ topK[current\_k] ~\leftarrow V[i]$; \\
-					\>(l.8~) \> ~\> \> $ current\_k ~\leftarrow current\_k + 1$; \\
-					\>(l.9~) \> ~\> \textbf{else}: \\
-					\>(l.10) \> ~\> \> $ m ~\leftarrow i + \frac{j - i + 1}{2}$; \\
-					\>(l.11) \> ~\> \> $ q ~\leftarrow$ \textbf{$\select_1(D,m + 1)$}; \\
-					\>(l.12) \> ~\> \> $ Q .$\textbf{push$(\langle i, m-1 \rangle, \langle l, q-1 \rangle)$}; \\
-					\>(l.13) \> ~\> \> $ Q .$\textbf{push$(\langle m, j \rangle, \langle q, r \rangle)$}; \\%\\
-					\>(l.14) \> ~\textbf{return} $topK$; \\
-				\end{code}
-			\end{minipage}
-		\end{center}
-		\caption{Algorithm {\em Top-k most used nodes} using binary-partition approach.}
-		\label{alg:topk_nieves}
+    \begin{algorithm}[ht]
+    \SetKwData{k}{k}\SetKwData{topK}{topK}\SetKwData{Q}{Q}\SetKwData{D}{D}\SetKwData{V}{V}\SetKwData{n}{n}\SetKwData{currentK}{current\_k}\SetKwData{k}{k}\SetKwData{i}{i}\SetKwData{j}{j}\SetKwData{l}{l}\SetKwData{r}{r}\SetKwData{middle}{m}\SetKwData{q}{q}
+    \SetKwFunction{GetTopK}{GetTopK\_most\_used\_nodes}\SetKwFunction{Push}{Push}\SetKwFunction{Pop}{Pop}
+    \SetKwProg{Fn}{Function}{\string:}{}
+     
+    \Fn{\GetTopK{\k}}{
+        \KwData{number \k}
+        \KwResult{\topK nodes}
+        \BlankLine
+        
+        \Q $~\leftarrow$ \textbf{new PriorityQueue()}\;
+        \Push{\Q,$(\langle2, |\V|\rangle, \langle\select_1(\D,2), \n\rangle)$}\;
+        \currentK $~\leftarrow~0$\;
+        \BlankLine
+        
+        \While{\currentK $<$ \k}{
+            $(\langle \i,\j\rangle, \langle \l,\r\rangle) ~\leftarrow ~$\Pop{\Q}\;
+            \BlankLine
+            
+            \eIf{\i=\j}{
+                $\topK[\currentK]$ $~\leftarrow~\V[\i]$\;
+                \currentK $~\leftarrow~\currentK+1$\;
+            }{
+                \middle $~\leftarrow\i + \frac{\j-\i+1}{2}$\;
+                \q $~\leftarrow~ \select_1(\D,\middle+1$)\;
+                \Push{\Q,$(\langle \i, \middle-1 \rangle, \langle \l, \q-1 \rangle)$}\;
+                \Push{\Q,$(\langle \middle, \j \rangle, \langle \q, \r \rangle)$}\;
+            }
+        }
+        \Return{\topK}\;
+     }
+     
+	\caption{Algorithm {\em Top-k most used nodes} using binary-partition approach.}
+	\label{alg:topk_nieves}
 	\end{algorithm}
 
 	\item {\em Top-k most used nodes to start a trip (\topK$_s$).}
@@ -523,8 +531,8 @@
 	each iteration, hence increasing the temporal complexity of the operation.
 
 	The implementation of the linear approach is straightforward. The binary-partition approach differs slightly 
-	from the Algorithm~\ref{alg:topk_nieves}: in (l.2) we insert $(\langle 2, |V| \rangle, \langle 2,z+1 \rangle)$ into $Q$, and we 
-	replace (l.11) with $[x..y]~\leftarrow~\bsearch(\Psi,\$V[m])$; $q \leftarrow x$. This increases the temporal complexity of \topK$_s$ by a factor of $O(\log n)$ over the complexities discussed for the original \topK\ queries.
+	from the Algorithm~\ref{alg:topk_nieves}: in the \textit{line 3} we insert $(\langle 2, |V| \rangle, \langle 2,z+1 \rangle)$ into $Q$, and we 
+	replace \textit{line 12} with $[x..y]~\leftarrow~\bsearch(\Psi,\$V[m])$; $q \leftarrow x$. This increases the temporal complexity of \topK$_s$ by a factor of $O(\log n)$ over the complexities discussed for the original \topK\ queries.
 	\end{itemize}
 
 	\subsection{Temporal queries}
@@ -686,8 +694,8 @@
 		a segment $[l..r]$ in $\Psi$ we compute that priority as $p_{l..r} \leftarrow \cnt_{t_1,t_2}(Icode^{\Psi},l,r)$ instead of 
 		$p_{l..r} \leftarrow  r-l+1$. Apart from
 		that, the only modifications that we must consider over the pure spatial \topK$_{bin}$\ Algorithm~\ref{alg:topk_nieves} are:
-		we replace (l.2) by $p_{l..r} \leftarrow \cnt_{t_1,t_2}(Icode^{\Psi},\select_1(D,2),n)$; $Q.push(\langle2, |V|\rangle, \langle \select_1(D,2), n\rangle, \underline{p_{l..r}})$,
-		and we replace  (l.12) and (l.13), respectively, by 
+		we replace \textit{line 3} by $p_{l..r} \leftarrow \cnt_{t_1,t_2}(Icode^{\Psi},\select_1(D,2),n)$; $Q.push(\langle2, |V|\rangle, \langle \select_1(D,2), n\rangle, \underline{p_{l..r}})$,
+		and we replace  \textit{lines 12 and 13}, respectively, by 
 		   $ Q.push(\langle i, m-1 \rangle, \langle l, q-1 \rangle, \underline{\cnt_{t_1,t_2}(Icode^{\Psi},l,q-1)})$ and
 		   $ Q.push(\langle m,   j \rangle, \langle q,   r \rangle, \underline{\cnt_{t_1,t_2}(Icode^{\Psi},q,r)})$. Due to these modifications, the overall time complexity for this variant is $O(|S|\log|S|\log|I|)$
 		
