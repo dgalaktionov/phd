@@ -246,7 +246,7 @@
 	
 	Although our system is oblivious to the specific data sources, we have successfully experimented adapting information collected from \gls{gtfs} sources, as well as OpenStreetMap, to obtain a description of a public transportation network. Each different source or format would require a custom conversion to adapt it to our model, which is one of the reasons that we had for standing against overcomplicating our model. As for the passenger trips, they must be described in terms of stages (boarding and alighting pairs) that are related to stops and journeys. The amount of preprocessing needed will depend on the source of the data, as most \gls{afc} systems do not directly record the alightings and the specific journey within the day will have to be estimated based on timestamps.
 	
-	We have also opted for different persistence options for the network description and the passenger trips, as we are interested in using our \gls{xctr} for the later, while the former does not pose any technological challenges that would warrant the use of a compact representation.
+	We have also opted for different persistence options for the network description and the passenger trips, as we are interested in using our \gls{xctr} for the latter, while the former does not pose any technological challenges that would warrant the use of a compact representation.
 	
 	Finally, these two data repositories are used to feed an API over which requests can be made, which is going to be exploited by the user interface. The specific supported requests are discussed in the Section~\ref{sec:api}.
 	
