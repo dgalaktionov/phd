@@ -48,7 +48,7 @@
     \subsection{Abstractions for geographical information}
     Once the \gls{crs} is defined, we must define the abstractions that will allow us to represent geographical information, which can be considered from three alternative perspectives: as geographical objects, as geographical fields or as topological networks.
     
-    Geographical objects are subsets of space that are used to represent the position or extension of spatial entities. The surface of a road or the position of a store are examples of geographical objects. The Figure~\ref{fig:gis:concept} (left) shows an example of geographical objects on a map.
+    Geographical objects are subsets of space that are used to represent the position or extension of spatial entities. The surface of a road or the position of a store are examples of geographical objects. Figure~\ref{fig:gis:concept} (left) shows an example of geographical objects on a map.
     
     \begin{figure}[ht]
 		\begin{center}
@@ -61,7 +61,7 @@
     
     Note that there can be several valid representations for a geographical object, regardless of its extension in the real world. For instance, a city may be represented as a single position (point) or as a geometric surface, depending on the ultimate requirements of visualization or exploitation.
     
-    On the other hand, a geographical field is characterized as a function that associates a value for every point of space. The surface temperature or the slope of the terrain may be considered as geographical fields. An example of a geographical field can be found in the Figure~\ref{fig:gis:concept} (right), where an elevation map is shown.
+    On the other hand, a geographical field is characterized as a function that associates a value for every point of space. The surface temperature or the slope of the terrain may be considered as geographical fields. An example of a geographical field can be found in Figure~\ref{fig:gis:concept} (right), where an elevation map is shown.
     
     Both abstractions described above (geographical objects and geographical fields) can be alternatively used to represent information of different nature. Commonly, geographical objects are used to analyze man made structures, such as roads, borders or land registry, while geographical fields are more appropriate for natural information collected by sensors, such as meteorological, geological or satellite information. However, this does not mean that, for example, a building cannot be represented as a geographical field that assigns a value of 1 for a coordinate contained within the building and 0 for every other coordinate, although such conceptual definition may be inadequate for many applications.
 
@@ -77,7 +77,7 @@
     \subsection{Vector model}
     This model uses numerical data types (such as integers or floating point representations) to deifne a system of coordinates over which the geographical information is represented using geometric constructions (points, segments, polygons, etc\dots). For each primitive data type defined in the geographical object conceptual model, there is a vector representation.
     
-    The most extended vector model is the Simple Feature Specification, defined by the Open Geospatial Consortium (OGS), in which data types are defined to represent simple spatial objects defined in the ISO 19107. The simpler data types are composed to represent more complex ones, as shown in the Figure~\ref{fig:gis:sfc}, where a \textit{curve} is approximated as a \textit{LineString}, which is defined as a sequence of \textit{points}, while a \textit{surface} can be a \textit{Polygon} defined with \textit{LinearRings}, which are special cases of \textit{LineStrings} where their last \textit{point} is equal to the first one, thus enclosing a space.
+    The most extended vector model is the Simple Feature Specification, defined by the Open Geospatial Consortium (OGS), in which data types are defined to represent simple spatial objects defined in the ISO 19107. The simpler data types are composed to represent more complex ones, as shown in Figure~\ref{fig:gis:sfc}, where a \textit{curve} is approximated as a \textit{LineString}, which is defined as a sequence of \textit{points}, while a \textit{surface} can be a \textit{Polygon} defined with \textit{LinearRings}, which are special cases of \textit{LineStrings} where their last \textit{point} is equal to the first one, thus enclosing a space.
     
     \begin{figure}[ht]
 		\begin{center}
@@ -87,7 +87,7 @@
 		\label{fig:gis:sfc}
 	\end{figure}
 	
-	This composition can be also seen in the Figure~\ref{fig:gis:sfcexample}, where six \textit{points} are used to define a \textit{LineString}, while three \textit{LinearRings} are used to define a \textit{polygon}, one for the external borders of the \textit{polygon} while the other two define the internal borders (the {\em holes}).
+	This composition can be also seen in Figure~\ref{fig:gis:sfcexample}, where six \textit{points} are used to define a \textit{LineString}, while three \textit{LinearRings} are used to define a \textit{polygon}, one for the external borders of the \textit{polygon} while the other two define the internal borders (the {\em holes}).
 	
 	\begin{figure}[ht]
 		\begin{center}
@@ -106,7 +106,7 @@
     \subsection{Comparison of vector and raster models}
     In the previous section we have described two possible logical models to represent geographical information: the vector and raster models. Both models can be used to represent either geographical objects or geographical fields. As previously seen, each model has a different approach to the practical limitations when implementing a conceptual model. In this section we will show how each of the logical models can represent either geographical objects or geographical fields and also make a brief comparison of both models.
     
-    In the vector model, geographical objects are represented as a discretization, which may lead to some precission loss in some of the shapes, as seen in the Figure~\ref{fig:gis:object} (top). In the other hand, the raster model can represent objects by a process called \textit{rasterization}, where each cell value is assigned to an object identifier, as seen in the Figure~\ref{fig:gis:object} (bottom).
+    In the vector model, geographical objects are represented as a discretization, which may lead to some precission loss in some of the shapes, as seen in Figure~\ref{fig:gis:object} (top). In the other hand, the raster model can represent objects by a process called \textit{rasterization}, where each cell value is assigned to an object identifier, as seen in Figure~\ref{fig:gis:object} (bottom).
     
     \begin{figure}[ht]
 		\begin{center}
@@ -117,7 +117,7 @@
 		\label{fig:gis:object}
 	\end{figure}
 	
-	Geographical fields are also transformed when they are represented in a logical model. As such, in the vector model, these fields are represented with a polygonization of the function, as shown in the Figure~\ref{fig:gis:field} (top), while in the raster model we discretize the function, representing a value only for the cells of the matrix, as done in the Figure~\ref{fig:gis:field} (bottom).
+	Geographical fields are also transformed when they are represented in a logical model. As such, in the vector model, these fields are represented with a polygonization of the function, as shown in Figure~\ref{fig:gis:field} (top), while in the raster model we discretize the function, representing a value only for the cells of the matrix, as done in Figure~\ref{fig:gis:field} (bottom).
     
     \begin{figure}[ht]
 		\begin{center}
@@ -147,7 +147,7 @@
     For this reason, custom \texttt{REST API}s that encode vector geometries in GeoJSON\footnote{\url{https://geojson.org/}} (RFC 7946) have become the most popular way of transmitting this data. This format makes it possible to encode \textit{Points},  \textit{LineStrings}, \textit{Polygons} and their multipart variants in a compact string, while also allowing to attach any arbitrary information (\textit{properties}) to these features in JSON format.
     
     \subsection{GTFS}
-    Developed as a standard to represent the schedules of most public transportation systems, \gls{gtfs}\footnote{\url{https://developers.google.com/transit/gtfs/}} was developed by Google and it provides a standard model to specify stops, routers, schedules and other useful information for trip planning that may be associated with a transportation system, as shown in the diagram from the Figure~\ref{fig:gis:gtfs}.
+    Developed as a standard to represent the schedules of most public transportation systems, \gls{gtfs}\footnote{\url{https://developers.google.com/transit/gtfs/}} was developed by Google and it provides a standard model to specify stops, routers, schedules and other useful information for trip planning that may be associated with a transportation system, as shown in the diagram from Figure~\ref{fig:gis:gtfs}.
     
     \begin{figure}[ht]
 		\begin{center}
@@ -157,7 +157,7 @@
 		\label{fig:gis:gtfs}
 	\end{figure}
 	
-	This has some resemblance to the model we have previously proposed in the Figure~\ref{fig:er} from Section~\ref{sec:newctr:desc}, where a \texttt{stop} in \gls{gtfs} corresponds to a \texttt{stop\_place} in our model, \texttt{stoptime} to \texttt{stop\_time}, a \texttt{trip} is similar to a \texttt{journey}, while a \texttt{route} is a \texttt{line}. The largest difference, however, is that we consider that a line (route) is formed by fixed sequence of stops, while in \gls{gtfs} no such restriction exists, and every trip can theoretically have a different sequence of stops.
+	This has some resemblance to the model we have previously proposed in Figure~\ref{fig:er} from Section~\ref{sec:newctr:desc}, where a \texttt{stop} in \gls{gtfs} corresponds to a \texttt{stop\_place} in our model, \texttt{stoptime} to \texttt{stop\_time}, a \texttt{trip} is similar to a \texttt{journey}, while a \texttt{route} is a \texttt{line}. The largest difference, however, is that we consider that a line (route) is formed by fixed sequence of stops, while in \gls{gtfs} no such restriction exists, and every trip can theoretically have a different sequence of stops.
 	
 	There are GPS coordinates stored for a stop, and it is also possible to define a \textit{LineString} shape for a trip, which will be referenced by a \texttt{shape\_id} from a shapes definition file. The stop times for a trip are usually defined within the calendar dates, allowing this way to specify a schedule based on the day of the week or have a special consideration for selected days. Outside of the calendar definition, it is still possible to specify an expected frequency that a trip must respect.
     
@@ -234,7 +234,7 @@
 	In this section we discuss the overall architecture of Trippy, our interface based on \gls{xctr}. We start by describing it from the functional perspective, following the data flow from the data sources until the presentation in the user interface. We complement this description with a technical architecture overview, speaking about how the individual components are integrated together and facilitate an understanding of the decisions behind the technological choices.
 	
 	\subsection{Functional architecture}
-	We have designed Trippy to be as flexible as possible, ensuring that it can operate with any network and trip descriptions that can be adapted to the model from the Figure~\ref{fig:er}, which is elementary enough to apply to most of the current transportation systems. For an overview of this data flow, refer to the diagram in the Figure~\ref{fig:arch:functional}.
+	We have designed Trippy to be as flexible as possible, ensuring that it can operate with any network and trip descriptions that can be adapted to the model from Figure~\ref{fig:er}, which is elementary enough to apply to most of the current transportation systems. For an overview of this data flow, refer to the diagram in Figure~\ref{fig:arch:functional}.
 	
 	\begin{figure}[ht]
 		\begin{center}
@@ -253,7 +253,7 @@
 	\subsection{Technical architecture}
 	We have designed and implemented the infrastructure needed to solve our query needs, which are focused on the usage of network elements, as previously explained in Section~\ref{sec:gis:intro}. 
 	%It is also worth highlighting that apart from that main target of Trippy, the second challenge addressed in our system is to efficiently represent massive datasets of trajectories formed by user's trips along a public transportation network. 
-	To visualize and query on these network elements, we need to work with a representation of the network itself. Specifically, we represent the model for trips over a public transport network shown in the Figure~\ref{fig:er}, extended with spatial attributes (gps coordinates) for the stops and lines. Implementing this model for networks does not pose any challenge, as this information is rather static (it is not expected to grow significantly) and only requires a small amount of space in comparison to passenger trips. Therefore, a \gls{rdbms} representation can be used  to represent the elements of the network. On the other hand, we use our compact representation \gls{xctr} for the trips, that we are going to rely on for most of our queries. The reduced size of this autoindexed representation allows us to keep it in primary memory, making it outperform any traditional indexing alternative that is based on secondary memory.
+	To visualize and query on these network elements, we need to work with a representation of the network itself. Specifically, we represent the model for trips over a public transport network shown in Figure~\ref{fig:er}, extended with spatial attributes (gps coordinates) for the stops and lines. Implementing this model for networks does not pose any challenge, as this information is rather static (it is not expected to grow significantly) and only requires a small amount of space in comparison to passenger trips. Therefore, a \gls{rdbms} representation can be used  to represent the elements of the network. On the other hand, we use our compact representation \gls{xctr} for the trips, that we are going to rely on for most of our queries. The reduced size of this autoindexed representation allows us to keep it in primary memory, making it outperform any traditional indexing alternative that is based on secondary memory.
 
     The overall technical architecture of our proposal is presented in Figure~\ref{fig:arch:real}. In the bottom part, we can find the backend
     %Before we explain each component in detail, we present a diagram for the overall architecture in Figure~\ref{fig:arch}. It is based on 
@@ -272,7 +272,7 @@
     Further details about the elements included in both the backend and the frontend of Trippy\ are discussed below.
     
     \subsubsection{\bf Representing the transport network (SQLite).}
-    Since we aim at visualizing the elements of the network over a map, we need information regarding the stops and lines of the transport network, following closely the model from the Figure~\ref{fig:er}. For each physical stop, along with the GPS coordinates of its location, we store a unique numeric identifier. Regarding the lines of the transport network, we basically keep the sequence of stops each line traverses. Note that, unlike the abstractions used by most public transportation networks, we consider lines to be one-way (i.e. they have a unique direction), and consequently the reversed/returning path is treated as a different line.
+    Since we aim at visualizing the elements of the network over a map, we need information regarding the stops and lines of the transport network, following closely the model from Figure~\ref{fig:er}. For each physical stop, along with the GPS coordinates of its location, we store a unique numeric identifier. Regarding the lines of the transport network, we basically keep the sequence of stops each line traverses. Note that, unlike the abstractions used by most public transportation networks, we consider lines to be one-way (i.e. they have a unique direction), and consequently the reversed/returning path is treated as a different line.
     
     As indicated above, we have chosen  a SQLite database to represent the network because it is conveniently portable and efficient for such small datasets. While no spatial database technology was required to deal with the GPS coordinates of the  stops, we have opted to integrate the  SpatiaLite extension\footnote{\url{https://www.gaia-gis.it/fossil/libspatialite/index}} to support storing the shapes of our lines.
     
@@ -372,7 +372,7 @@
 	\label{sec:ui}
 	Based on the API developed from Section~\ref{sec:api}, we have developed a prototype of an accessible and intuitive user interface, based on web application technologies. In the rest of this section, we are going to demonstrate the elements of this interface in what may be read as a user manual.
 	
-    The interface of Trippy consists of a map as shown in the Figure~\ref{fig:ui:overall}, where have set up a study case with the same bus networks from Madrid used in Section~\ref{sec:newctr:exp:data}. Every bus stop is represented by a stop and we are using the underlying Thunderforest\footnote{\url{https://www.thunderforest.com}} \gls{tms} layer to display the bus lines that connect them. Additionally, the interface presents stop selectors \textcircled{1}, line selectors \textcircled{2} and also date \textcircled{3} and time \textcircled{4} filters that allow a user to query the \gls{xctr} for information.
+    The interface of Trippy consists of a map as shown in Figure~\ref{fig:ui:overall}, where have set up a study case with the same bus networks from Madrid used in Section~\ref{sec:newctr:exp:data}. Every bus stop is represented by a stop and we are using the underlying Thunderforest\footnote{\url{https://www.thunderforest.com}} \gls{tms} layer to display the bus lines that connect them. Additionally, the interface presents stop selectors \textcircled{1}, line selectors \textcircled{2} and also date \textcircled{3} and time \textcircled{4} filters that allow a user to query the \gls{xctr} for information.
     
     \begin{figure}[ht]
 		\begin{center}
@@ -384,7 +384,7 @@
 	
 	As the interface shown is still in a prototype phase, it does not yet incorporate all the planned features. Concretely, we are not yet displaying the geometries of the lines nor making them interactive, and there is yet no way to make requests over the line or histogram endpoints from the previous Section~\ref{sec:api} using the graphic interface. However, we consider it complete enough to be representative of the utility that such an interface can have when powered by \gls{xctr}.
 	
-	By clicking on a stop, a popup is revealed with the stop name, the lines that the stop belongs to, and also the number of users that used that stop for boarding, starting or ending a trip or as a switch stop,\footnote{The number of boardings must be equal to the number of starts added to the number of switches.} as shown in the Figure~\ref{fig:ui:stop} (left). These usage numbers will only be considered within the time window specified by the filter, if any. It is also possible to open a context menu for the stop with a right click, as done in the Figure~\ref{fig:ui:stop} (right), and is one of the ways to specify a starting or ending stop for an X to Y query (from the trip endpoint).
+	By clicking on a stop, a popup is revealed with the stop name, the lines that the stop belongs to, and also the number of users that used that stop for boarding, starting or ending a trip or as a switch stop,\footnote{The number of boardings must be equal to the number of starts added to the number of switches.} as shown in Figure~\ref{fig:ui:stop} (left). These usage numbers will only be considered within the time window specified by the filter, if any. It is also possible to open a context menu for the stop with a right click, as done in Figure~\ref{fig:ui:stop} (right), and is one of the ways to specify a starting or ending stop for an X to Y query (from the trip endpoint).
 	
 	A future feature is planned to query the line endpoint in a similar way, in order to display usage statistics for a whole line instead of single stops. Since several line paths may overlap each other, the interface must provide a way to disambiguate the selection. The navigation among stops and lines may also be helped by providing links in the corresponding popups.
 	
@@ -399,7 +399,7 @@
 		\label{fig:ui:stop}
 	\end{figure}
 	
-	In the upper part of the screen we include stop and line selectors, which are implemented as custom dropdown components with a search field, as exposed in the Figure~\ref{fig:ui:select}, where on the left we are looking for stops containing \textit{Bilbao} in their names, and on the right we are checking lines from \textit{Leganés}, from the partial query \textit{legan}.
+	In the upper part of the screen we include stop and line selectors, which are implemented as custom dropdown components with a search field, as exposed in Figure~\ref{fig:ui:select}, where on the left we are looking for stops containing \textit{Bilbao} in their names, and on the right we are checking lines from \textit{Legan\'es}, from the partial query \textit{legan}.
 	
 	\begin{figure}[ht]
 		\begin{center}
@@ -412,7 +412,7 @@
 	
 	As in Madrid it is frequent to have several bus stops with the exact same name for different physical stop locations, either because it is used by different lines or by the reversed direction of the same lines (as such, they tend to be located on the opposite direction of the same street), we display the lines that each stop belongs to, in order to help distinguish between these cases. Note that in the displayed version we do not distinguish the direction of the line in the interface, although we do keep track of the directions internally, and consider the reverse direction to be a separate line. These two selectors are also correlated: selecting a stop in the starting (or ending) field will restrict the starting (or ending) line selector to only those lines that the selected stop belongs to, and vice versa.
 	
-	The date and time filters affect all the displayed results, and can be edited with their corresponding components from the Figure~\ref{fig:ui:date}. We also ensure that the selected starting and ending dates and times do not overlap: in our example only the dates starting from \texttt{2019-03-11} are available, since that is the selected starting date. If a popup is displayed while these filters are changed, the contents of the popup are dynamically updated.
+	The date and time filters affect all the displayed results, and can be edited with their corresponding components from Figure~\ref{fig:ui:date}. We also ensure that the selected starting and ending dates and times do not overlap: in our example only the dates starting from \texttt{2019-03-11} are available, since that is the selected starting date. If a popup is displayed while these filters are changed, the contents of the popup are dynamically updated.
 	
 	\begin{figure}[ht]
 		\begin{center}
@@ -422,7 +422,7 @@
 		\label{fig:ui:date}
 	\end{figure}
 	
-	The trip endpoint (which returns number of trips performed starting with a stop X and ending with a stop Y) may be queried by either using the starting and ending stop selectors or the context menu of the stops accessible with the right click, which also fills the selected stop into the corresponding stop selector. A straight arrow will be displayed connecting the starting and the ending stops, as can be seen in the Figure~\ref{fig:ui:xy}, and a popup with the total number of trips will be shown over that arrow.
+	The trip endpoint (which returns number of trips performed starting with a stop X and ending with a stop Y) may be queried by either using the starting and ending stop selectors or the context menu of the stops accessible with the right click, which also fills the selected stop into the corresponding stop selector. A straight arrow will be displayed connecting the starting and the ending stops, as can be seen in Figure~\ref{fig:ui:xy}, and a popup with the total number of trips will be shown over that arrow.
 	
 	\begin{figure}[ht]
 		\begin{center}
@@ -434,7 +434,7 @@
 	
 	Additionally, we allow both of these stops be be filtered by line, and the results filtered by a time window. These controls may be interacted with while the popup is open, and the number of results will be updated.
 	
-	We can also perform the generalized version of this query, and obtain the number of movements between a starting and a final areas, as done in the Figure~\ref{fig:ui:xyarea}.
+	We can also perform the generalized version of this query, and obtain the number of movements between a starting and a final areas, as done in Figure~\ref{fig:ui:xyarea}.
 	
 	\begin{figure}[ht]
 		\begin{center}

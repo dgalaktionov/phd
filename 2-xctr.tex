@@ -11,7 +11,7 @@
     \label{sec:newctr:desc}
 	While in theory we could use the \gls{ctr} introduced in Chapter~\ref{sec:ctr} to also represent trips over a subway or bus network, such representation would be very redundant. If we defined our \gls{ctr} nodes as stops or stations, making two of them connected if there exists a line or route that stops at each, we would find out that a commuter will board at a stop and follow only one route (line), passing through all its stops consecutively until the alighting stop, either to switch lines or end the trip. Furthermore, a single vehicle (such as a bus or a train) will be shared by several commuters at the same time, thus also producing trips that visit the same nodes at the same times. Because simply listing every node traversed introduces all these kinds of redundancy for public transportation networks, we state that \gls{ctr} is more adequate for urban street networks.
 	
-	Therefore, in order to better capture the information of trips over a public transportation network, and exploit this information in order to find a representation that avoids redundancy, we propose an ER model for the demand information for a public transportation network, as seen in the Figure~\ref{fig:er}.
+	Therefore, in order to better capture the information of trips over a public transportation network, and exploit this information in order to find a representation that avoids redundancy, we propose an ER model for the demand information for a public transportation network, as seen in Figure~\ref{fig:er}.
 	
 	\begin{figure}[ht]
 	    \begin{center}
@@ -24,7 +24,7 @@
     These are the main elements from our model:
     \begin{itemize}
         \item A \textbf{stop\_place} is a physical stop with a location, on which several lines may make stops.
-        \item A \textbf{line} is an ordered sequence of stop places that can be traveled by a transport vehicle, such as a bus or a train. It only considers one travel direction. For this reason, there is often a different and complementary line for the opposite direction.%, as shown in the Figure~\ref{fig:example_network}.
+        \item A \textbf{line} is an ordered sequence of stop places that can be traveled by a transport vehicle, such as a bus or a train. It only considers one travel direction. For this reason, there is often a different and complementary line for the opposite direction.%, as shown in Figure~\ref{fig:example_network}.
         \item A \textbf{journey} is a singular traversal of a transport vehicle over a line. It can be seen as a vehicle trip, instead of a user trip.
         \item A \textbf{stage} is formed by a boarding from a stop and alighting to another from the same single line and journey.
         \item An \textbf{user\_trip} is a concatenation of several stages, until the final destination (alighting stop of the last stage) is reached.
@@ -32,7 +32,7 @@
 	
 	This approach allows us to treat the information in a layered fashion: the bottom layer is a static network representation, formed by the line and stop\_place types, the middle layer represents the journeys made by vehicles that make stops at specific times, while the top layer are the trips made by the users over these vehicle journeys. Finally, it is possible to introduce a \textbf{user} identity, with an anonymized identifier to split trips by users. However, we do not consider such information useful for the kind of analysis that this work focuses on. If needed in the future, this additional entity could be trivially integrated in our representation.
 	
-	In order to represent and operate our data structures, we will follow this model by defining stops $s_i \in S$, lines $l_i \in L$ and journeys $j_i \in J^l$. It is important to state that journeys are \textbf{not} identified by $j_i$, as the same $j_i$ can belong to several $J^l$ from different lines, so we speak about journey \textbf{codes} (jcodes) instead of journey identifiers. In the Figure~\ref{fig:example_trips_ttctr} we can find an example network with two lines and fourteen stops, and journeys that periodically traverse these lines.
+	In order to represent and operate our data structures, we will follow this model by defining stops $s_i \in S$, lines $l_i \in L$ and journeys $j_i \in J^l$. It is important to state that journeys are \textbf{not} identified by $j_i$, as the same $j_i$ can belong to several $J^l$ from different lines, so we speak about journey \textbf{codes} (jcodes) instead of journey identifiers. In Figure~\ref{fig:example_trips_ttctr} we can find an example network with two lines and fourteen stops, and journeys that periodically traverse these lines.
 	
     \begin{figure}[ht]
         \includegraphics[width=\textwidth]{figures/network.eps}
@@ -97,7 +97,7 @@
     
     With the exception of $initialTime$, all these structures are considered small enough to be represented using plain fixed-length integer arrays. In the case of $initialTime$, its size naturally grows with the amount of trips that are indexed, thus there is a motivation to reduce its size, which can be easily achieved with any technique that works on posting lists or sequences of strictly increasing numbers. In our work we've used a simplified Vbyte+ANS compression described in \cite{moffat2017ans} using the Zstd library.\footnote{https://github.com/facebook/zstd} In order to facilitate searches and random access, we introduced fixed-length samples on configurable intervals.
     
-    Examples of these sequences may be found in the Figure~\ref{fig:example_trips_ttctr}, where we indicate the sequence of stops for each line ($lineStop$), the average estimated times ($avgTime$), the initial times of each journey ($initialTime$) and finally the inverted lists of lines per stop ($stopLine$).
+    Examples of these sequences may be found in Figure~\ref{fig:example_trips_ttctr}, where we indicate the sequence of stops for each line ($lineStop$), the average estimated times ($avgTime$), the initial times of each journey ($initialTime$) and finally the inverted lists of lines per stop ($stopLine$).
     
     \subsection{TTCTR}
     \label{sec:newctr:str:ttctr}
@@ -163,7 +163,7 @@
     \label{sec:newctr:str:tm}
     While both \gls{ttctr} and \gls{xctr} are effective solutions for the trip pattern queries (type B in Section~\ref{sec:newctr:desc}), they can be too unpractical to efficiently solve network load queries (type A). For this reason, we propose \gls{tm}, a structure based on the \gls{sat} described in Section~\ref{sec:sat}, to which we have designed a compression scheme that will reduce the total size of the structure while maintaining the $O(1)$ time bound for obtaining the sum of an arbitrary rectangle.
     
-    We build a \gls{sat} $M^b_l$ for each line $l$, with a column for every stop of that line and a row for every journey, sorted by their starting times. For each cell $M^b_l[j,s]$ we store the number of users that have boarded on the stop $s$ during the journey $j$ from the line $l$. There is also an analogous matrix $M^a_l$ that stores the number of alighting users in $l$. A small example of a single \tm~is displayed in the Figure~\ref{fig:tmatrix}, where \textit{Basic} refers to the raw (unaggregated) values, \textit{Sum} are the accumulated values of a \gls{sat} and \textit{Blocks} is our compressed version.
+    We build a \gls{sat} $M^b_l$ for each line $l$, with a column for every stop of that line and a row for every journey, sorted by their starting times. For each cell $M^b_l[j,s]$ we store the number of users that have boarded on the stop $s$ during the journey $j$ from the line $l$. There is also an analogous matrix $M^a_l$ that stores the number of alighting users in $l$. A small example of a single \tm~is displayed in Figure~\ref{fig:tmatrix}, where \textit{Basic} refers to the raw (unaggregated) values, \textit{Sum} are the accumulated values of a \gls{sat} and \textit{Blocks} is our compressed version.
 
     \begin{figure}[ht]
     \begin{center}
@@ -566,7 +566,7 @@
     We have implemented the most adequate queries for \gls{ttctr}~and \gls{xctr}~from those compared in Section~\ref{sec:newctr:algo:analysis}, and measured their average execution time from 100.000 randomly generated queries on a Intel Xeon E5-2620v4@2.1 GHz machine. In this section we will only discuss four of the possible configurations tested for both \gls{ttctr}~and \gls{xctr}, with t$_{\Psi}$ values of 32 and 512 combining with \gls{wm} using either uncompressed bitvectors (\texttt{RG32}) or the most compressed (\texttt{RRR128}). These four configurations should be illustrative enough to provide an understanding of the space-time trade-offs of our approaches. Finally, we will also compare the performance of the query \boardX$_{LT}$ with the one achieved by the \gls{tm}.
     %, although the execution times for all tested configurations can be found in the Appendix A.
     
-    We demonstrate the main advantage of \gls{xctr}~over the older \gls{ttctr}~ in the Figure~\ref{fig:start}b, where restricting a line or a time interval for an \endX query is very expensive for \gls{ttctr}~ due to its separate vocabulary for final stops, requiring to query the \gls{csa} for every possible stop that could have been boarded before X to restrict a line. In the Figure~\ref{fig:start}a it is also possible to see how the performance of \gls{xctr}~degrades less with a highly compressed \gls{csa} for the query \startX$_T$, where even queries over a compressed \texttt{WML} are faster than queries over the \gls{csa}.
+    We demonstrate the main advantage of \gls{xctr}~over the older \gls{ttctr}~ in Figure~\ref{fig:start}b, where restricting a line or a time interval for an \endX query is very expensive for \gls{ttctr}~ due to its separate vocabulary for final stops, requiring to query the \gls{csa} for every possible stop that could have been boarded before X to restrict a line. In Figure~\ref{fig:start}a it is also possible to see how the performance of \gls{xctr}~degrades less with a highly compressed \gls{csa} for the query \startX$_T$, where even queries over a compressed \texttt{WML} are faster than queries over the \gls{csa}.
     
     \begin{figure}[ht]
     \begin{subfigure}{0.5\linewidth}
@@ -587,7 +587,7 @@
     
     Recall that restricting both the line and time is always cheaper than only restricting the time, as for the latter more operations need to be performed to filter every line. This explains why $T$ queries are always slower than $LT$ queries. This is true for both representations, with any configuration and query.
     
-    We can see more examples of this difference in performance between these two representations with the \texttt{from\_X\_to\_Y} queries in the Figure~\ref{fig:xy0}, whenever the end lines or times are restricted. Additionally, we can observe yet again how using the most sparse sampling of $\Psi$ affects much more the \gls{ttctr}~than the \gls{xctr}, with the performance of \texttt{from\_X$_{T}$\_to\_Y} consistent with the \texttt{\startX$_T$} shown in the Figure~\ref{fig:start}a.
+    We can see more examples of this difference in performance between these two representations with the \texttt{from\_X\_to\_Y} queries in Figure~\ref{fig:xy0}, whenever the end lines or times are restricted. Additionally, we can observe yet again how using the most sparse sampling of $\Psi$ affects much more the \gls{ttctr}~than the \gls{xctr}, with the performance of \texttt{from\_X$_{T}$\_to\_Y} consistent with the \texttt{\startX$_T$} shown in Figure~\ref{fig:start}a.
     
     \begin{figure}[ht]
     \begin{subfigure}{0.5\linewidth}
@@ -608,7 +608,7 @@
     
     The performance of both representations can sometimes improve  when more selective restrictions are added, where the execution is cut short when no matching trips are found, before evaluating further restrictions. For this reason, the average times for \texttt{from\_X$_{T}$\_to\_Y$_{L}$} and \texttt{from\_X$_{LT}$\_to\_Y$_{L}$} are shorter than those of \texttt{from\_X\_to\_Y$_{L}$} and \texttt{from\_X$_{L}$\_to\_Y$_{L}$}.
     
-    When restricting to the end time, \gls{xctr}~consistently outperforms \gls{ttctr}, as shown in the Figure~\ref{fig:xy2}. which is to be expected considering the large number of times that the \gls{csa} from \gls{ttctr}~needs to be queried, yielding results similar to those from the Figure~\ref{fig:start}b where the end time is also restricted.
+    When restricting to the end time, \gls{xctr}~consistently outperforms \gls{ttctr}, as shown in Figure~\ref{fig:xy2}. which is to be expected considering the large number of times that the \gls{csa} from \gls{ttctr}~needs to be queried, yielding results similar to those from Figure~\ref{fig:start}b where the end time is also restricted.
     
     \begin{figure}[ht]
     \begin{subfigure}{0.5\linewidth}
@@ -629,7 +629,7 @@
     
     The high selectivity of time restrictions explain why \gls{ttctr}~appears to become more competitive with the most restrictive queries of Figure~\ref{fig:xy2}b. However, its query time still increases several times when the \gls{csa} is highly compressed.
     
-    The only query for which \gls{ttctr}~is clearly preferred over \gls{xctr}~is \boardX, with any restriction, as can be seen in the Figure~\ref{fig:board}a. Both for \boardX and \boardX$_{L}$, \gls{ttctr}~takes on average less than one microsecond per query, as the only operations needed are two constant time $\select_1$ over the bitvector $D$ from the \gls{csa}, while \gls{xctr}~needs to subtract the occurrences of $X\$$ (as those are alighting stops, not boarding), for which $\Psi$ must be accessed. This advantage is carried on the queries with time restrictions as well.
+    The only query for which \gls{ttctr}~is clearly preferred over \gls{xctr}~is \boardX, with any restriction, as can be seen in Figure~\ref{fig:board}a. Both for \boardX and \boardX$_{L}$, \gls{ttctr}~takes on average less than one microsecond per query, as the only operations needed are two constant time $\select_1$ over the bitvector $D$ from the \gls{csa}, while \gls{xctr}~needs to subtract the occurrences of $X\$$ (as those are alighting stops, not boarding), for which $\Psi$ must be accessed. This advantage is carried on the queries with time restrictions as well.
     
     \begin{figure}[ht]
     \begin{subfigure}{0.5\linewidth}

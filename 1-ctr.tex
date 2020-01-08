@@ -35,7 +35,7 @@
 		\label{fig:street_er}
 	\end{figure}
     
-    The Figure~\ref{fig:street_er} contains an entity-relationship diagram of our network model, where nodes and connections define a directed graph, over which user trips can be conformed by sequentially visiting the nodes. The order in which these nodes are visited is implicitly defined by the time, meaning that it is necessary to somehow represent that time for the visited nodes of each trip.
+    Figure~\ref{fig:street_er} contains an entity-relationship diagram of our network model, where nodes and connections define a directed graph, over which user trips can be conformed by sequentially visiting the nodes. The order in which these nodes are visited is implicitly defined by the time, meaning that it is necessary to somehow represent that time for the visited nodes of each trip.
     %It is easy to see how this model could introduce redundancy in the public transportation context, where several passengers may be sharing the same bus at the same time.
 	
 	To make the
@@ -385,7 +385,7 @@
 	\begin{itemize}
 	\item {\em Number of trips starting at node $X$ (\startX).}
 	Because $\Psi$ was cyclically built in such a way that every $\$$ symbol is followed by the first node 
-	of its trip, this query is solved by $[l..r]~\leftarrow~\bsearch(\Psi,\$X)$ over the \gls{csa}, 
+	of its trip, this query is solved by $[l..r]\leftarrow\bsearch(\Psi,\$X)$ over the \gls{csa}, 
 	which results on a binary search for the pattern $\$X$ over the section $\Psi[2..|\mathcal{T}|]$ corresponding to $\$$ symbols. 
 	Then $r-l+1$ gives the number of trips starting at $X$.
 	Applying the backward search algorithm for \gls{csa}, this query involves two $\select_1$ operations over $D$ in order to delimit the region $\Psi[l_x..r_x]$ for $X$\footnote{Assuming that $X$ is at position $p$ in the vocabulary $V$ of \gls{ctr} ($V[p]=X$), its region in $\Psi[l_x..r_x]$ is obtained as $l_x \leftarrow \select_1(D,p)$,  $r_x \leftarrow \select_1(D,p+1)$. If $p$ is the last entry in $V$, we set $r_x \leftarrow n$.} and binary search in the $\$$ region to find the subrange for $\$X$. Since $\select_1$ on $D$ are $O(1)$, the temporal complexity of this query is $O(\log|\mathcal{T}|)$, omitting a constant factor due to the compression of $\Psi$.
@@ -532,7 +532,7 @@
 
 	The implementation of the linear approach is straightforward. The binary-partition approach differs slightly 
 	from the Algorithm~\ref{alg:topk_nieves}: in the \textit{line 3} we insert $(\langle 2, |V| \rangle, \langle 2,z+1 \rangle)$ into $Q$, and we 
-	replace \textit{line 12} with $[x..y]~\leftarrow~\bsearch(\Psi,\$V[m])$; $q \leftarrow x$. This increases the temporal complexity of \topK$_s$ by a factor of $O(\log n)$ over the complexities discussed for the original \topK\ queries.
+	replace \textit{line 12} with $[x..y]\leftarrow\bsearch(\Psi,\$V[m])$; $q \leftarrow x$. This increases the temporal complexity of \topK$_s$ by a factor of $O(\log n)$ over the complexities discussed for the original \topK\ queries.
 	\end{itemize}
 
 	\subsection{Temporal queries}
@@ -598,7 +598,7 @@
 		\item {\em Number of trips starting at node $X$ during time interval $[t_1..t_2]$ (\startX$_T$).}
 		Recall that in the time sequence we also included timestamps associated with the area of $\$$-symbols in $\Psi[1..|\mathcal{T}|+1]$.
 		Particularly, for each $\$$ at $\Psi[i+1]$, we keep the time of the first node of its trip $\mathcal{T}_i$. Therefore, 
-		we can perform $[l..r]~\leftarrow~\bsearch(\Psi,\$X)$ as in a regular spatial query to find the
+		we can perform $[l..r]\leftarrow\bsearch(\Psi,\$X)$ as in a regular spatial query to find the
 		range $\Psi[l..r]$ ($[l..r]\subseteq [2..|\mathcal{T}|+1]$) that corresponds to $\$$ symbols that end a trip which started at node $X$. Then, since the time sequence $Icode^{\Psi}$ 
 		(represented with either a \gls{htwt} or \gls{wm}) is
 		 aligned with $\Psi$, we can filter out those trips that started within $[t_1..t_2]$ performing operation $\cnt_{t_1,t_2}(Icode^{\Psi},l,r)$. Because both $\bsearch$ and $\cnt$ are used, the time complexity for the whole query is $O(\log n + \log|I|)$. In Figure~\ref{fig:ctr:search2} (steps \textcircled{1} and \textcircled{2}) we illustrate steps involved.
@@ -612,7 +612,7 @@
 	\end{figure}
 		
 		\item {\em Number of trips ending at node $X$ during the time interval $[t_1..t_2]$ (\endX$_T$). }
-		As above, we initially perform the spatial query $[l..r]~\leftarrow~\bsearch(X\$)$ to 
+		As above, we initially perform the spatial query $[l..r]\leftarrow\bsearch(X\$)$ to 
 		obtain the range in $\Psi[l..r]$ that corresponds to the pattern $X\$$ (trips ending at node $X$). Then, we use  $\cnt_{t_1,t_2}(Icode^{\Psi},l,r)$ operation to count how many of those trips match the temporal constraint. See steps \textcircled{3} and \textcircled{4} in Figure~\ref{fig:ctr:search2}.
 		
 		\item {\em Number of trips using node $X$ during the time interval $[t_1..t_2]$ (\loadX$_T$).}
@@ -671,7 +671,7 @@
 			\item {\em Weak semantics (\XtoY$_{Tw}$).}
 			The size of $[\alpha'..\beta']$ ($\beta' - \alpha' + 1$) is already a partial answer. To get the final result, we need to add 
 			also the occurrences of those trips starting before $t_1$ that end at $t_1$ or later, which can only exist if $\alpha<\alpha'$. 
-			To do so, we need to obtain $l'~\leftarrow~l+\alpha'-\alpha$ as done in \XtoY$_{Ts}$, and compute $\cnt_{t_1, |I|}(Icode^{\Psi},l,l'-1)$. This gives us the number of time instants in the range $[l..l')$ of  $Icode^{\Psi}$ that fall inside $[t_1..|I|]$. 
+			To do so, we need to obtain $l'\leftarrowl+\alpha'-\alpha$ as done in \XtoY$_{Ts}$, and compute $\cnt_{t_1, |I|}(Icode^{\Psi},l,l'-1)$. This gives us the number of time instants in the range $[l..l')$ of  $Icode^{\Psi}$ that fall inside $[t_1..|I|]$. 
 			That is, ending times equal or after $t_1$. Yet again, the time complexity for this query is $O(\log n + \log|I|)$.
 		\end{itemize}
 		
@@ -1188,7 +1188,7 @@
 	% to perform a $\cnt$ operation) and that those times improve as the height of the structure decreases.
 	% 
 	% %When querying the top ten most used time intervals, we are using a sequential algorithm for the \gls{wm}, and binary 
-	% %for the \gls{wt}. For this reason, in the Figure~\ref{fig:ctr:exp:queries:temp:madrid} the points for each temporal index belong 
+	% %for the \gls{wt}. For this reason, in Figure~\ref{fig:ctr:exp:queries:temp:madrid} the points for each temporal index belong 
 	% %to a completely different time range. The uneven distribution of times favors the binary algorithm of the \gls{wt}, 
 	% %and having a wider time interval reduces the height of the \gls{wt} or the \gls{wm}.
 	% %\OJOFARI{{\em pure temporal. Antes de enviar paper Daniil va a implementar top-k-binario en WM y top-k-secuencial en WTHT.
@@ -1270,7 +1270,7 @@
 	% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 	% % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 
-	In the Figures~\ref{fig:ctr:exp:queries:st:madrid} and \ref{fig:ctr:exp:queries:st:porto} we show the space/time tradeoff obtained by \gls{ctr}\ when 
+	In Figures~\ref{fig:ctr:exp:queries:st:madrid} and \ref{fig:ctr:exp:queries:st:porto} we show the space/time tradeoff obtained by \gls{ctr}\ when 
 	dealing with spatio-temporal queries. Recall that this type of queries require both using the \gls{csa}, to 
 	exploit indexed access to the nodes in the trips, and the 
 	temporal component of \gls{ctr} to handle temporal constraints. In this case, the space values showed in

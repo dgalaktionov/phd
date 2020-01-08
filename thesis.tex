@@ -181,27 +181,27 @@
     A recent compact data structure named {\em CiNCT} has been proposed in \cite{koide2018cinct}, where trajectories are encoded into a string, that is used to build an FM-index \cite{DBLP:conf/focs/FerraginaM00} with a Huffman-shaped Wavelet Tree \cite{ferragina2009compressed}. To further save space, the string is constructed with relative movement labels instead of absolute edges, with an auxiliary structure that represents a network graph built from the input trajectories themselves. While this structure excels at pattern-matching and path extraction in vehicular networks (such as the streets of a city), it cannot be applied to our problems in public transportation networks, where network demand and aggregated travel patterns have to be analyzed. Note that finding out which trajectories traversed on a specific path of sequential street segments does not provide us much relevant information for our needs.
 	
 	
-\part{Compact representation of trajectories over transportation networks} \label{part:cds}
+\part{Compact representation for trajectories over transportation networks} \label{part:cds}
 \chapter{Previous concepts}
 \label{ch:cds:prev}
-	This chapter may serve as an introduction to the compact data structures used in our proposed representations, and it should give a sufficient understanding of the underlying concepts that we will be working with for the rest of this part. For a more in-depth guide on compact data structures, the reader may refer to \cite{Nav16}.
+	This chapter presents a brief discussion of the compact data structures used in our proposed representations, and it gives a background of the underlying concepts that we will be working with for the rest of this part. For a more in-depth guide on compact data structures, the reader may refer to \cite{Nav16}.
 	%, where they are introduced from basic information theory concepts such as entropy.
 	
 	A reader who is already familiar with compact data structures is still encouraged to read Section~\ref{sec:sat}, where the \gls{sat} is introduced, which is initially unrelated to compact data structures, and also Section~\ref{sec:wt}, where we discuss some less known variants and operations of the \gls{wt}, that we make use of in our contributions.
 	
 	\section{Summed Area Table}
 	\label{sec:sat}
-	The \gls{sat} was first introduced in computer graphics \cite{crow1984summed} to speed up the mipmapping process, where given a texture image represented as bidimensional matrices of numbers (usually three matrices of integers, one for each color channel) we are interested in finding the average color of any arbitrary rectangle within the image. This operation is most often used to reduce the rendering time for distant polygons where a pixel on the target screen may correspond to several texture pixels (texels), and also for anisotropic filtering, in order to improve the visual quality of polygons that are projected in an oblique angle.
+	The {\em \acrfull{sat}} was first introduced in computer graphics \cite{crow1984summed} to speed up the mipmapping process, where given a texture image represented as a series of bidimensional matrices of numbers (usually three matrices of integers, one for each color channel) we are interested in finding the average color of any arbitrary rectangle within the image. This operation is most often used to reduce the rendering time for distant polygons where a pixel on the target screen may correspond to several texture pixels (texels), and also for anisotropic filtering, in order to improve the visual quality of polygons that are projected in an oblique angle.
 
-    With the most direct representation of a matrix as an array of values, we are required to compute the average value of a rectangle $(a,b),(a+h,b+w)$ as:
+    With the most direct representation of a matrix as an array of values, we are required to compute the average value of a rectangle $[(a,b),(a+h,b+w)]$ as:
     
     \[
-    \overline{M}[a..a+h,b..b+w]~\leftarrow~
+    \overline{M}[a..a+h,b..b+w]\leftarrow
     \frac{\displaystyle\sum^h_{i=0}\displaystyle\sum^w_{j=0}M[i+a,j+b]}
     {(h+1)(w+1)}
     \]
     
-    Note that the summation has a time complexity of $O(hw)$, which would make this operation quite expensive for real time rendering applications. In order to improve the complexity of these calculations, the \gls{sat} precomputes the summations of $M$ in a matrix $I$, of the same size, where $I[a,b]~\leftarrow~\displaystyle\sum^a_{i=0}\displaystyle\sum^b_{j=0}M[i,j]$. That is, each cell of $I$ is the sum of the values within rectangle spanning from the origin of the matrix to the position of the cell. An example of a \gls{sat} can be found in the Figure~\ref{fig:sat}.
+    Note that the summation has a time complexity of $O(hw)$, which would make this operation quite expensive for \mbox{real-time} rendering applications. In order to decrease the complexity of these calculations, the \gls{sat} precomputes the summations of $M$ in a matrix $I$, of the same size, where $I[a,b]\leftarrow\displaystyle\sum^a_{i=0}\displaystyle\sum^b_{j=0}M[i,j]$. That is, each cell of $I$ is the sum of the values within the rectangle spanning from the origin of the matrix to the position of the cell. An example of a \gls{sat} is shown in Figure~\ref{fig:sat}.
     
     \begin{figure}[ht]
 		\begin{center}
@@ -214,25 +214,25 @@
     Having $I$, we can compute the average value of a rectangle in $O(1)$ operations as:
     
     \[
-    \overline{M}[a..a+h,b..b+w]~\leftarrow~
+    \overline{M}[a..a+h,b..b+w]\leftarrow
     \frac{I[a+h,b+w] - I[a+h,b-1] - I[a-1,b+w] + I[a-1,b-1]}
     {(h+1)(w+1)}
     \]
     
-    In our example from Figure~\ref{fig:sat}, to calculate the sum of the delimited $3x3$ region in the matrix, we simply operate over the four terms in \textbf{bold} from the \gls{sat}, obtaining
+    In our example from Figure~\ref{fig:sat}, to calculate the sum of the delimited $3x3$ region in the matrix $M$, we simply operate over the four terms in \textbf{bold} from $I$, obtaining
     $\displaystyle\sum^4_{i=2}\displaystyle\sum^4_{j=2}M[i,j]~=~I[4,4]-I[4,1]-I[1,4]+I[1,1]~=~84-27-18+8~=~47$.
     
     While with this representation we do not need to keep the original matrix,\footnote{As accessing a single cell can be viewed as a special case of the computation of an average where $h=0,w=0$.} the improved computational efficiency comes at the expense of having to represent larger numbers than the original values.
 	
 	\section{Entropy coding}
-	Given an information source (such as a text) that provides symbols from an alphabet $[1..\sigma]$ with a probability of $0 \leq p_i \leq 1$ for each symbol, where $\displaystyle\sum_ip_i=1$, the goal of an entropy coder is to exploit these probabilities in order to achieve compression by assigning shorter codes to the most frequent symbols, and longer to the less frequent ones. In the work that is considered as the foundation of information theory \cite{shannon1948mathematical}, Claude Shannon defined a concept called \textit{entropy}, which is closely related to the probabilities we are discussing, and used it to prove that the when encoding the symbols in binary, the optimal length in bits for each code is of $l_i = \frac{1}{\log_2p_i} = -\log_2p_i$ bits, and the entropy of an information source $S$ calculated as $H_0(S) = -\displaystyle\sum^\sigma_i p_il_i = -\displaystyle\sum^\sigma_i p_i\log_2p_i$.
+	Given an information source (such as a text) that provides symbols from an alphabet $[1..\sigma]$ with a probability of $0 \leq p_i \leq 1$ for each symbol, where $\displaystyle\sum_ip_i=1$, the goal of an entropy coder is to exploit these probabilities in order to achieve compression by assigning shorter codes to the most frequent symbols, and longer codes to the less frequent ones. In the work that is considered as the foundation of information theory \cite{shannon1948mathematical}, Claude Shannon defined a concept called \textit{entropy}, which is closely related to the probabilities we are discussing, and used it to prove that when encoding the symbols in binary, the optimal length in bits for each code is of $l_i = \frac{1}{\log_2p_i} = -\log_2p_i$ bits, and the entropy of an information source $S$ is calculated as $H_0(S) = -\displaystyle\sum^\sigma_i p_il_i = -\displaystyle\sum^\sigma_i p_i\log_2p_i$.
 	
-	As this compression technique relies on using variable-length codes, it is necessary that the codes are unambiguous: there can be no two codes $C_i, C_j$ that, when concatenated, can be interpreted as another code 
+	For any compression technique relying on using variable-length codes, it is necessary for the codes to be unambiguous: there can be no two codes $C_i, C_j$ that, when concatenated, could be interpreted as another code 
 	% esto esta mal porque no contempla el caso de concatenar tres o mas codigos ambiguos
 	%($C_iC_j \neq C_k, \forall i,j,k \in [1..\sigma]$)
-	. Additionally, it is computationally very useful for those codes to also be prefix-free, meaning that there can be no code that is the prefix part of another ($C_i \neq C_j0^a1^b,~\forall i,j \in [1..\sigma], i\neq j, a,b \in [0..\infty)$), as this will allow us to unambiguously interpret the symbol right after the bits of $C_i$ are read, without having to determine if it could be the prefix part of some other longer code $C_j$.
+	. Additionally, it is computationally very useful for those codes to be also prefix-free, meaning that there can be no code that is the prefix part of another code ($C_i \neq C_j\{0|1\}^a,~\forall i,j \in [1..\sigma], i\neq j, a \in [0..\infty)$). This will allow us to unambiguously interpret the symbol right after the bits of $C_i$, without having to determine if it could be the prefix part of some other longer code $C_j$.
 	
-	The Huffman coding, introduced in \cite{huffman1952method}, is a coding algorithm that produces prefix-free and optimal\footnote{That is, with lengths as close to $-\log_2p_i$ as possible with a whole number of bits per symbol.} codes based on the frequencies of each symbol. The ideas of the Huffman coding have been widely implemented in numerous compression algorithms and codecs since its inception, where the most notable examples are DEFLATE (PKZIP, GZIP), JPEG and MPEG.
+	The Huffman coding, introduced in \cite{huffman1952method}, is a coding algorithm that produces optimal\footnote{That is, with lengths as close to $-\log_2p_i$ as possible with a whole number of bits per symbol.} prefix-free codes based on the frequencies of each symbol. The ideas of the Huffman coding have been widely implemented in numerous compression algorithms and codecs since its inception, where the most notable examples are DEFLATE (PKZIP, GZIP), JPEG and MPEG.
 	
 	One less known variation of the Huffman codes are the Hu-Tucker codes \cite{hu1971optimal}, which aim to provide codes that preserve the same lexical order as the original symbols, meaning that for any two symbols $s_i,s_j$, it holds that $s_i \prec s_j \iff C_i \prec C_j$. This comes at the expense of at most one extra bit per code over Huffman on average.\footnote{Being $L_h$ and $L_{ht}$ the average codeword 
 	length of Huffman coding and Hu-Tucker codes for $S$ respectively, it holds: $H_0(S) \leq L_h \leq H_0(S)+1$ and $H_0(S) \leq L_{ht} \leq H_0+2(S)$
@@ -240,11 +240,11 @@
 	
 	\section{Bitvectors}
 	\label{sec:bit}
-	A great amount of works in compact data structures involves the use of bitvectors, both compressed and uncompressed. A bitvector $B[1..n]$ is a sequence of $n$ bits, for which the following operations are expected to be supported:
+	A vast amount of works in compact data structures involves the use of bitvectors, both compressed and uncompressed. A bitvector $B[1..n]$ is a sequence of $n$ bits, for which the following operations are expected to be supported:
 
     \begin{itemize}
-        \item $\rank_1(B,i)$ is the number of set bits in $B[1..i]$. Alternatively, $\rank_0(B,i)~\leftarrow~i - \rank_1(B,i)$. Consequently, it also holds that the bit from the position $i$ can be retrieved as $B[i] = \rank_1(B,i) - \rank_1(B,i-1)$.
-        \item $\select_1(B,i)$ is the position in $[1..n]$ where the $i$-th 1 occurs. Therefore, $\rank_1(B,\select_1(B,i)) = i$. An equivalent version for 0 bits may be defined as $\select_1(B,i)$, although, unlike with $\rank_0$, there does not exist a direct way of obtaining it from the previously defined operations.
+        \item $\rank_1(B,i)$ is the number of set bits in $B[1..i]$. Alternatively, $\rank_0(B,i)\leftarrowi - \rank_1(B,i)$. Consequently, it also holds that the bit from the position $i$ can be retrieved as $B[i] = \rank_1(B,i) - \rank_1(B,i-1)$, with a special case of $\rank_1(B,0) = 0$.
+        \item $\select_1(B,i)$ is the position in $[1..n]$ where the $i$-th 1 occurs. Therefore, $\rank_1(B,\select_1(B,i)) = i$. An equivalent version for 0 bits may be defined as $\select_0(B,i)$, although, unlike $\rank_0$, there does not exist a direct way of obtaining it from the previously defined operations.
     \end{itemize}
     
     \begin{example}
@@ -255,18 +255,18 @@
     \end{example}
     
     All these operations can be supported in $O(1)$ time with $o(n)$ extra bits \cite{Jac89,Mun96}. 
-    Additionally, there exist several techniques for compressing these bitvectors based on their arrangement although several techniques exist for compressing bitvectors depending on their statistical properties. In this work we will use a representation that excels in efficiently solving $\select_1$ operations for sparse bitvectors (with a low number of set bits in proportion to the bitvector size) introduced in \cite{okanohara2007practical}, and also another representation that works particularly well with non uniformly distributed bitvectors, thus exploiting their entropy to require only $nH_0(B) + o(n)$ bits\footnote{Being $n_1$ the number of set bits in $B$ and $n_0 = n - n_1$, then $H_0(B) = \dfrac{n_1\log\dfrac{n}{n_1} + n_0\log\dfrac{n}{n_0}}{n} \leq 1$.} \cite{Raman:2002:SID:545381.545411}.
+    Additionally, there exist several techniques for compressing these bitvectors based on their statistical properties or the arrangement of the bits. In this work we will use a representation that excels in efficiently solving $\select_1$ operations for sparse bitvectors (with a low number of set bits in proportion to the bitvector size) introduced in \cite{okanohara2007practical}, and also another representation that works particularly well with non uniformly distributed bitvectors, thus exploiting their entropy to require only $nH_0(B) + o(n)$ bits\footnote{Being $n_1$ the number of set bits in $B$ and $n_0 = n - n_1$, then $H_0(B) = \dfrac{n_1\log\dfrac{n}{n_1} + n_0\log\dfrac{n}{n_0}}{n} \leq 1$.} \cite{Raman:2002:SID:545381.545411}.
 	
 	\section{Wavelet Tree and Wavelet Matrix}
 	\label{sec:wt}
-	When working with a sequence $S[1..n]$ over an alphabet $[1..\sigma]$, we can extend the definitions of $\rank$ and $\select$ from Section~\ref{sec:bit} to work over an any symbol $a \in [1..\sigma]$ instead of bits, resulting in the following operations:
+	When working with a sequence $S[1..n]$ built over an alphabet $[1..\sigma]$, we can extend the definitions of $\rank$ and $\select$ from Section~\ref{sec:bit} to work over any symbol $a \in [1..\sigma]$ instead of bits, resulting in the following operations:
 	
 	\begin{itemize}
-	    \item $\rank_a(S,i)$ is the number of occurrences of the symbol $a$ in $S[1..i]$.
-	    \item $\select_a(S,i)$ is the position in $[1..n]$ where the $i$-th $a$ occurs.
+	    \item $\rank_a(S,i)$ gives the number of occurrences of the symbol $a$ in $S[1..i]$.
+	    \item $\select_a(S,i)$ gives the position in $[1..n]$ where the $i$-th $a$ occurs.
 	\end{itemize}
 	
-    The \gls{wt} \cite{WT03} represents $S$ with a balanced binary tree, with $\sigma$ leaves, one for each symbol. Every internal node $v$ represents a the range of symbols $[\alpha_v..\omega_v] \subseteq [1..\sigma]$ in the same order as they appear in $S$, where the root node corresponds to all the $n$ symbols from the alphabet $[1..\sigma]$ appearing in $S$. Its left child $v_l$ will only represent the $n_l$ symbols that fall in the range $[1..\dfrac{\sigma}{2})$, preserving the order that they had in $v_0$, while the right child will represent the other $n_r$ symbols from $[\dfrac{\sigma}{2}..\sigma]$, holding that $n_l+n_r=n$. This is built recursively until a leaf $v_a$ is reached, with will correspond to only one symbol $a \in [1..\sigma]$, with $n_a = \rank_a(S,n)$ times. An example \gls{wt} can be found in Figure~\ref{fig:wt}.
+    The \gls{wt} \cite{WT03} represents $S$ with a balanced binary tree, with $\sigma$ leaves, one for each symbol. Every internal node $v$ represents the range of symbols $[\alpha_v..\omega_v] \subseteq [1..\sigma]$ in the same order as they appear in $S$, where the root node corresponds to all the $n$ symbols from the alphabet $[1..\sigma]$ appearing in $S$. Its left child $v_l$ will only represent the $n_l$ symbols that fall in the range $[1..\dfrac{\sigma}{2})$, preserving the order that they had in $v_0$, while the right child will represent the other $n_r$ symbols from $[\dfrac{\sigma}{2}..\sigma]$, holding that $n_l+n_r=n$. This is built recursively until a leaf $v_a$ is reached, with will correspond to only one symbol $a \in [1..\sigma]$, with $n_a = \rank_a(S,n)$ times. An example \gls{wt} can be found in Figure~\ref{fig:wt}.
     
     \begin{figure}[ht]
 		\begin{center}
@@ -276,43 +276,44 @@
 		\label{fig:wt}
 	\end{figure}
     
-    For each node $v$, these symbols from the alphabet $[\alpha_v..\omega_v]$ are represented implicitly using a bitvector $B_v[1..n_v]$, where $B[i] = 0$ when the symbol $a$ represented in the position $i$ should belong to the left child ($a < \dfrac{\alpha_v + \omega_v}{2}$), while $B[i] = 1$ means it should belong to the right child ($a \geq \dfrac{\alpha_v + \omega_v}{2}$). By making use of $\rank$ and $\select$ operations over these bitvectors, we are able to recover the value of any $S[i]$, and also answer $\rank_a$ and $\select_a$ for any $a \in [1..\sigma]$ in $O(\log\sigma)$ without the need of storing the original sequence. As there are $n$ bits per level and $\log\sigma$ internal levels (the nodes from the leaf level do not have bitvectors), we could represent every bitvector in $n\log\sigma$ bits, which is equivalent to the space it would take to represent $S$ as an array of fixed length integers.\footnote{When $\sigma$ is not a power of two, $\log\sigma$ would need to be rounded up for fixed length integers, while for the \gls{wt} there will be some leaves at level $h-1$, being $h$ the height of the tree, and its total size will depend on the frequency of those symbols ($\lfloor n\log\sigma\rfloor < \sum_i n_i < \rceil n\log\sigma\rceil$).} However, we also need some auxiliary structures for $\rank_1$ and $\select_1$, which will require $o(n\log\sigma)$ bits and also store a pointer for every one of the $2\sigma-1$ nodes. Therefore, the total size of this representation amounts to $n\log\sigma + o(n\log\sigma) + O(\sigma\log n)$.
+    For each node $v$, these symbols from the alphabet $[\alpha_v..\omega_v]$ are represented implicitly using a bitvector $B_v[1..n_v]$, where $B[i] = 0$ when the symbol $a$ represented in the position $i$ should belong to the left child ($a < \dfrac{\alpha_v + \omega_v}{2}$), while $B[i] = 1$ means it should belong to the right child ($a \geq \dfrac{\alpha_v + \omega_v}{2}$). By making use of $\rank$ and $\select$ operations over these bitvectors, we are able to recover the value of any $S[i]$, and also to answer $\rank_a$ and $\select_a$ for any $a \in [1..\sigma]$ in $O(\log\sigma)$ without the need of storing the original sequence. As there are $n$ bits per level and $\log\sigma$ internal levels (the nodes from the leaf level do not have bitvectors), we could represent all the bitvectors in $n\log\sigma$ bits, which is equivalent to the space it would take to represent $S$ as an array of fixed length integers.\footnote{When $\sigma$ is not a power of two, $\log\sigma$ would need to be rounded up for fixed length integers, while for the \gls{wt} there will be some leaves at level $h-1$, being $h$ the height of the tree, and its total size will depend on the frequency of those symbols ($\lfloor n\log\sigma\rfloor < \sum_i n_i < \lceil n\log\sigma\rceil$).} However, we also need some auxiliary structures for $\rank_1$ and $\select_1$, which will require $o(n\log\sigma)$ bits and also store a pointer for every one of the $2\sigma-1$ nodes. Therefore, the total size of this representation amounts to $n\log\sigma + o(n\log\sigma) + O(\sigma\log n)$.
     
-    In order to access the value of $S[i]$, we must start by looking into $B_v[i]$ from the root node. If $B_v[i]=0$, we traverse to the position $B_{v_0}[\rank_0(B_v,i)]$ of the bitvector of the left child. Conversely, when $B_v[i]=1$, we traverse to the bitvector of the right child at $B_{v_1}[\rank_1(B_v,i)]$. In both cases, we recurse until a leaf is reached, which will unambiguously correspond to a symbol $a$, thus we determine that $B_v[i]=a$.
+    In order to access the value of $S[i]$, we must start by looking into $B_v[i]$ from the root node. If $B_v[i]=0$, we traverse to the position $B_{v_0}[\rank_0(B_v,i)]$ of the bitvector of the left child. Conversely, when $B_v[i]=1$, we traverse to the bitvector of the right child at $B_{v_1}[\rank_1(B_v,i)]$. In both cases, we recurse until a leaf is reached, which will unambiguously correspond to the symbol $a$, thus we determine that $S[i]=a$.
     
+    \medskip
     \begin{example} \label{exp:wtaccess}
     In the \gls{wt} from Figure~\ref{fig:wt}, if we wanted to retrieve the value of $S[2]$, we would start by looking into the bit $B_v[2]=0$, meaning that the we have to traverse to the node $v_0$ and look into the bit $B_{v_0}[\rank_0(B_v,2)] = B_{v_0}[2] = 1$, leading us to the node $v_{01}$ at $B_{v_{01}}[\rank_1(B_{v_0},2)] = B_{v_{01}}[2] = 0$. The left node is a leaf node belonging to the symbol $2$, so $S[2]=2$ (namely, the first occurrence of $2$ in $S$, as $\rank_0(B_{v_{01}}, 2) = 1$).
     \qed
     \end{example}
     
-    We can also solve $\rank_a$ by traversing the tree from top to bottom with the bitvector $\rank$ operation: knowing that the binary representation (and thus also the path in the \gls{wt}) of a symbol will allow us to use $\rank_1$ or $\rank_0$ in each level $i$ according to the $i$-th bit of our code. In the Example~\ref{exp:wtaccess}, knowing that the binary representation of $2$ is $010$, we can calculate $\rank_2(S,2)$ (or any other position) following the same order of operations: a $\rank_0$, a $\rank_1$ and one final $\rank_0$ to determine the position of the leaf node, which will give away $\rank_2$. It is also possible to calculate $\select_a(S,i)$ with a bottom to top traversal of the tree, by starting at the $i$-th position from the leaf belonging to $a$, and applying $\select_0$ and $\select_1$ on the bitvectors of the parent nodes, following the reversed binary code of $a$. Eventually, a position $S[i]=a$ will be reached such that it will contain the $i$-th occurrence of $a$ in $S$.
+    We can also solve $\rank_a$ by traversing the tree from top to bottom with the $\rank$ operation on the bitvectors: knowing that the binary representation (and thus also the path in the \gls{wt}) of a symbol will allow us to use $\rank_1$ or $\rank_0$ in each level $i$ according to the $i$-th bit of our code. In the Example~\ref{exp:wtaccess}, knowing that the binary representation of $2$ is $010$, we can calculate $\rank_2(S,2)$ (or any other position) following the same order of operations: a $\rank_0$, a $\rank_1$ and one final $\rank_0$ to determine the position of the leaf node, which will give away $\rank_2$. It is also possible to calculate $\select_a(S,i)$ with a bottom-up traversal of the tree, by starting at the $i$-th position from the leaf belonging to $a$, and applying $\select_0$ and $\select_1$ on the bitvectors of the parent nodes, following the reversed binary code of $a$. Eventually, a position $S[j]=a$ will be reached such that it will contain the $i$-th occurrence of $a$ in $S$, consequently obtaining that $j=\select(S,i)$.
     
-    A more complex operation that we have found very useful in our work in is the $\cnt_{a,b}(S,i,j)$, first described in \cite{gagie2012new}, which counts the number of occurrences of symbols in $[a..b]$ within $S[i..j]$. While it is equivalent to $\displaystyle\sum^b_{k=a}\rank_k(S,j) - \rank_k(S,i)$, it can be solved more efficiently by doing two simultaneous top to bottom traversals, as described for $\rank_a$. Starting at the root node $v$ we calculate $\rank_0(B_v,i)$ and $\rank_0(B_v,j)$ to find out the limits in the left node for the codes within $[a..b]$ that start with 0, and also $\rank_1(B_v,i)$ and $\rank_1(B_v,j)$ for those codes starting by 1. If all of the codes in $[a..b]$ start with either a zero or a one, we will only compute the corresponding $\rank$. After that, we recurse for each node, where on the left $i~\leftarrow~\rank_0(B_v,i)$, $j~\leftarrow~\rank_0(B_v,j)$ and we only consider the range of symbols $[a..b']$ that can be represented by that node ($b' \leq \omega_{v_0})$). The same is true for the recursion on the right, where $i~\leftarrow~\rank_1(B_v,i)$, $j~\leftarrow~\rank_1(B_v,j)$ and $\alpha_{v_1} \leq a'$. Therefore, 
+    A more complex operation that we have found very useful in our work is the operation $\cnt_{a,b}(S,i,j)$, first described in \cite{gagie2012new}, which counts the number of occurrences of the symbols in $[a..b]$ within $S[i..j]$. While it is equivalent to $\displaystyle\sum^b_{k=a}\rank_k(S,j) - \rank_k(S,i)$, it can be solved more efficiently by doing two simultaneous top-down traversals, as described for $\rank_a$. Starting at the root node $v$ we calculate $\rank_0(B_v,i)$ and $\rank_0(B_v,j)$ to find out the limits in the left node for the codes within $[a..b]$ that start with 0, and also $\rank_1(B_v,i)$ and $\rank_1(B_v,j)$ for those codes starting by 1. If all the codes in $[a..b]$ start with either a zero or a one, we will only compute the corresponding $\rank$. After that, we recurse for each node, where on the left we set $i\leftarrow\rank_0(B_v,i)$, $j\leftarrow\rank_0(B_v,j)$ and we only consider the range of symbols $[a..b']$ that can be represented by that node ($b' \leq \omega_{v_0})$). The same is true for the recursion on the right, where $i\leftarrow\rank_1(B_v,i)$, $j\leftarrow\rank_1(B_v,j)$ and $\alpha_{v_1} \leq a'$. Therefore, we compute recursively:
     \begin{align*}
     \cnt_{a,b}(v,i,j) = &\cnt_{a,b'}(v_0,\rank_0(B_v,i),\rank_0(B_v,j))\\
     &+~\cnt_{a',b}(v_1,\rank_1(B_v,i),\rank_1(B_v,j))
     \end{align*}
-    , recursively. The recursion on each node $v$ stops when $a \leq \alpha_v$ and $\omega_v \leq b$, in which case the count for that node is reported as $j-i+1$. Finally, all the counts are summed and the total amount of occurrences is obtained. While it may look as if the worst case would imply traversing every of the $\sigma$ internal nodes, it is avoided by stopping the recursion when $a \leq \alpha_v$ and $\omega_v \leq b$, thus requiring us to visit only $O(\log\sigma)$ nodes.\footnote{In fact, the best case is $cnt_{1,\sigma}(S,i,j) = j-i+1$, which is solved without traversing at all!} In the \gls{wt} from Figure~\ref{fig:wt}, we have marked the considered ranges for solving $\cnt_{3,3}(S,5,10)$. Additionally, when the subsequence $S[i..j]$ is sorted, we can define $[l..r]~\leftarrow~\cnt^{LR}_{a,b}(S,i,j)$, which returns the upper and lower limits $S[l..r]$ of the occurrences of the symbols $[a..b]$. Naturally, $S[l..r] \subseteq S[i..j]$.
+    The recursion on each node $v$ stops when $a \leq \alpha_v$ and $\omega_v \leq b$, in which case the count for that node is reported as $j-i+1$. Finally, all the counts are summed and the total amount of occurrences is obtained. While it may look as if the worst case would imply traversing all $\sigma$ internal nodes, it is avoided by stopping the recursion when $a \leq \alpha_v$ and $\omega_v \leq b$, thus requiring to visit only $O(\log\sigma)$ nodes.\footnote{In fact, the best case is $cnt_{1,\sigma}(S,i,j) = j-i+1$, which is solved without traversing at all.} In the \gls{wt} from Figure~\ref{fig:wt}, we have marked in red the ranges considered for solving $\cnt_{3,3}(S,5,10)$. Additionally, when the subsequence $S[i..j]$ is sorted, we can define $[l..r]\leftarrow\cnt^{LR}_{a,b}(S,i,j)$, which returns the upper and lower limits $S[l..r]$ of the occurrences of the symbols $[a..b]$. Naturally, $S[l..r] \subseteq S[i..j]$.
     
     \subsection{Hu-Tucker Wavelet Tree}
     A straightforward way of reducing the size of a \gls{wt} is to use compressed bitvectors, as discussed in \cite{CNspire08.1}, allowing to represent a \gls{wt} in $nH_0(S) + o(n\log\sigma) + O(\sigma\log n)$ bits \cite{WT03}. There is, however, a different approach to achieve similar space requirements is to use a prefix-free variable-length encoding for the symbols.
     For example, Huffman code \cite{huffman1952method} can be used to build a
     Huffman-Shaped \gls{wt} \cite{ferragina2009compressed}, where the tree is not balanced
-    anymore, as level of each leaf $v_a$ will be the number of bits for the Huffman code of $a$, which will depend on the frequency of $a$ in $S$. The size reduces to $n(H_0(S)+1)+ o(n(H_0(S)+1)) +  O(\sigma \log n)$,\footnote{$O(\sigma \log n)$ term 
+    anymore, as the level of each leaf $v_a$ will be the number of bits for the Huffman code of $a$, which will depend on the frequency of $a$ in $S$. The size reduces to $n(H_0(S)+1)+ o(n(H_0(S)+1)) +  O(\sigma \log n)$,\footnote{$O(\sigma \log n)$ term 
     includes both the tree pointers and the size of the Huffman model.} while average time becomes
-    $O(H_0(S))$ for $\rank_a$, and $\select_a$  (the worst-case time is still $O(\log\sigma)$ 
+    $O(H_0(S))$ for $\rank_a$ and $\select_a$  (the worst-case time is still $O(\log\sigma)$ 
     \cite{Barbay:2013:CPA:2562345.2562626}). By using compressed
     bitvectors \cite{CNspire08.1} space can be even further reduced to $nH_0(S) + o(n(H_0(S)+1)) +  O(\sigma \log n)$.
     Unfortunately, the Huffman codes (including \textit{canonical Huffman}) assigned to
     lexicographically adjacent symbols do not maintain that lexicographic order, and it is not possible to have a $O(\log\sigma)$ bound for $\cnt_{a,b}(S,i,j)$ anymore.
 	
-	In order to support $\cnt_{a,b}(S,i,j)$ more efficiently, Hu-Tucker codes \cite{hu1971optimal} can be used instead. While the compression achieved by a \gls{htwt} \cite{barbay2009compressed} degreades slightly with respect to using Huffman coding, yielding a bound of $n(H_0(S)+2) + o(n(H_0(S)+1)) +  O(\sigma \log n)$,\footnote{This can be reduced to  $nH_0(S) + o(n(H_0(S)+1)) +  O(\sigma \log n)$ by using compressed bitvectors as well.} the codes for adjacent symbols are lexicographically contiguous. Therefore, we can guarantee a bound of $O(\log\sigma)$ for $\cnt_{a,b}(S,i,j)$ again. An example of a \gls{htwt} in practice can be found in the Figure~\ref{fig:wtwm}.
+	In order to support $\cnt_{a,b}(S,i,j)$ more efficiently, Hu-Tucker codes \cite{hu1971optimal} can be used instead. While the compression achieved by a \gls{htwt} \cite{barbay2009compressed} degreades slightly with respect to using Huffman coding, yielding a bound of $n(H_0(S)+2) + o(n(H_0(S)+1)) +  O(\sigma \log n)$,\footnote{This can be reduced to  $nH_0(S) + o(n(H_0(S)+1)) +  O(\sigma \log n)$ by using compressed bitvectors as well.} the codes for adjacent symbols are lexicographically contiguous. Therefore, we can guarantee a bound of $O(\log\sigma)$ for $\cnt_{a,b}(S,i,j)$ again. An example of a \gls{htwt} in practice can be found in Figure~\ref{fig:wtwm}.
 	
 	\subsection{Wavelet Matrix}
 	\label{sec:wm}
 	For large alphabets, the size of the \gls{wt} is affected by the term $ O(\sigma \log n)$. A {pointerless}
     \gls{wt} \cite{CNspire08.1} permits to remove\footnote{In a pointerless Huffman-shaped \gls{wt}  a
-    term $O(\sigma \log\log n)$ still remains due to the need of storing the canonical Huffman model.} 
+    term $O(\sigma \log\log n)$ still remains due to the need for storing the canonical Huffman model.} 
     that term by concatenating all the bitvectors level-wise 
     and computing the values of the pointers during the \gls{wt} traversals. 
     The operations on a pointerless \gls{wt} have the same time complexity but become slower in practice. 
@@ -324,7 +325,7 @@
 	\begin{center}
 		{\includegraphics[width=0.65\textwidth]{figures/wm1.eps}}
 	\end{center}
-	\caption{An example \acrlong{wm} of three levels. A conceptual fourth level was omitted since it does not contain a bitvector.}
+	\caption{An example of a \acrlong{wm} with three levels. A conceptual fourth level was omitted since it does not contain a bitvector.}
 	\label{fig:wm}
 	\end{figure}
     
@@ -333,9 +334,9 @@
     $1$-st bit of the encoding of the symbols in the order of the original sequence $S$.
     From there on, at level $i$, symbols are reordered according to the $(i-1)$-th bit of their encoding; 
     that is, according to the bit they had in the previous level.
-    Those symbols whose encoding had a zero at position $i-1$ must be arranged before those that
+    The symbols whose encoding had a zero at position $i-1$ must be arranged before those that
     had a one. After that, the relative order from the previous level is maintained. That is, if 
-    a symbol $a$ occurred before other symbol $b$, and the $(i-1)$-th bit of their encoding
+    a symbol $a$ occurred before some other symbol $b$, and the $(i-1)$-th bit of their encoding
     coincides, then $a$ will precede $b$ at level $i$. %Note that, following this rule,
     %the symbols in the last level shall be ordered by their reversed bit encoding.
     
@@ -345,37 +346,38 @@
     the same time complexity of the \gls{wt} operations, including $\cnt_{a,b}(S,i,j)$. For 
     implementation details see \cite{CNO15,ordonez2015statistical}. 
     
+    \medskip
     \begin{example}
     To find out the symbol at $S[8]$, we start by observing that $B_1[8]=0$ and $\rank_0(B_1,8)=5$. We move to the next level where we check position $5$; we see that $B_2[5]=1$ and $\rank_1(B_2,5)=3$. We move to next level and check position $3+z_2 = 3+5 = 8$,
     where we finally see $B_3[8]=1$. Therefore, we have decoded the bits $\mathbf{011}$ that correspond to the symbol $S[8] = 3$.
     \qed
     \end{example}
     
-    To reduce the space needs of \gls{wm} we could use compressed bitvectors as for \gls{wt}. Yet, 
+    To reduce the space needs of the \gls{wm} we could use compressed bitvectors as for the \gls{wt}. Yet, 
     compressing the \gls{wm} by giving it either a Huffman or Hu-Tucker shape is not possible as the reordering of the \gls{wm} would lead to the existence of %holes in the structure 
     gaps in the bitvectors 
     that would ruin the process of 
     tracking symbols during traversals. To overcome this issue, an optimal Huffman-based coding was 
     specifically developed for wavelet matrices \cite{CNO15, Farina2016}. This allows to obtain space
-    similar to the one a pointerless Huffman-shaped \gls{wt} but with faster $\rank_a$ and $\select_a$ operations.
+    similar to that of a pointerless Huffman-shaped \gls{wt} but with faster $\rank_a$ and $\select_a$ operations.
     Unfortunately, since the encodings of consecutive symbols do not keep the same order, $\cnt_{a,b}(S,i,j)$ is no longer supported in $O(\log\sigma)$ time.
     %and computing $\rank_a(S,j)-rank_c(S,i)+1$ is required for each $c$ in $[\alpha,\beta]$.
 	
 	\section{Compressed Suffix Array}
 	\label{sec:csa}
-	Given a sequence $S[1..n]$ built over an alphabet $\Sigma$ of length
+	Given a sequence $S[1..n]$\footnote{For convention, we establish that $S[n]$ must contain a terminator symbol $\$$ that must be lexicographically smaller than any of the other symbols in $S[1..n-1]$.} built over an alphabet $\Sigma$ of length
     $\sigma$, the {\em suffix array} $A[1..n]$ is built over $S$ \cite{MM93}
     as a permutation of the positions $i \in [1..n]$ of all the suffixes $S[i..n]$, so that
     $S[A[i]..n] \prec S[A[i+1]..n]$ for all $1 \le i < n$
     %, being $\prec$ the lexicographic ordering. 
     Because $A$ contains all the suffixes of $S$ in lexicographic order,
-    we can use this structure to search for any pattern $P[1..m] \in S$ in time
+    we can use this structure to search for any pattern $P[1..m]$ in time
     $O(m \log n)$ by simply performing binary searches for the range $A[l..r]$ that
     contains pointers to all the positions in $S$ where $P$ occurs.
     %For the construction of the $A$ a linear time construction
     %algorithm such as the SA-IS~\cite{nong2011two} could be used.
     %which is based on induction sorting.
-    We can find an example of an suffix array $A$ in the Figure~\ref{fig:csa}. Any pattern $P[1..m] \in S$ (such as $ana$) can be delimited by a range $A[l..r]$ (for $ana$ it is $A[3..4]$), where the limits $l$ and $r$ can be found with binary searches due to the suffixes being sorted.
+    We can find an example of an suffix array $A$ in Figure~\ref{fig:csa}. Any pattern $P[1..m]$ (such as $ana$) can be delimited by a range $A[l..r]$ (for ``$ana$'' it is $A[3..4]$), where the limits $l$ and $r$ can be found with binary searches due to the suffixes being sorted.
     
     \begin{figure}[ht]
 		\begin{center}
@@ -385,20 +387,20 @@
 		\label{fig:csa}
 	\end{figure}
     
-    A straightforward enhancement to avoid storing the original string $S$ is to set up a vocabulary array $V[1..\sigma']$, with all the different symbols from $\Sigma$ appearing in $S$,\footnote{$\sigma' \leq \sigma)$, since some of the symbols from $\Sigma$ may never appear in $S$.} and a bitvector $D[1..n]$ aligned to $A$ so that $D[1]=1$ and $D[i]=1~\iff~S[A[i-1]] \neq S[A[i]]$ for all the other $i \in [2..n]$. This means that $D$ marks with a $1$ the beginning of a range of suffixes pointed from $A$ such that the first symbol of those suffixes coincides. With $D$, keeping $S$ is not longer needed since $S[A[i]] = V[\rank_1(D,i)]$.
+    A straightforward enhancement to avoid storing the original string $S$ is to set up a vocabulary array $V[1..\sigma']$, with all the different symbols from $\Sigma$ appearing in $S$,\footnote{Note that $\sigma' \leq \sigma)$ since some of the symbols from $\Sigma$ may never occur in $S$.} and a bitvector $D[1..n]$ aligned to $A$ so that $D[1]=1$ and $D[i]=1~\iff~S[A[i-1]] \neq S[A[i]]$ for all the other $i \in [2..n]$. This means that $D$ marks with a $1$ the beginning of a range of suffixes pointed from $A$ such that the first symbol of those suffixes coincides. With $D$, keeping $S$ is no longer needed since $S[A[i]] = V[\rank_1(D,i)]$.
     
-    We also replace $A$ as described in Sadakane's \gls{csa} \cite{Sad03}, using
+    We can also replace $A$ as described in Sadakane's \gls{csa} \cite{Sad03}, using
     another permutation $\Psi[1..n]$ defined in \cite{GV00}, where $\Psi[i] = A^{-1}[A[i]+1]$. That is, for every $A[i]=k$ and $A[j]=k+1$, $\Psi[i]=j$.
     %For each position $j$ in $S$ pointed from $A[i]=j$, $\Psi[i]$ gives the position $z$ such that $A[z]$ points to $j+1$. 
     The special case when $A[i]=n$\footnote{$i=1$ if we use the unique terminator $\$$.} is handled as $\Psi[i]=A^{-1}[1]$, making a cycle.
-    Therefore, the \gls{csa} is formed by $\Psi$, $D$, and $V$, which are sufficient to simulate binary searches of the interval $A[l..r]$ for the occurrences of $P$ without the need of accessing $A$ nor $S$. In this work, we define that operation as $[l..r]~\leftarrow~\bsearch(\Psi,P)$.
+    Therefore, the \gls{csa} is formed by $\Psi$, $D$, and $V$, which are sufficient to simulate binary searches of the interval $A[l..r]$ for the occurrences of $P$ without the need of accessing $A$ nor $S$. In this work, we define that operation as $[l..r]\leftarrow\bsearch(\Psi,P)$.
     The symbol $S[A[i]]$ pointed by $A[i]$ can be obtained as
     $V[\rank_1(D,i)]$. We can also easily obtain the following symbol from the source sequence  $S[A[i]+1]$ as
     $V[\rank_1(D, \Psi[i])]$, $S[A[i]+2]$ can be obtained as $V[\rank_1(D, \Psi[\Psi[i]])]$, and so on.
     %Therefore, the \gls{csa} replaces $S$, and it does not need $A$ anymore to perform searches.
     
     Although an uncompressed $\Psi$ would have the same space requirements
-    as $A$, it is highly compressible, since it is formed by $\sigma$ strictly increasing subsequences. By using $\delta$-codes of the gaps (differences of each value with respect to the previous one) we are able to compress $\Psi$ to around the zero-order entropy of $S$~\cite{Sad03}, with $nH_0(S)+O(n\log\log\sigma)$ bits.
+    as $A$, it is highly compressible, since it is formed by $\sigma$ strictly increasing subsequences. By using $\delta$-codes of the gaps (differences of each value with respect to the previous one) it is possible to compress $\Psi$ to around the zero-order entropy of $S$~\cite{Sad03}, with $nH_0(S)+O(n\log\log\sigma)$ bits.
     In \cite{NM07} it has been further proved that $\Psi$ can be split into
     at most $nH_k+\sigma^k$ (for any $k$) {\em runs} of consecutive values so
     that the differences within those runs are always $1$. This allows for a combination of $\delta$-coding of gaps with run-length
@@ -412,7 +414,7 @@
     compression of $\Psi$ was obtained by combining differential encoding of runs with Huffman and
     run-length encoding.
 
-\include{1-ctr}
+%\include{1-ctr}
 %\include{2-xctr}
 %\include{3-gis}
 
