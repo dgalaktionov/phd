@@ -142,7 +142,7 @@
     
     \subsection{XCTR}
     \label{sec:newctr:str:xctr}
-    For certain queries, \gls{ttctr} can be quite inefficient, as we discuss later in the Section~\ref{sec:newctr:algo}. These use cases motivated us to develop a second version, \gls{xctr}, that instead of encoding the lines into the \gls{csa} vocabulary, uses a second \gls{wm} with the sequence of line identifiers, thus reducing the complexity of the queries that restrict the final line, and delegates line checks on a new WM and allowing for a better space-time trade-off. As in \gls{ttctr}, the input trips need to be sorted by the same criteria, but in \gls{xctr}~we use three complementary structures to represent each component of the sequence, as shown in Figure~\ref{fig:example_xctr}:
+    For certain queries, \gls{ttctr} can be quite inefficient, as we discuss later in Section~\ref{sec:newctr:algo}. These use cases motivated us to develop a second version, \gls{xctr}, that instead of encoding the lines into the \gls{csa} vocabulary, uses a second \gls{wm} with the sequence of line identifiers, thus reducing the complexity of the queries that restrict the final line, and delegates line checks on a new WM and allowing for a better space-time trade-off. As in \gls{ttctr}, the input trips need to be sorted by the same criteria, but in \gls{xctr}~we use three complementary structures to represent each component of the sequence, as shown in Figure~\ref{fig:example_xctr}:
     \begin{enumerate}[(i)]
         \item An adapted \gls{csa} over the stop identifiers of all trips, concatenated into a string with additional terminator symbols $\$$ appended at the end of each trip. As in the \gls{csa} from \gls{ttctr}, we make these $\$$ symbols maintain the order of the trips and cyclical in $\Psi$. Because this time we do not encode line and stop identifiers together and \gls{csa} only encodes stops, there is no need for a complex vocabulary anymore.
         \item \texttt{WML}: Aligned to the entries of (i) there is a Wavelet Matrix (WM) for the line identifiers of each stop. Aligned to the $\$$ section we duplicate the starting lines of each trip. As a trivial optimization, we build a separate WM for every stop, allowing us to save space due to the fact that a single stop does not usually belong to many lines, thus the average height of these WM is no larger (and usually smaller) than the height of a single WM.
@@ -157,11 +157,11 @@
     \end{center}
     \end{figure}
     
-    In the later Section~\ref{sec:newctr:algo}, we will detail how these structures are interacted in order to solve the queries proposed in the Section~\ref{sec:newctr:desc}, and we will also compare the time complexities to \gls{ttctr} for every kind of query.
+    In the later Section~\ref{sec:newctr:algo}, we will detail how these structures are interacted in order to solve the queries proposed in Section~\ref{sec:newctr:desc}, and we will also compare the time complexities to \gls{ttctr} for every kind of query.
     
     \subsection{T-Matrices}
     \label{sec:newctr:str:tm}
-    While both \gls{ttctr} and \gls{xctr} are effective solutions for the trip pattern queries (type B in the Section~\ref{sec:newctr:desc}), they can be too unpractical to efficiently solve network load queries (type A). For this reason, we propose \gls{tm}, a structure based on the \gls{sat} described in the Section~\ref{sec:sat}, to which we have designed a compression scheme that will reduce the total size of the structure while maintaining the $O(1)$ time bound for obtaining the sum of an arbitrary rectangle.
+    While both \gls{ttctr} and \gls{xctr} are effective solutions for the trip pattern queries (type B in Section~\ref{sec:newctr:desc}), they can be too unpractical to efficiently solve network load queries (type A). For this reason, we propose \gls{tm}, a structure based on the \gls{sat} described in Section~\ref{sec:sat}, to which we have designed a compression scheme that will reduce the total size of the structure while maintaining the $O(1)$ time bound for obtaining the sum of an arbitrary rectangle.
     
     We build a \gls{sat} $M^b_l$ for each line $l$, with a column for every stop of that line and a row for every journey, sorted by their starting times. For each cell $M^b_l[j,s]$ we store the number of users that have boarded on the stop $s$ during the journey $j$ from the line $l$. There is also an analogous matrix $M^a_l$ that stores the number of alighting users in $l$. A small example of a single \tm~is displayed in the Figure~\ref{fig:tmatrix}, where \textit{Basic} refers to the raw (unaggregated) values, \textit{Sum} are the accumulated values of a \gls{sat} and \textit{Blocks} is our compressed version.
 
@@ -181,7 +181,7 @@
 
 \section{Algorithms}
 \label{sec:newctr:algo}
-	In these section, we are going to show how these structures from Section~\ref{sec:newctr:str}  can be operated in order to solve our proposed queries from the Section~\ref{sec:newctr:desc}. Finally, we will provide a complexity analysis that we will later support with experiments in the Section~\ref{sec:newctr:exp}.
+	In these section, we are going to show how these structures from Section~\ref{sec:newctr:str}  can be operated in order to solve our proposed queries from Section~\ref{sec:newctr:desc}. Finally, we will provide a complexity analysis that we will later support with experiments in Section~\ref{sec:newctr:exp}.
 	
 	\subsection{Solving network load queries}
 	With \gls{tm}, we can directly solve most of the proposed network load queries with summations over the matrices. For example, \boardX$_{L}$, when we are not restricting to a time interval $T$, is equivalent of summing the corresponding column of the stop $X$ for the matrix $M^b_L$. If we did not want to restrict to a line $L$ either, since there is a $M^b_l$ for every line $l$, we would simply add all the sums of those matrices whose lines contain the stop $X$. All this also holds true for \alightX$_{L}$, using the alighting matrix $M^a_L$ instead of the boarding one.
@@ -256,7 +256,7 @@
      \label{alg:extract}
     \end{algorithm}
     
-    A more complex example of these structures working together is the query ``number of trips that started from a stop \DataSty{s$_a$} and ended at a stop \DataSty{s$_z$}'', which can be further restricted to specific starting and ending lines and a time window (\texttt{from\_X$_{LT}$\_to\_Y$_{LT}$}). The pseudocode for the full version of such query can be found at the Algorithm~\ref{alg:xy}. This algorithm relies heavily on the $\cnt_{j_a,j_z}(Jcodes^{\Psi},i,j)$ operation, as well as its variant $\cnt^{LR}$, both defined in the Section~\ref{sec:wt}.
+    A more complex example of these structures working together is the query ``number of trips that started from a stop \DataSty{s$_a$} and ended at a stop \DataSty{s$_z$}'', which can be further restricted to specific starting and ending lines and a time window (\texttt{from\_X$_{LT}$\_to\_Y$_{LT}$}). The pseudocode for the full version of such query can be found at the Algorithm~\ref{alg:xy}. This algorithm relies heavily on the $\cnt_{j_a,j_z}(Jcodes^{\Psi},i,j)$ operation, as well as its variant $\cnt^{LR}$, both defined in Section~\ref{sec:wt}.
     
     \begin{algorithm}[h!]
     \SetKwData{la}{$l_a$}\SetKwData{lz}{$l_z$}\SetKwData{sa}{s$_a$}\SetKwData{sz}{s$_z$}\SetKwData{ta}{t$_a$}\SetKwData{tz}{t$_z$}\SetKwData{pattern}{pattern}\SetKwData{left}{left}\SetKwData{right}{right}\SetKwData{csa}{CSA}\SetKwData{wmj}{WMJ}\SetKwData{leftzero}{left$_0$}\SetKwData{rightzero}{right$_0$}\SetKwData{a}{a}\SetKwData{z}{z}\SetKwData{ja}{j$_a$}\SetKwData{jz}{j$_z$}\SetKwData{n}{n}\SetKwData{ap}{a'}\SetKwData{zp}{z'}\SetKwData{offset}{offset}
@@ -359,7 +359,7 @@
     %\item[g] $\bar{|J^l|}$ is the average number of jcodes per line.
     \end{tablenotes}
     
-    \caption{Worst case time complexities for the representations described in the Section~\ref{sec:newctr:str}, assuming the queries have all the restrictions.}
+    \caption{Worst case time complexities for the representations described in Section~\ref{sec:newctr:str}, assuming the queries have all the restrictions.}
     \label{tab:queries}
     \end{threeparttable}
     
@@ -393,7 +393,7 @@
     Using real GTFS\footnote{\url{https://developers.google.com/transit/gtfs/}} descriptions of bus routes and schedules, we generated a synthetic dataset of user trips that aims to realistically imitate real user behaviour over a month. In this work, we have combined the GTFS obtained for the networks of urban\footnote{Provided by EMT \url{http://www.emtmadrid.es}} and interurban\footnote{Provided by CRTM \url{http://www.crtm.es}} buses for the city of Madrid. The network model was extracted and user trips were generated with the following general steps:
     
     \begin{enumerate}
-        \item We parsed stop, route and trip identifiers. This produced two lines per route in almost all cases, one for each direction. With this we were able to build the common structures $lineStop$ and $stopLine$ from the Section~\ref{sec:cs}.
+        \item We parsed stop, route and trip identifiers. This produced two lines per route in almost all cases, one for each direction. With this we were able to build the common structures $lineStop$ and $stopLine$ from Section~\ref{sec:cs}.
         \item We connected stops that are on a short walking distance (100 meters) from each other, or appear sequentially on the same line.
         \item We parsed the schedules for bus trips.
         \item We generated a month of journeys from the schedules, differentiating days of week. From this we computed $avgTime$ and $initialTime$.

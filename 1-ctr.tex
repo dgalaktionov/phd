@@ -448,7 +448,7 @@
 	the single node 3 (position $4$ in $V$), concluding that the  {\em Top-1 most used node} is 
 	$\mathbf{3}=V[4]$ with a frequency equal to $5=18-14$.
 	
-	Even though the worst-case complexity of this approach is $O(|S|\log|S|)$, which can be expected when the distribution of nodes is uniform, it can perform considerably better than the sequential approach with a skewed distribution and a small $k$, as will be experimentally proven in the Section~\ref{sec:ctr:exp:queries:spat}.
+	Even though the worst-case complexity of this approach is $O(|S|\log|S|)$, which can be expected when the distribution of nodes is uniform, it can perform considerably better than the sequential approach with a skewed distribution and a small $k$, as will be experimentally proven in Section~\ref{sec:ctr:exp:queries:spat}.
 
 	%\marginpar{\tiny algorithm ten que comezar metendo $<2,|V|>$, non $1,V$}
 	%\marginpar{\tiny $q$ debe ser $\select_1(D,m)$, non $\select_1(D,m+1)$}
@@ -648,7 +648,7 @@
 		Therefore, we can find the continuous subrange $[\alpha'..\beta'] \subseteq [\alpha..\beta] $ corresponding to trips
 		that start within $[t_1..t_2]$ ({\em step-\textcircled{3}}).
 		%We refer to this operation as $\cnt^{LR}$ in Figure~\ref{fig:ctr:search}.
-		This operation was defined as $\cnt^{LR}_{a, b}(i,j)$ in the Section~\ref{sec:wt}.
+		This operation was defined as $\cnt^{LR}_{a, b}(i,j)$ in Section~\ref{sec:wt}.
 		Thus, that assuming $Icode^{\Psi}[\alpha..\beta]$ are increasing,  
 		$[\alpha'..\beta'] \leftarrow \cnt^{LR}_{t_1,t_2}(\alpha,\beta)$ would report the 
 		positions $[\alpha'..\beta'] \subseteq [\alpha..\beta]$ such that $\alpha' = argmin_{x} (Icode^{\Psi}[x] \geq t_1)$ and
@@ -825,7 +825,7 @@
 	$9$-bits per node (Madrid) and $16$-bits per segment (Porto). 
 	As expected, compression improves as we increase the $\Psi$ sampling parameter $t_{\Psi}$. We show that by tuning 
 	\gls{csa} in a more sparse setup we can almost halve the space needs of using $t_{\Psi}=32$, although the resulting \gls{csa} would become
-	much slower as we will later prove in the Section~\ref{sec:ctr:exp:queries}.
+	much slower as we will later prove in Section~\ref{sec:ctr:exp:queries}.
 	In general, we can see that \gls{csa} obtains better compression in Porto than in Madrid. This is probably due to the longer and
 	more predictable trips. Note that is not common to arrive at an intersection having more than two valid street links where to navigate to.
 
@@ -862,7 +862,7 @@
 	plain baseline representations differs depending on the discretization period. Both \gls{htwt} and \gls{wm} were tuned by
 	using bitvector representations $RG_{32}$, $RRR_{32}$, $RRR_{64}$, and $ RRR_{128}$.
 
-	One important insight from these results is that in the synthetic dataset from Madrid $RRR$ bitvectors always lead to a better compression than the plain $RG$, while in the real dataset from Porto that is not always the case, and we have to use the sparsest configuration of $RRR$ to achieve similar space requirements of the uncompressed $RG$ version. Consequently, for Porto dataset, the faster plain $RG$ bitvectors are probably the best choice. In Madrid dataset, we can see an actual space/time trade-off: $RRR$ obtains better compression but will be slower, as later seen in the Section~\ref{sec:ctr:exp:queries}.
+	One important insight from these results is that in the synthetic dataset from Madrid $RRR$ bitvectors always lead to a better compression than the plain $RG$, while in the real dataset from Porto that is not always the case, and we have to use the sparsest configuration of $RRR$ to achieve similar space requirements of the uncompressed $RG$ version. Consequently, for Porto dataset, the faster plain $RG$ bitvectors are probably the best choice. In Madrid dataset, we can see an actual space/time trade-off: $RRR$ obtains better compression but will be slower, as later seen in Section~\ref{sec:ctr:exp:queries}.
 
 	\begin{table}[ht]
 	

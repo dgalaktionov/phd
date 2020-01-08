@@ -137,7 +137,7 @@
     \subsection{TMS}
     The Open Source Geospatial Foundation defines a standard to generate cartographic images (tiles) called \gls{tms},\footnote{\url{http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification}} which aims to simplify and modernize some aspects of an older standard called \gls{wms}.
     
-    A \gls{tms} service returns map parts, called \textit{tiles}, at several levels of zoom with {\em HTTP GET} requests, typically in PNG format, although other formats can be supported. With a special metadata request that returns the definition of the \gls{crs} and the parameters to translate pixel coordinates to \gls{crs} coordinates (discussed in the Section~\ref{sec:raster}) at all the supported zoom levels, it is possible to develop a web map application, loading tiles interactively as a user spans and zooms over the map.
+    A \gls{tms} service returns map parts, called \textit{tiles}, at several levels of zoom with {\em HTTP GET} requests, typically in PNG format, although other formats can be supported. With a special metadata request that returns the definition of the \gls{crs} and the parameters to translate pixel coordinates to \gls{crs} coordinates (discussed in Section~\ref{sec:raster}) at all the supported zoom levels, it is possible to develop a web map application, loading tiles interactively as a user spans and zooms over the map.
     
     It is also possible to integrate \gls{tms} from several sources, as tiles can have transparent background. This could allow, for example, to paint tiles containing only bus lines over tiles showing the streets of a city. Due to its ease of implementation, both server side and for client libraries, this standard has been widely adopted and made available by operators such as OpenStreetMap, Google, Thunderforest and many others.\footnote{\url{https://wiki.openstreetmap.org/wiki/Tile_servers}}
     
@@ -157,7 +157,7 @@
 		\label{fig:gis:gtfs}
 	\end{figure}
 	
-	This has some resemblance to the model we have previously proposed in the Figure~\ref{fig:er} from the Section~\ref{sec:newctr:desc}, where a \texttt{stop} in \gls{gtfs} corresponds to a \texttt{stop\_place} in our model, \texttt{stoptime} to \texttt{stop\_time}, a \texttt{trip} is similar to a \texttt{journey}, while a \texttt{route} is a \texttt{line}. The largest difference, however, is that we consider that a line (route) is formed by fixed sequence of stops, while in \gls{gtfs} no such restriction exists, and every trip can theoretically have a different sequence of stops.
+	This has some resemblance to the model we have previously proposed in the Figure~\ref{fig:er} from Section~\ref{sec:newctr:desc}, where a \texttt{stop} in \gls{gtfs} corresponds to a \texttt{stop\_place} in our model, \texttt{stoptime} to \texttt{stop\_time}, a \texttt{trip} is similar to a \texttt{journey}, while a \texttt{route} is a \texttt{line}. The largest difference, however, is that we consider that a line (route) is formed by fixed sequence of stops, while in \gls{gtfs} no such restriction exists, and every trip can theoretically have a different sequence of stops.
 	
 	There are GPS coordinates stored for a stop, and it is also possible to define a \textit{LineString} shape for a trip, which will be referenced by a \texttt{shape\_id} from a shapes definition file. The stop times for a trip are usually defined within the calendar dates, allowing this way to specify a schedule based on the day of the week or have a special consideration for selected days. Outside of the calendar definition, it is still possible to specify an expected frequency that a trip must respect.
     
@@ -228,7 +228,7 @@
     %To the best of our knowledge, it is the first tool that uses a representation of the data based on compact data structures.
     %While there exist other previous works that make use of compact data structures to efficiently index large collections of in-network trajectories \cite{brisaboa2018compact, koide2018cinct,  koide15}, the recent \gls{xctr}\ solution in \cite{daniil18} is novel as it implements a conceptual model that could adapt to any particular transportation system. To decrease the redundancy in the representation of user's trajectories, instead of listing all the stops traversed along a user's trip, \gls{xctr}\ stores only the stops where a user boards a vehicle along a whole trip that chains several lines, and the intermediate stops may be easily deduced from the network representation. 
     
-    Given that we are focusing on a tool specifically for public transportation networks, our interface is built over the \gls{xctr} (introduced in the Section~\ref{sec:newctr:str:xctr}), which has allowed us to achieve fast response times in our tested use cases. In any case, our proposed tool is flexible enough to allow data to be represented in a more traditional way, such as with a relational \gls{dbms}.
+    Given that we are focusing on a tool specifically for public transportation networks, our interface is built over the \gls{xctr} (introduced in Section~\ref{sec:newctr:str:xctr}), which has allowed us to achieve fast response times in our tested use cases. In any case, our proposed tool is flexible enough to allow data to be represented in a more traditional way, such as with a relational \gls{dbms}.
 	
 	\section{Architecture}
 	In this section we discuss the overall architecture of Trippy, our interface based on \gls{xctr}. We start by describing it from the functional perspective, following the data flow from the data sources until the presentation in the user interface. We complement this description with a technical architecture overview, speaking about how the individual components are integrated together and facilitate an understanding of the decisions behind the technological choices.
@@ -248,7 +248,7 @@
 	
 	We have also opted for different persistence options for the network description and the passenger trips, as we are interested in using our \gls{xctr} for the latter, while the former does not pose any technological challenges that would warrant the use of a compact representation.
 	
-	Finally, these two data repositories are used to feed an API over which requests can be made, which is going to be exploited by the user interface. The specific supported requests are discussed in the Section~\ref{sec:api}.
+	Finally, these two data repositories are used to feed an API over which requests can be made, which is going to be exploited by the user interface. The specific supported requests are discussed in Section~\ref{sec:api}.
 	
 	\subsection{Technical architecture}
 	We have designed and implemented the infrastructure needed to solve our query needs, which are focused on the usage of network elements, as previously explained in Section~\ref{sec:gis:intro}. 
@@ -288,7 +288,7 @@
 	
 	\section{API}
 	\label{sec:api}
-    As previously seen in the Section~\ref{sec:newctr:algo:analysis}, by basing our interface on \gls{xctr} we are able to solve a broad range of transport-related queries, including but not limiting to:
+    As previously seen in Section~\ref{sec:newctr:algo:analysis}, by basing our interface on \gls{xctr} we are able to solve a broad range of transport-related queries, including but not limiting to:
 
     \begin{itemize}
     %\item[\textbf{Transport Load Queries}]
@@ -372,7 +372,7 @@
 	\label{sec:ui}
 	Based on the API developed from Section~\ref{sec:api}, we have developed a prototype of an accessible and intuitive user interface, based on web application technologies. In the rest of this section, we are going to demonstrate the elements of this interface in what may be read as a user manual.
 	
-    The interface of Trippy consists of a map as shown in the Figure~\ref{fig:ui:overall}, where have set up a study case with the same bus networks from Madrid used in the Section~\ref{sec:newctr:exp:data}. Every bus stop is represented by a stop and we are using the underlying Thunderforest\footnote{\url{https://www.thunderforest.com}} \gls{tms} layer to display the bus lines that connect them. Additionally, the interface presents stop selectors \textcircled{1}, line selectors \textcircled{2} and also date \textcircled{3} and time \textcircled{4} filters that allow a user to query the \gls{xctr} for information.
+    The interface of Trippy consists of a map as shown in the Figure~\ref{fig:ui:overall}, where have set up a study case with the same bus networks from Madrid used in Section~\ref{sec:newctr:exp:data}. Every bus stop is represented by a stop and we are using the underlying Thunderforest\footnote{\url{https://www.thunderforest.com}} \gls{tms} layer to display the bus lines that connect them. Additionally, the interface presents stop selectors \textcircled{1}, line selectors \textcircled{2} and also date \textcircled{3} and time \textcircled{4} filters that allow a user to query the \gls{xctr} for information.
     
     \begin{figure}[ht]
 		\begin{center}
