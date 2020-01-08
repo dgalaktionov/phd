@@ -222,7 +222,7 @@
     In our example from Figure~\ref{fig:sat}, to calculate the sum of the delimited $3x3$ region in the matrix, we simply operate over the four terms in \textbf{bold} from the \gls{sat}, obtaining
     $\displaystyle\sum^4_{i=2}\displaystyle\sum^4_{j=2}M[i,j]~=~I[4,4]-I[4,1]-I[1,4]+I[1,1]~=~84-27-18+8~=~47$.
     
-    While with this representation we do not need to keep the original matrix\footnote{As accessing a single cell can be viewed as a special case of the computation of an average where $h=0,w=0$.}, the improved computational efficiency comes at the expense of having to represent larger numbers than the original values.
+    While with this representation we do not need to keep the original matrix,\footnote{As accessing a single cell can be viewed as a special case of the computation of an average where $h=0,w=0$.} the improved computational efficiency comes at the expense of having to represent larger numbers than the original values.
 	
 	\section{Entropy coding}
 	Given an information source (such as a text) that provides symbols from an alphabet $[1..\sigma]$ with a probability of $0 \leq p_i \leq 1$ for each symbol, where $\displaystyle\sum_ip_i=1$, the goal of an entropy coder is to exploit these probabilities in order to achieve compression by assigning shorter codes to the most frequent symbols, and longer to the less frequent ones. In the work that is considered as the foundation of information theory \cite{shannon1948mathematical}, Claude Shannon defined a concept called \textit{entropy}, which is closely related to the probabilities we are discussing, and used it to prove that the when encoding the symbols in binary, the optimal length in bits for each code is of $l_i = \frac{1}{\log_2p_i} = -\log_2p_i$ bits, and the entropy of an information source $S$ calculated as $H_0(S) = -\displaystyle\sum^\sigma_i p_il_i = -\displaystyle\sum^\sigma_i p_i\log_2p_i$.
@@ -234,9 +234,9 @@
 	
 	The Huffman coding, introduced in \cite{huffman1952method}, is a coding algorithm that produces prefix-free and optimal\footnote{That is, with lengths as close to $-\log_2p_i$ as possible with a whole number of bits per symbol.} codes based on the frequencies of each symbol. The ideas of the Huffman coding have been widely implemented in numerous compression algorithms and codecs since its inception, where the most notable examples are DEFLATE (PKZIP, GZIP), JPEG and MPEG.
 	
-	One less known variation of the Huffman codes are the Hu-Tucker codes \cite{hu1971optimal}, which aim to provide codes that preserve the same lexical order as the original symbols, meaning that for any two symbols $s_i,s_j$, it holds that $s_i \prec s_j \iff C_i \prec C_j$. This comes at the expense of at most one extra bit per code over Huffman on average\footnote{Being $L_h$ and $L_{ht}$ the average codeword 
+	One less known variation of the Huffman codes are the Hu-Tucker codes \cite{hu1971optimal}, which aim to provide codes that preserve the same lexical order as the original symbols, meaning that for any two symbols $s_i,s_j$, it holds that $s_i \prec s_j \iff C_i \prec C_j$. This comes at the expense of at most one extra bit per code over Huffman on average.\footnote{Being $L_h$ and $L_{ht}$ the average codeword 
 	length of Huffman coding and Hu-Tucker codes for $S$ respectively, it holds: $H_0(S) \leq L_h \leq H_0(S)+1$ and $H_0(S) \leq L_{ht} \leq H_0+2(S)$
-	(see \cite{Cover:2006:EIT:1146355} (pages 122-123), or \cite{HORIBE1977148, GilbertandMore1959}).}.
+	(see \cite{Cover:2006:EIT:1146355} (pages 122-123), or \cite{HORIBE1977148, GilbertandMore1959}).}
 	
 	\section{Bitvectors}
 	\label{sec:bit}
@@ -276,7 +276,7 @@
 		\label{fig:wt}
 	\end{figure}
     
-    For each node $v$, these symbols from the alphabet $[\alpha_v..\omega_v]$ are represented implicitly using a bitvector $B_v[1..n_v]$, where $B[i] = 0$ when the symbol $a$ represented in the position $i$ should belong to the left child ($a < \dfrac{\alpha_v + \omega_v}{2}$), while $B[i] = 1$ means it should belong to the right child ($a \geq \dfrac{\alpha_v + \omega_v}{2}$). By making use of $\rank$ and $\select$ operations over these bitvectors, we are able to recover the value of any $S[i]$, and also answer $\rank_a$ and $\select_a$ for any $a \in [1..\sigma]$ in $O(\log\sigma)$ without the need of storing the original sequence. As there are $n$ bits per level and $\log\sigma$ internal levels (the nodes from the leaf level do not have bitvectors), we could represent every bitvector in $n\log\sigma$ bits, which is equivalent to the space it would take to represent $S$ as an array of fixed length integers\footnote{When $\sigma$ is not a power of two, $\log\sigma$ would need to be rounded up for fixed length integers, while for the \gls{wt} there will be some leaves at level $h-1$, being $h$ the height of the tree, and its total size will depend on the frequency of those symbols ($\lfloor n\log\sigma\rfloor < \sum_i n_i < \rceil n\log\sigma\rceil$.}). However, we also need some auxiliary structures for $\rank_1$ and $\select_1$, which will require $o(n\log\sigma)$ bits and also store a pointer for every one of the $2\sigma-1$ nodes. Therefore, the total size of this representation amounts to $n\log\sigma + o(n\log\sigma) + O(\sigma\log n)$.
+    For each node $v$, these symbols from the alphabet $[\alpha_v..\omega_v]$ are represented implicitly using a bitvector $B_v[1..n_v]$, where $B[i] = 0$ when the symbol $a$ represented in the position $i$ should belong to the left child ($a < \dfrac{\alpha_v + \omega_v}{2}$), while $B[i] = 1$ means it should belong to the right child ($a \geq \dfrac{\alpha_v + \omega_v}{2}$). By making use of $\rank$ and $\select$ operations over these bitvectors, we are able to recover the value of any $S[i]$, and also answer $\rank_a$ and $\select_a$ for any $a \in [1..\sigma]$ in $O(\log\sigma)$ without the need of storing the original sequence. As there are $n$ bits per level and $\log\sigma$ internal levels (the nodes from the leaf level do not have bitvectors), we could represent every bitvector in $n\log\sigma$ bits, which is equivalent to the space it would take to represent $S$ as an array of fixed length integers.\footnote{When $\sigma$ is not a power of two, $\log\sigma$ would need to be rounded up for fixed length integers, while for the \gls{wt} there will be some leaves at level $h-1$, being $h$ the height of the tree, and its total size will depend on the frequency of those symbols ($\lfloor n\log\sigma\rfloor < \sum_i n_i < \rceil n\log\sigma\rceil$).} However, we also need some auxiliary structures for $\rank_1$ and $\select_1$, which will require $o(n\log\sigma)$ bits and also store a pointer for every one of the $2\sigma-1$ nodes. Therefore, the total size of this representation amounts to $n\log\sigma + o(n\log\sigma) + O(\sigma\log n)$.
     
     In order to access the value of $S[i]$, we must start by looking into $B_v[i]$ from the root node. If $B_v[i]=0$, we traverse to the position $B_{v_0}[\rank_0(B_v,i)]$ of the bitvector of the left child. Conversely, when $B_v[i]=1$, we traverse to the bitvector of the right child at $B_{v_1}[\rank_1(B_v,i)]$. In both cases, we recurse until a leaf is reached, which will unambiguously correspond to a symbol $a$, thus we determine that $B_v[i]=a$.
     
@@ -292,21 +292,21 @@
     \cnt_{a,b}(v,i,j) = &\cnt_{a,b'}(v_0,\rank_0(B_v,i),\rank_0(B_v,j))\\
     &+~\cnt_{a',b}(v_1,\rank_1(B_v,i),\rank_1(B_v,j))
     \end{align*}
-    , recursively. The recursion on each node $v$ stops when $a \leq \alpha_v$ and $\omega_v \leq b$, in which case the count for that node is reported as $j-i+1$. Finally, all the counts are summed and the total amount of occurrences is obtained. While it may look as if the worst case would imply traversing every of the $\sigma$ internal nodes, it is avoided by stopping the recursion when $a \leq \alpha_v$ and $\omega_v \leq b$, thus requiring us to visit only $O(\log\sigma)$ nodes\footnote{In fact, the best case is $cnt_{1,\sigma}(S,i,j) = j-i+1$, which is solved without traversing at all!}. In the \gls{wt} from Figure~\ref{fig:wt}, we have marked the considered ranges for solving $\cnt_{3,3}(S,5,10)$. Additionally, when the subsequence $S[i..j]$ is sorted, we can define $[l..r]~\leftarrow~\cnt^{LR}_{a,b}(S,i,j)$, which returns the upper and lower limits $S[l..r]$ of the occurrences of the symbols $[a..b]$. Naturally, $S[l..r] \subseteq S[i..j]$.
+    , recursively. The recursion on each node $v$ stops when $a \leq \alpha_v$ and $\omega_v \leq b$, in which case the count for that node is reported as $j-i+1$. Finally, all the counts are summed and the total amount of occurrences is obtained. While it may look as if the worst case would imply traversing every of the $\sigma$ internal nodes, it is avoided by stopping the recursion when $a \leq \alpha_v$ and $\omega_v \leq b$, thus requiring us to visit only $O(\log\sigma)$ nodes.\footnote{In fact, the best case is $cnt_{1,\sigma}(S,i,j) = j-i+1$, which is solved without traversing at all!} In the \gls{wt} from Figure~\ref{fig:wt}, we have marked the considered ranges for solving $\cnt_{3,3}(S,5,10)$. Additionally, when the subsequence $S[i..j]$ is sorted, we can define $[l..r]~\leftarrow~\cnt^{LR}_{a,b}(S,i,j)$, which returns the upper and lower limits $S[l..r]$ of the occurrences of the symbols $[a..b]$. Naturally, $S[l..r] \subseteq S[i..j]$.
     
     \subsection{Hu-Tucker Wavelet Tree}
     A straightforward way of reducing the size of a \gls{wt} is to use compressed bitvectors, as discussed in \cite{CNspire08.1}, allowing to represent a \gls{wt} in $nH_0(S) + o(n\log\sigma) + O(\sigma\log n)$ bits \cite{WT03}. There is, however, a different approach to achieve similar space requirements is to use a prefix-free variable-length encoding for the symbols.
     For example, Huffman code \cite{huffman1952method} can be used to build a
     Huffman-Shaped \gls{wt} \cite{ferragina2009compressed}, where the tree is not balanced
-    anymore, as level of each leaf $v_a$ will be the number of bits for the Huffman code of $a$, which will depend on the frequency of $a$ in $S$. The size reduces to $n(H_0(S)+1)+ o(n(H_0(S)+1)) +  O(\sigma \log n)$\footnote{$O(\sigma \log n)$ term 
-    includes both the tree pointers and the size of the Huffman model.}, while average time becomes
+    anymore, as level of each leaf $v_a$ will be the number of bits for the Huffman code of $a$, which will depend on the frequency of $a$ in $S$. The size reduces to $n(H_0(S)+1)+ o(n(H_0(S)+1)) +  O(\sigma \log n)$,\footnote{$O(\sigma \log n)$ term 
+    includes both the tree pointers and the size of the Huffman model.} while average time becomes
     $O(H_0(S))$ for $\rank_a$, and $\select_a$  (the worst-case time is still $O(\log\sigma)$ 
     \cite{Barbay:2013:CPA:2562345.2562626}). By using compressed
     bitvectors \cite{CNspire08.1} space can be even further reduced to $nH_0(S) + o(n(H_0(S)+1)) +  O(\sigma \log n)$.
     Unfortunately, the Huffman codes (including \textit{canonical Huffman}) assigned to
     lexicographically adjacent symbols do not maintain that lexicographic order, and it is not possible to have a $O(\log\sigma)$ bound for $\cnt_{a,b}(S,i,j)$ anymore.
 	
-	In order to support $\cnt_{a,b}(S,i,j)$ more efficiently, Hu-Tucker codes \cite{hu1971optimal} can be used instead. While the compression achieved by a \gls{htwt} \cite{barbay2009compressed} degreades slightly with respect to using Huffman coding, yielding a bound of $n(H_0(S)+2) + o(n(H_0(S)+1)) +  O(\sigma \log n)$\footnote{This can be reduced to  $nH_0(S) + o(n(H_0(S)+1)) +  O(\sigma \log n)$ by using compressed bitvectors as well.}, the codes for adjacent symbols are lexicographically contiguous. Therefore, we can guarantee a bound of $O(\log\sigma)$ for $\cnt_{a,b}(S,i,j)$ again. An example of a \gls{htwt} in practice can be found in the Figure~\ref{fig:wtwm}.
+	In order to support $\cnt_{a,b}(S,i,j)$ more efficiently, Hu-Tucker codes \cite{hu1971optimal} can be used instead. While the compression achieved by a \gls{htwt} \cite{barbay2009compressed} degreades slightly with respect to using Huffman coding, yielding a bound of $n(H_0(S)+2) + o(n(H_0(S)+1)) +  O(\sigma \log n)$,\footnote{This can be reduced to  $nH_0(S) + o(n(H_0(S)+1)) +  O(\sigma \log n)$ by using compressed bitvectors as well.} the codes for adjacent symbols are lexicographically contiguous. Therefore, we can guarantee a bound of $O(\log\sigma)$ for $\cnt_{a,b}(S,i,j)$ again. An example of a \gls{htwt} in practice can be found in the Figure~\ref{fig:wtwm}.
 	
 	\subsection{Wavelet Matrix}
 	\label{sec:wm}
@@ -385,7 +385,7 @@
 		\label{fig:csa}
 	\end{figure}
     
-    A straightforward enhancement to avoid storing the original string $S$ is to set up a vocabulary array $V[1..\sigma']$, with all the different symbols from $\Sigma$ appearing in $S$\footnote{$\sigma' \leq \sigma)$, since some of the symbols from $\Sigma$ may never appear in $S$.}, and a bitvector $D[1..n]$ aligned to $A$ so that $D[1]=1$ and $D[i]=1~\iff~S[A[i-1]] \neq S[A[i]]$ for all the other $i \in [2..n]$. This means that $D$ marks with a $1$ the beginning of a range of suffixes pointed from $A$ such that the first symbol of those suffixes coincides. With $D$, keeping $S$ is not longer needed since $S[A[i]] = V[\rank_1(D,i)]$.
+    A straightforward enhancement to avoid storing the original string $S$ is to set up a vocabulary array $V[1..\sigma']$, with all the different symbols from $\Sigma$ appearing in $S$,\footnote{$\sigma' \leq \sigma)$, since some of the symbols from $\Sigma$ may never appear in $S$.} and a bitvector $D[1..n]$ aligned to $A$ so that $D[1]=1$ and $D[i]=1~\iff~S[A[i-1]] \neq S[A[i]]$ for all the other $i \in [2..n]$. This means that $D$ marks with a $1$ the beginning of a range of suffixes pointed from $A$ such that the first symbol of those suffixes coincides. With $D$, keeping $S$ is not longer needed since $S[A[i]] = V[\rank_1(D,i)]$.
     
     We also replace $A$ as described in Sadakane's \gls{csa} \cite{Sad03}, using
     another permutation $\Psi[1..n]$ defined in \cite{GV00}, where $\Psi[i] = A^{-1}[A[i]+1]$. That is, for every $A[i]=k$ and $A[j]=k+1$, $\Psi[i]=j$.
@@ -413,8 +413,8 @@
     run-length encoding.
 
 \include{1-ctr}
-\include{2-xctr}
-\include{3-gis}
+%\include{2-xctr}
+%\include{3-gis}
 
 \part{Thesis summary} \label{part:final}
 \chapter{Conclusions and future works}

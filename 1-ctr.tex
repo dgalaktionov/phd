@@ -180,7 +180,7 @@
 	\subsection{Spatial component using a CSA}
 	\label{sec:ctr:str:spat}
 	We use a slightly adapted \gls{csa} to represent the spatial component of our dataset of trips within \gls{ctr}. 
-	However, we must perform some preprocessing on each trip  $\mathcal{T}_i \in \mathcal{T}$ before building a \gls{csa} on it. Initially, we sort the trips by their first node ($s^i_1$), then by the last node ($s^i_n$), then by the starting time ($t^i_1$), and finally, by its second node ($s^i_2$), third node ($s^i_3$), and successive nodes (i.e. the trips are sorted by the key $s_1,s_n,t_1,s_{2..n-1}$.  Note that the start time ($t^i_1$) of the trip does not belong to the spatial component, but it is nevertheless used for the sorting\footnote{This initial sorting of the trips will allow us to answer some useful queries very efficiently  (i.e., count trips starting at node $X$ and ending at node $Y$).}.
+	However, we must perform some preprocessing on each trip  $\mathcal{T}_i \in \mathcal{T}$ before building a \gls{csa} on it. Initially, we sort the trips by their first node ($s^i_1$), then by the last node ($s^i_n$), then by the starting time ($t^i_1$), and finally, by its second node ($s^i_2$), third node ($s^i_3$), and successive nodes (i.e. the trips are sorted by the key $s_1,s_n,t_1,s_{2..n-1}$.  Note that the start time ($t^i_1$) of the trip does not belong to the spatial component, but it is nevertheless used for the sorting.\footnote{This initial sorting of the trips will allow us to answer some useful queries very efficiently  (i.e., count trips starting at node $X$ and ending at node $Y$).}
 
 	Following with Example~\ref{exp:ctr}, after sorting the trips in $\mathcal{T}$ with the criteria above, 
 	our sorted dataset $\mathcal{T}^s$ would look like: 
@@ -207,7 +207,7 @@
 	\mathbf{\$_i}),(t^i_1, t^i_2, \dots,  t^i_{n_i}, \mathbf{t^i_1}) \rangle$. 
 
 	The next step involves concatenating the codes $s^i_j$ and $\$_i$ of the spatial components of our trips and to add an 
-	extra trailing terminator $\$_0$ to create a sequence $Text[1..n]$\footnote{By definition, it must hold that $n = |\mathcal{T}| + 1 + \displaystyle\sum^{|\mathcal{T}|}_{i=1} n_i$.}. $\$_0$ must be  lexicographically 
+	extra trailing terminator $\$_0$ to create a sequence $Text[1..n]$.\footnote{By definition, it must hold that $n = |\mathcal{T}| + 1 + \displaystyle\sum^{|\mathcal{T}|}_{i=1} n_i$.} $\$_0$ must be  lexicographically 
 	smaller than any other entry (then it also holds $\$_0 \prec \$_i$, $\forall i \in [1..|\mathcal{T}|]$). In the top part of
 	Figure~\ref{fig:tcsa}, we can see array $Text$ for the running example, as well as the corresponding time-IDs that
 	are regarded in sequence $Icode$  ($Time$ shows the original times).
@@ -249,11 +249,11 @@
 
 	Another interesting property arises from the use of a cyclical $\Psi$ on trips, and from using trip terminators.
 	Since the first entries in $\Psi[2..|\mathcal{T}|+1]$ correspond the $\$$ symbols that 
-	mark the end of each trip in $Text$ (remember that $\Psi[1]$ corresponds the $\$_0$), we can see that the $j^{th}$ node of the $i^{th}$ trip can
+	mark the end of each trip in $Text$ (remember that $\Psi[1]$ corresponds the $\$_0$), we can see that the $j$-th node of the $i$-th trip can
 	be obtained as $V[\rank_1(D, \Psi^j[i+1])]$, (where $\Psi^3[x]= \Psi[\Psi[\Psi[x]]]$). This property
 	makes it very simple to find starting nodes for any trip.
 	For example, if we focus on the shaded area $\Psi[2..7]$, we can find the ending terminator $\$_4$ of the
-	fourth trip at the $5^{th}$ position (because the first $\$_0$
+	fourth trip at the $5$-th position (because the first $\$_0$
 	corresponds to the final $\$$ at $S[28]$). Therefore, its starting node can be found 
 	as $V[\rank_1(D, \Psi[4+1])]$. Since $\Psi[5] = 12$ and $\rank_1(D,12)= 3$, 
 	the starting node is $V[3]=\mathbf{2}$. For illustration purposes note that it would correspond to $Text[A[12]]$.
@@ -346,7 +346,7 @@
 	The binary code-assignment to the source symbols $t_i \in I$ and that obtained after applying Hu-Tucker encoding
 	algorithm~\cite{hu1971optimal} are also included in the figure.
 	
-	Since the most useful operation of these two structures for our application, by far, is the $\cnt_{a,b}(Icode^{\Psi},i,j)$, we will proceed to explain in detail how the efficiency of that operation has influenced our choice of structures. Just as proven in Section~\ref{sec:wt} with \gls{wt}, both \gls{htwt} and \gls{wm} implement the $\cnt_{a,b}(Icode^{\Psi},i,j)$ operation in $O(\log\sigma)$ time on average. This is easy to prove for \gls{htwt} as each node will contain entries from a lexicographically contiguous subrange from the alphabet $\Sigma$, making the same properties seen for \gls{wt} hold. The main difference is that Hu-Tucker codes will reshape the tree, making the leaves containing the least frequent symbols deeper than the leaves with the more frequent symbols, which may theoretically produce a tree of height $\sigma-1$\footnote{Imagine a vocabulary $\Sigma=\{s_1..s_\sigma\}$, where the probability of appearance of the symbol $s_i$ in the text $S$ turned out to be $2^{-i}$.}, which will obviously affect the worst-case performance, in exchange of a very large compression ratio.
+	Since the most useful operation of these two structures for our application, by far, is the $\cnt_{a,b}(Icode^{\Psi},i,j)$, we will proceed to explain in detail how the efficiency of that operation has influenced our choice of structures. Just as proven in Section~\ref{sec:wt} with \gls{wt}, both \gls{htwt} and \gls{wm} implement the $\cnt_{a,b}(Icode^{\Psi},i,j)$ operation in $O(\log\sigma)$ time on average. This is easy to prove for \gls{htwt} as each node will contain entries from a lexicographically contiguous subrange from the alphabet $\Sigma$, making the same properties seen for \gls{wt} hold. The main difference is that Hu-Tucker codes will reshape the tree, making the leaves containing the least frequent symbols deeper than the leaves with the more frequent symbols, which may theoretically produce a tree of height $\sigma-1$,\footnote{Imagine a vocabulary $\Sigma=\{s_1..s_\sigma\}$, where the probability of appearance of the symbol $s_i$ in the text $S$ turned out to be $2^{-i}$.} which will obviously affect the worst-case performance, in exchange of a very large compression ratio.
 
 	The complexity may initially seem harder to analyze for \gls{wm}, as its ``nodes'' are delimited implicitly: the symbols with a code starting in 0 will find their second bit in an implicit node delimited by the subrange $B_2[1..z]$ (for some $1 \leq z < n$), while the symbols with a code starting in 1 will correspond to $B_2[z+1..n]$. Generalizing this idea, we can assert that symbols with the same \textit{context} of $\alpha$ starting bits in their codes will find their next $\alpha+1$ bit in some subrange $B_{\alpha+1}[i..j]$ with $1 \leq i \leq j \leq n$. Therefore, the same properties from \gls{wt} can be exploited for a $\cnt_{a,b}(Icode^{\Psi},i,j)$ operation in \gls{wm} as well, allowing us to solve it in $O(\log\sigma)$ worst-case time.
 
@@ -636,7 +636,7 @@
 		In Figure~\ref{fig:ctr:search}, we show the step-by-step process to solve this type of queries.
 		As in a spatial query, we start by searching for the range $[l..r] \leftarrow \bsearch(\Psi,Y\$X)$ corresponding 
 		to trips starting at $Y$ and ending at $X$ ({\em step-\textcircled{1}}). Next, due to our sorting of trips, the range for $Y\$X$ in $\Psi[l..r]$
-		can be mapped to a continuous range $\Psi[\alpha..\beta]$ of the same size in the $\$X$ region of $\Psi$\footnote{As the trips were sorted by the key $s_1,s_n,t_1,s_{2..n-1}$, and we positioned each $\$_i$ according to the order of their trip $\mathcal{T}_i$, the region $Y\$X$ will be conveniently sorted by the key $s_n,\$,s_1,s_n,t_1,s_{2..n-1}$ within $\Psi$, thus delimiting an equivalent region $\Psi[\alpha..\beta]$ in $\$X$ where each entry corresponds to a trip that also ends in $Y$.}. 
+		can be mapped to a continuous range $\Psi[\alpha..\beta]$ of the same size in the $\$X$ region of $\Psi$.\footnote{As the trips were sorted by the key $s_1,s_n,t_1,s_{2..n-1}$, and we positioned each $\$_i$ according to the order of their trip $\mathcal{T}_i$, the region $Y\$X$ will be conveniently sorted by the key $s_n,\$,s_1,s_n,t_1,s_{2..n-1}$ within $\Psi$, thus delimiting an equivalent region $\Psi[\alpha..\beta]$ in $\$X$ where each entry corresponds to a trip that also ends in $Y$.} 
 		We compute $\alpha \leftarrow \Psi[l], 
 		\beta\leftarrow\alpha+r-l$ ({\em step-\textcircled{2}}). Furthermore, note that the range for $\$XY$ preserves the same order as that for $Y\$X$.
 		
@@ -734,7 +734,7 @@
 	  Using \gls{gtfs} data obtained for the public transportation network of 
 	  {Madrid},\footnote{Data from
 	  the CRTM corporation at \url{http://www.crtm.es/}} we generated a dataset of 
-	  synthetic trips combining the subway network with the Spanish commuter rail system\footnote{Data manually scraped from public sources} (called {\em cercan\'ias}). 
+	  synthetic trips combining the subway network with the Spanish commuter rail system.\footnote{Data manually scraped from public sources} (called {\em cercan\'ias})
 	  In this dataset, we define the nodes as stops or stations, making two of them connected if there exists a line or route that stops at each, consecutively, thus allowing us to represent user trajectories following the same strategy as for urban street networks.
 	  In total, there are $313$ different stations/nodes from $23$ lines.
 	 
@@ -798,8 +798,6 @@
 
 	\begin{table}[ht]
 	\begin{center}
-	\caption{Compression of \acrshort{csa} with respect to the spatial baseline.}
-	\label{table:ctr:exp:space:spat}
 	  \begin{tabular}{|l|*{3}{r}|}
 	  \cline{2-4}
 	  \multicolumn{1}{c|}{} & \multicolumn{3}{c|}{$t_{\Psi}$ } \\
@@ -809,6 +807,9 @@
 	  Porto & 23.66\% & 15.49\% & 13.37\% \\
 	  \hline
 	  \end{tabular}
+	  
+	\caption{Compression of \acrshort{csa} with respect to the spatial baseline.}
+	\label{table:ctr:exp:space:spat}
 	\end{center}
 	\end{table}
 
@@ -830,8 +831,6 @@
 
 	\begin{table}[ht]
 	\begin{center}
-	\caption{Compression of \acrshort{wm} and \acrshort{htwt} with respect to the temporal baseline.}
-	\label{table:ctr:exp:space:wt}
 	  \begin{tabular}{|l|*{4}{r}|}
 	  \cline{2-5}
 	  \multicolumn{1}{c|}{} & \multicolumn{4}{c|}{Type of bitvector in \gls{wm}/\gls{htwt}}\\
@@ -852,6 +851,9 @@
 	  \cline{2-5}
 	  \end{tabular}
 	\end{center}
+	
+	\caption{Compression of \acrshort{wm} and \acrshort{htwt} with respect to the temporal baseline.}
+	\label{table:ctr:exp:space:wt}
 	\end{table}
 
 	In Table~\ref{table:ctr:exp:space:wt}, we focus on the space needed by the temporal component of \gls{ctr}. 
@@ -865,9 +867,6 @@
 	\begin{table}[ht]
 	
 	\begin{center}
-	\caption{Overall compression of \acrshort{ctr} including different configurations for both the spatial and temporal components.}
-	\label{table:ctr:exp:space:ctr}
-	
 	  \begin{tabular}{|c|l|*{4}{c}|}
 	  \cline{3-6}
 	  \multicolumn{2}{c|}{} & \multicolumn{4}{c|}{Type of bitvector in \gls{wm}/\gls{htwt}} \\
@@ -913,6 +912,9 @@
 	%	\cline{2-5}
 	  \end{tabular}
 	\end{center}
+	
+	\caption{Overall compression of \acrshort{ctr} including different configurations for both the spatial and temporal components.}
+	\label{table:ctr:exp:space:ctr}
 	\end{table}
 
 
@@ -1313,7 +1315,7 @@
 
 	For queries \XtoY$_{Ts}$\ and \XtoY$_{Tw}$\ we can see a big gap between the times reported by \gls{htwt} and \gls{wm}.
 	This gap arises because in \gls{wm} we have used the $\cnt^{LR}$ operation discussed in Section~\ref{sec:ctr:alg:stq}
-	that was implemented with two additional upward traversals for the \gls{wm}\footnote{We used the exact same \gls{wm} 
+	that was implemented with two additional upward traversals for the \gls{wm}.\footnote{We used the exact same \gls{wm} 
 		implementation as in \cite{CNO15} and simply added the new operation $\cnt^{LR}$ that calls the underlying $\cnt$ from the
 		\gls{wm} and traverses up from the bottom level by using the $\select$ operation over its bitvectors. In later works, we have optimized this operation.}  
 	However, in our implementation of
