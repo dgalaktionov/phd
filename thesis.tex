@@ -243,7 +243,7 @@
 	A vast amount of works in compact data structures involves the use of bitvectors, both compressed and uncompressed. A bitvector $B[1..n]$ is a sequence of $n$ bits, for which the following operations are expected to be supported:
 
     \begin{itemize}
-        \item $\rank_1(B,i)$ is the number of set bits in $B[1..i]$. Alternatively, $\rank_0(B,i)\leftarrowi - \rank_1(B,i)$. Consequently, it also holds that the bit from the position $i$ can be retrieved as $B[i] = \rank_1(B,i) - \rank_1(B,i-1)$, with a special case of $\rank_1(B,0) = 0$.
+        \item $\rank_1(B,i)$ is the number of set bits in $B[1..i]$. Alternatively, $\rank_0(B,i)\leftarrow i - \rank_1(B,i)$. Consequently, it also holds that the bit from the position $i$ can be retrieved as $B[i] = \rank_1(B,i) - \rank_1(B,i-1)$, with a special case of $\rank_1(B,0) = 0$.
         \item $\select_1(B,i)$ is the position in $[1..n]$ where the $i$-th 1 occurs. Therefore, $\rank_1(B,\select_1(B,i)) = i$. An equivalent version for 0 bits may be defined as $\select_0(B,i)$, although, unlike $\rank_0$, there does not exist a direct way of obtaining it from the previously defined operations.
     \end{itemize}
     
@@ -266,7 +266,7 @@
 	    \item $\select_a(S,i)$ gives the position in $[1..n]$ where the $i$-th $a$ occurs.
 	\end{itemize}
 	
-    The \gls{wt} \cite{WT03} represents $S$ with a balanced binary tree, with $\sigma$ leaves, one for each symbol. Every internal node $v$ represents the range of symbols $[\alpha_v..\omega_v] \subseteq [1..\sigma]$ in the same order as they appear in $S$, where the root node corresponds to all the $n$ symbols from the alphabet $[1..\sigma]$ appearing in $S$. Its left child $v_l$ will only represent the $n_l$ symbols that fall in the range $[1..\dfrac{\sigma}{2})$, preserving the order that they had in $v_0$, while the right child will represent the other $n_r$ symbols from $[\dfrac{\sigma}{2}..\sigma]$, holding that $n_l+n_r=n$. This is built recursively until a leaf $v_a$ is reached, with will correspond to only one symbol $a \in [1..\sigma]$, with $n_a = \rank_a(S,n)$ times. An example \gls{wt} can be found in Figure~\ref{fig:wt}.
+    The \acrfull{wt} \cite{WT03} represents $S$ with a balanced binary tree, with $\sigma$ leaves, one for each symbol. Every internal node $v$ represents the range of symbols $[\alpha_v..\omega_v] \subseteq [1..\sigma]$ in the same order as they appear in $S$, where the root node corresponds to all the $n$ symbols from the alphabet $[1..\sigma]$ appearing in $S$. Its left child $v_l$ will only represent the $n_l$ symbols that fall in the range $[1..\dfrac{\sigma}{2})$, preserving the order that they had in $v_0$, while the right child will represent the other $n_r$ symbols from $[\dfrac{\sigma}{2}..\sigma]$, holding that $n_l+n_r=n$. This is built recursively until a leaf $v_a$ is reached, with will correspond to only one symbol $a \in [1..\sigma]$, with $n_a = \rank_a(S,n)$ times. An example \gls{wt} can be found in Figure~\ref{fig:wt}.
     
     \begin{figure}[ht]
 		\begin{center}
@@ -318,7 +318,7 @@
     and computing the values of the pointers during the \gls{wt} traversals. 
     The operations on a pointerless \gls{wt} have the same time complexity but become slower in practice. 
     
-    By reorganizing the nodes in each level of a pointerless \gls{wt}, the \gls{wm} \cite{CNO15} obtains the  same space requirements, yet its performance is very close 
+    By reorganizing the nodes in each level of a pointerless \gls{wt}, the \acrfull{wm} \cite{CNO15} obtains the  same space requirements, yet its performance is very close 
     to that of the regular \gls{wt} with pointers. Figure~\ref{fig:wm} contains an example of a \gls{wm}, representing the same sequence as in Figure~\ref{fig:wt}.
     
     \begin{figure}[ht]
@@ -389,7 +389,7 @@
     
     A straightforward enhancement to avoid storing the original string $S$ is to set up a vocabulary array $V[1..\sigma']$, with all the different symbols from $\Sigma$ appearing in $S$,\footnote{Note that $\sigma' \leq \sigma)$ since some of the symbols from $\Sigma$ may never occur in $S$.} and a bitvector $D[1..n]$ aligned to $A$ so that $D[1]=1$ and $D[i]=1~\iff~S[A[i-1]] \neq S[A[i]]$ for all the other $i \in [2..n]$. This means that $D$ marks with a $1$ the beginning of a range of suffixes pointed from $A$ such that the first symbol of those suffixes coincides. With $D$, keeping $S$ is no longer needed since $S[A[i]] = V[\rank_1(D,i)]$.
     
-    We can also replace $A$ as described in Sadakane's \gls{csa} \cite{Sad03}, using
+    We can also replace $A$ as described in Sadakane's \acrfull{csa} \cite{Sad03}, using
     another permutation $\Psi[1..n]$ defined in \cite{GV00}, where $\Psi[i] = A^{-1}[A[i]+1]$. That is, for every $A[i]=k$ and $A[j]=k+1$, $\Psi[i]=j$.
     %For each position $j$ in $S$ pointed from $A[i]=j$, $\Psi[i]$ gives the position $z$ such that $A[z]$ points to $j+1$. 
     The special case when $A[i]=n$\footnote{$i=1$ if we use the unique terminator $\$$.} is handled as $\Psi[i]=A^{-1}[1]$, making a cycle.
@@ -414,7 +414,7 @@
     compression of $\Psi$ was obtained by combining differential encoding of runs with Huffman and
     run-length encoding.
 
-%\include{1-ctr}
+\include{1-ctr}
 %\include{2-xctr}
 %\include{3-gis}
 
