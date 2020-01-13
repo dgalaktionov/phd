@@ -1,17 +1,17 @@
-\chapter{Our representation for trips over public transportation networks}
+\chapter{Our representations for trips over public transportation networks}
 \label{sec:newctr}
 
-	After \gls{ctr} from Chapter~\ref{sec:ctr} was introduced as a representation oriented for trips over urban street networks, in this chapter we introduce two alternative representations, called \acrfull{ttctr} and \acrfull{xctr}, that will be more adequate for trips over public transportation networks, since it will make possible to query about network concepts such as line and schedules, and also use them in order to reduce the size of our structures.
+	After \gls{ctr} was introduced in Chapter~\ref{sec:ctr} as a representation oriented for trips over urban street networks, in this chapter we introduce two alternative representations, called \acrfull{ttctr} and \acrfull{xctr}. These new techniques are expected to be more adequate for trips over public transportation networks, since they make it possible to query about network concepts such as line and schedules, and also use them in order to reduce the size of our structures.
 	
-	Both \gls{ttctr} and \gls{xctr} are based on the \gls{csa}  and the \gls{wm}, although they rely on other common structures for a network representation, that do not need to be compact due to their already small size. However, we have found out that while these representations excel at many of our proposed queries related to trip patterns, they can be quite inefficient for other kinds of aggregation queries about the load of a network. For this reason, we have also introduced \acrfull{tm}, a \gls{sat}-based structure designed to accelerate this second kind of queries.
+	Both \gls{ttctr} and \gls{xctr} are also based on the \gls{csa}  and the \gls{wm}, although they rely on other common structures for a network representation, that do not need to be compact due to their already small size. However, we have found out that while these representations excel at many of our proposed queries related to trip patterns, they could be rather inefficient for other kinds of aggregation queries about the load of a network. For this reason, we have also introduced a complementary \acrfull{tm}, a \gls{sat}-based structure designed to accelerate this second kind of queries.
 	
-	We have implemented and evaluated all of our structures, over the current bus network of Madrid, thus analyzing, both theoretically and experimentally, the fitness of each representation for every use case. Additionally, in the later Chapter~\ref{sec:gis}, we will show how these representations can be integrated into a GIS application, usable for a transportation network administrator.
+	We have implemented and evaluated our structures, over the current bus network of Madrid, thus analyzing, both theoretically and experimentally, the fitness of each representation for every use case. This chapter starts with a brief description of the scenario where we identify all the elements involved in a public transportation network, and we identify the most significative queries that should be considered. Then in Section~\ref{sec:newctr:str} we present all the structures considered in our proposal. This includes the commons structures to manage network related elements, and the structures \gls{ttctr}, \gls{xctr} and \gls{tm}. In Section~\ref{sec:newctr:algo} we show how to support queries. Finally, we analyze them theoretically in Section~\ref{sec:newctr:algo:analysis}, and experimentally in Section~\ref{sec:newctr:exp}, where we measure both the space needs and query performance. Additionally, in Chapter~\ref{sec:gis} we will show how these representations can be integrated into a GIS application, usable for a transportation network administrator.
 	
 \section{Description}
     \label{sec:newctr:desc}
-	While in theory we could use the \gls{ctr} introduced in Chapter~\ref{sec:ctr} to also represent trips over a subway or bus network, such representation would be very redundant. If we defined our \gls{ctr} nodes as stops or stations, making two of them connected if there exists a line or route that stops at each, we would find out that a commuter will board at a stop and follow only one route (line), passing through all its stops consecutively until the alighting stop, either to switch lines or end the trip. Furthermore, a single vehicle (such as a bus or a train) will be shared by several commuters at the same time, thus also producing trips that visit the same nodes at the same times. Because simply listing every node traversed introduces all these kinds of redundancy for public transportation networks, we state that \gls{ctr} is more adequate for urban street networks.
+	While, in theory, we could use the \gls{ctr} (Chapter~\ref{sec:ctr}) to also represent trips over a subway or bus network, such representation would be very redundant. If we defined our \gls{ctr} nodes as stops or stations, making two of them connected if there exists a line or route that stops at each, we would find out that a commuter would board at a stop and follow only one route (line), passing through all its stops consecutively until the alighting stop, either to switch lines or end the trip. Furthermore, a single vehicle (such as a bus or a train) will be shared by several commuters at the same time, thus also producing trips that visit the same nodes at the same times. Because simply listing every node traversed introduces all these kinds of redundancy for public transportation networks, we state that \gls{ctr} is more adequate for urban street networks.
 	
-	Therefore, in order to better capture the information of trips over a public transportation network, and exploit this information in order to find a representation that avoids redundancy, we propose an ER model for the demand information for a public transportation network, as seen in Figure~\ref{fig:er}.
+	Therefore, in order to better capture the information regarding trips over a public transportation network, and to exploit this information in order to find a representation that permitted us to reduce redundancy, we proposed an ER model that handles all the information related to the demand on a public transportation network. It is shown in Figure~\ref{fig:er}.
 	
 	\begin{figure}[ht]
 	    \begin{center}
@@ -26,13 +26,13 @@
         \item A \textbf{stop\_place} is a physical stop with a location, on which several lines may make stops.
         \item A \textbf{line} is an ordered sequence of stop places that can be traveled by a transport vehicle, such as a bus or a train. It only considers one travel direction. For this reason, there is often a different and complementary line for the opposite direction.%, as shown in Figure~\ref{fig:example_network}.
         \item A \textbf{journey} is a singular traversal of a transport vehicle over a line. It can be seen as a vehicle trip, instead of a user trip.
-        \item A \textbf{stage} is formed by a boarding from a stop and alighting to another from the same single line and journey.
+        \item A \textbf{stage} is formed by a boarding from a stop and an alighting to another from the same single line and journey.
         \item An \textbf{user\_trip} is a concatenation of several stages, until the final destination (alighting stop of the last stage) is reached.
     \end{itemize}
 	
-	This approach allows us to treat the information in a layered fashion: the bottom layer is a static network representation, formed by the line and stop\_place types, the middle layer represents the journeys made by vehicles that make stops at specific times, while the top layer are the trips made by the users over these vehicle journeys. Finally, it is possible to introduce a \textbf{user} identity, with an anonymized identifier to split trips by users. However, we do not consider such information useful for the kind of analysis that this work focuses on. If needed in the future, this additional entity could be trivially integrated in our representation.
+	This approach allows us to treat the information in a layered fashion: the bottom layer is a static network representation, formed by the line and stop\_place types, the middle layer represents the journeys made by vehicles that make stops at specific times, while the top layer includes the trips made by the users in these vehicle journeys. Finally, it is possible to introduce a \textbf{user} identity, with an anonymized identifier to split trips by users. However, we have not considered such information useful for the kind of analysis that this work focuses on. If needed in the future, this additional entity could be trivially integrated in our representation.
 	
-	In order to represent and operate our data structures, we will follow this model by defining stops $s_i \in S$, lines $l_i \in L$ and journeys $j_i \in J^l$. It is important to state that journeys are \textbf{not} identified by $j_i$, as the same $j_i$ can belong to several $J^l$ from different lines, so we speak about journey \textbf{codes} (jcodes) instead of journey identifiers. In Figure~\ref{fig:example_trips_ttctr} we can find an example network with two lines and fourteen stops, and journeys that periodically traverse these lines.
+	In order to represent and operate our data structures, we will follow this model by defining stops $s_i \in S$, lines $l_i \in L$ and journeys $j_i \in J^l$. It is important to state that journeys are \textbf{not} identified by $j_i$, as the same $j_i$ can belong to several $J^l$ from different lines, so we speak about journey \textbf{codes} (jcodes) instead of journey identifiers. In Figure~\ref{fig:example_trips_ttctr} we can find an example network with two lines and fourteen stops, and journeys that periodically traverse these lines. Note that \mbox{journey-id} 0 appears both in line 0 and in line 1.
 	
     \begin{figure}[ht]
         \includegraphics[width=\textwidth]{figures/network.eps}
@@ -40,43 +40,45 @@
         \label{fig:example_trips_ttctr}
     \end{figure}
     
-    A user trip can be represented by the stops from the transportation system that were boarded by a user, so from now on we will consider a trip as a sequence of triplets $<s,l,j>$, where $s$, $l$ are, respectively, stop and line identifiers, while $j$ are the journey codes corresponding to the journeys that compose the trip. These triplets describe a trip in a consecutive fashion, on the same order as the stops were boarded. Additionally, as we are interested in knowing where the trips end, we also represent the last stop where the user has alighted, which line and journey will logically match the line and journey of the last boarding stop. Although it is generally hard to obtain information about the last destination stop of a trip, many transportation companies are investing effort in providing it, either by implementing systems to keep track of users as they leave their system or estimating it based on previous trips made by that user \cite{alsger2016validating}.
+    A user trip can be represented by the stops from the transportation system that were boarded by a user, so from now on we will consider a trip as a sequence of triplets <$s,l,j$>, where $s$ and $l$ are, respectively, stop and line identifiers, while $j$ are the journey codes corresponding to the journeys that compose the trip. These triplets describe a trip in a consecutive fashion, on the same order as the stops were boarded. Additionally, as we are interested in knowing where the trips end, we also represent the last stop where the user has alighted. Note that both its line and journey will logically match the line and journey of the last boarding stop. Although it is generally hard to obtain information about the last destination stop of a trip, many transportation companies are investing effort in providing it, either by implementing systems to keep track of users as they leave their system or estimating it based on previous trips made by that user \cite{alsger2016validating}.
     
+    \medskip
     \begin{example}
     The arrows arrows in Figure~\ref{fig:example_trips_ttctr} are examples of five user trips done along the network.
-    For example, there is a user trip (dashed arrow from $S3$) that starts at stop $S3$ at 06:25am on {\em day-1}, 
-    %(6:20am + 305 sec.), 
-    following the journey $1$ of line $1$ until $S10$, where the user switches to line $2$ at time 6:35am 
-    %(6:30am + 300 sec.)
-    and continues by the journey $2$ of line $2$ (the one started as 06:30h in $S13$) up to stop $S12$. Consequently, this trip includes two stages.
+    For example, there is a user trip (dashed arrow from $S3$) that starts at stop $S3$ at 06:25 on {\em day-1}, 
+    %(06:20 + 305 sec.), 
+    following the journey $1$ of line $1$ until $S10$, where the user switches to line $2$ at time 06:35 
+    %(06:30 + 300 sec.)
+    and continues along journey $2$ of line $2$ (the one started as 06:30 in $S13$) up to stop $S12$. Consequently, this trip includes two stages.
     \qed
     \end{example}
     
-    In our first representation, \gls{ttctr}, we encode all valid $<s,l>$ pairs into a vocabulary $V$, with every trip as a concatenation of $<s,l>$ pairs for boarded stops, ended by the final destination stop, which will be alighting. We build a \gls{csa} over the concatenation of these trips, and a parallel \gls{wm} with the journey codes of the boarded stops, as previously done for \gls{ctr} in Chapter~\ref{sec:ctr}, but with a temporal component represented by line-dependant journey codes instead of explicit time intervals. For our alternative representation, \gls{xctr}, we only encode the sequence of boarded stops, while the lines go into a parallel \gls{wm}, and the journey codes are in a second \gls{wm} that is aligned to the last level of the first one, allowing us to have more flexibility for some queries, while sacrificing efficiency in others. Finally, \gls{tm} represents a matrix for each line of \texttt{stops x journeys} with the number of boardings (or alightings) performed in each cell.
+    In our first representation, \gls{ttctr}, we encode all valid $<s,l>$ pairs into a vocabulary $V$, with every trip defined as a concatenation of the $<s,l>$ pairs for the boarded stops, ended by the final destination stop, which will be alighting. We build a \gls{csa} over the concatenation of these trips, and a parallel \gls{wm} with the journey codes of the boarded stops, as previously done for \gls{ctr} in Chapter~\ref{sec:ctr}, but with the temporal component represented by line-dependant journey codes instead of explicit time intervals. For our alternative representation, \gls{xctr}, we only encode the sequence of boarded stops, while the lines go into a parallel \gls{wm}, and the journey codes are in a second \gls{wm} that is aligned to the last level of the first one, allowing us to have more flexibility for some queries, while sacrificing efficiency in others. Finally, \gls{tm} represents a matrix $M^b_l$ for each line $l$ where each cell in the matrix stores the number of boardings (or alightings) performed in the $s$-th stop of the $j$-th journey of line $l$.
 	
-	In the context of public transportation networks, we are interested in solving two kinds of queries, which we will present with a non-comprehensive list of examples that can be solved with the structures proposed in this work:
+	\medskip
+	In the context of public transportation networks, we are interested in solving two mai kinds of queries, which we present with a non-comprehensive list of examples that can be solved with the structures proposed in this work:
 
     \begin{enumerate}[A)]
-        \item Queries about the network load, asking for the gross number of users that boarded or alighted within a stop and a time/journey. Furthermore, it can be also interesting to obtain the average load of a bus or a train between any two stops from its line. Some of those queries are:
+        \item Queries about the \textbf{network load}, asking for the gross number of users that boarded or alighted within a stop and a given time/journey. Furthermore, it can be also interesting to obtain the average load of a bus or a train between any two stops from its line. Some of those queries are:
         \begin{itemize}
-            \item \boardX$_{LT}$ Number of users that stop X is boarded, optionally restricting to a line L and a time range T.
-            \item \alightX$_{LT}$ Number of users that stop X is alighted, optionally restricting to a line L and a time range T.
-            \item \useL$_T$  Number of users (boardings) for the line L, optionally restricting to a time range T.
-            \item \boardT~Number of users boarding within a time range T.
-            \item \alightT~Number of users alighting within a time range T.
-            \item \loadX$_{LT}$ The average number of passengers traveling from the stop X to its next stop in the line L within the time range T. Can also be seen as the average load of the vehicle.
+            \item \boardX$_{LT}$. Number of users that boarded a vehicle at stop X, optionally restricting to a line L and a time range T.
+            \item \alightX$_{LT}$. Number of users that alighted a vehicle at stop X, optionally restricting to a line L and a time range T.
+            \item \useL$_T$.  Number of users (boarding any vehicle) for the line L, optionally restricting to a time range T.
+            \item \boardT.~Number of users boarding (any vehicle) within a time range T.
+            \item \alightT.~Number of users alighting (any vehicle) within a time range T.
+            \item \loadX$_{LT}$. Average number of passengers traveling from the stop X to its next stop in the line L within the time range T. It can also be seen as the average load of the vehicle.
         \end{itemize}
         
-        \item Queries about user trips patterns. With his kind of queries we can obtain the number of times a stop was used to switch lines or the number of trips that started on a stop with another specific stop as the final destination. In this work we consider the following queries of this kind:
+        \item Queries about user \textbf{trips patterns}. With his kind of queries we can obtain the number of times a stop was used to switch lines or the number of trips that started on a stop with another specific stop as the final destination. In this work we consider the following queries of this kind:
         \begin{itemize}
-            \item \startX$_{LT}$ User trips starting at a stop X, optionally restricting to a line L and a time range T.
-            \item \endX$_{LT}$ User trips ending at a stop X, optionally restricting to a line L and a time range T.
-            \item \switchX$_{L\textsubscript{1}L\textsubscript{2}T}$ Number of trips in which the stop X was used to switch lines, optionally restricting to a line L\textsubscript{2} and a time range T.
-            \item \texttt{from\_X$_{LT}$\_to\_Y$_{LT}$} User trips that originate at stop X to end at stop Y, both being optionally restricted to a line and time range. A fundamental difference with the similar definition of \XtoY$_T$ from Section~\ref{sec:ctr:desc} is that we no longer restrict the whole trip to a single time range, but we query for separate time filters for the starting stop $X$ and the ending stop $Y$.
-            \item \startL$_T$ User trips starting at any stop from the line L, optionally restricting to a time range T.
-            \item \endL$_T$ User trips ending at any stop from the line L, optionally restricting to a time range T.
-            \item \startT~User trips starting within a time range T.
-            \item \endT~User trips ending within a time range T.
+            \item \startX$_{LT}$. User trips starting at a stop X, optionally restricting to a line L and a time range T.
+            \item \endX$_{LT}$. User trips ending at a stop X, optionally restricting to a line L and a time range T.
+            \item \switchX$_{L\textsubscript{1}L\textsubscript{2}T}$. Number of trips in which the stop X was used to switch lines, optionally restricting to a line L\textsubscript{2} and a time range T.
+            \item \texttt{from\_X$_{LT}$\_to\_Y$_{LT}$}. User trips that originate at stop X to end at stop Y, both being optionally restricted to a line and time range. A fundamental difference with the similar definition of \XtoY$_T$ from Section~\ref{sec:ctr:desc} is that we no longer restrict the whole trip to a single time range, but we query for separate time filters for the starting stop $X$ and the ending stop $Y$.
+            \item \startL$_T$. User trips starting at any stop from the line L, optionally restricting to a time range T.
+            \item \endL$_T$. User trips ending at any stop from the line L, optionally restricting to a time range T.
+            \item \startT.~User trips starting within a time range T.
+            \item \endT.~User trips ending within a time range T.
         \end{itemize}
     \end{enumerate}
 	
