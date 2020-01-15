@@ -53,7 +53,7 @@
     \qed
     \end{example}
     
-    In our first representation, \gls{ttctr}, we encode all valid $<s,l>$ pairs into a vocabulary $V$, with every trip defined as a concatenation of the $<s,l>$ pairs for the boarded stops, ended by the final destination stop, which will be alighting. We build a \gls{csa} over the concatenation of these trips, and a parallel \gls{wm} with the journey codes of the boarded stops, as previously done for \gls{ctr} in Chapter~\ref{sec:ctr}, but with the temporal component represented by line-dependant journey codes instead of explicit time intervals. For our alternative representation, \gls{xctr}, we only encode the sequence of boarded stops, while the lines go into a parallel \gls{wm}, and the journey codes are in a second \gls{wm} that is aligned to the last level of the first one, allowing us to have more flexibility for some queries, while sacrificing efficiency in others. Finally, \gls{tm} represents a matrix $M^b_l$ for each line $l$ where each cell in the matrix stores the number of boardings (or alightings) performed in the $s$-th stop of the $j$-th journey of line $l$.
+    In our first representation, \gls{ttctr}, we encode all valid <$s,l$> pairs into a vocabulary $V$, with every trip defined as a concatenation of the <$s,l$> pairs for the boarded stops, ended by the final destination stop, which will be alighting. We build a \gls{csa} over the concatenation of these trips, and a parallel \gls{wm} with the journey codes of the boarded stops, as previously done for \gls{ctr} in Chapter~\ref{sec:ctr}, but with the temporal component represented by line-dependant journey codes instead of explicit time intervals. For our alternative representation, \gls{xctr}, we only encode the sequence of boarded stops, while the lines go into a parallel \gls{wm}, and the journey codes are in a second \gls{wm} that is aligned to the last level of the first one, allowing us to have more flexibility for some queries, while sacrificing efficiency in others. Finally, \gls{tm} represents a matrix $M^b_l$ for each line $l$ where each cell in the matrix stores the number of boardings (or alightings) performed in the $s$-th stop of the $j$-th journey of line $l$.
 	
 	\medskip
 	In the context of public transportation networks, we are interested in solving two mai kinds of queries, which we present with a non-comprehensive list of examples that can be solved with the structures proposed in this work:
@@ -71,64 +71,66 @@
         
         \item Queries about user \textbf{trips patterns}. With his kind of queries we can obtain the number of times a stop was used to switch lines or the number of trips that started on a stop with another specific stop as the final destination. In this work we consider the following queries of this kind:
         \begin{itemize}
-            \item \startX$_{LT}$. User trips starting at a stop X, optionally restricting to a line L and a time range T.
-            \item \endX$_{LT}$. User trips ending at a stop X, optionally restricting to a line L and a time range T.
-            \item \switchX$_{L\textsubscript{1}L\textsubscript{2}T}$. Number of trips in which the stop X was used to switch lines, optionally restricting to a line L\textsubscript{2} and a time range T.
-            \item \texttt{from\_X$_{LT}$\_to\_Y$_{LT}$}. User trips that originate at stop X to end at stop Y, both being optionally restricted to a line and time range. A fundamental difference with the similar definition of \XtoY$_T$ from Section~\ref{sec:ctr:desc} is that we no longer restrict the whole trip to a single time range, but we query for separate time filters for the starting stop $X$ and the ending stop $Y$.
-            \item \startL$_T$. User trips starting at any stop from the line L, optionally restricting to a time range T.
-            \item \endL$_T$. User trips ending at any stop from the line L, optionally restricting to a time range T.
-            \item \startT.~User trips starting within a time range T.
-            \item \endT.~User trips ending within a time range T.
+            \item \startX$_{LT}$. Number of user trips starting at a given stop X, optionally restricting to a line L and a time range T.
+            \item \endX$_{LT}$. Number of user trips ending at a given stop X, optionally restricting to a line L and a time range T.
+            \item \switchX$_{LT}$. Number of trips in which the stop X was used to switch lines, optionally restricting to a destination line L and a time range T.
+            \item \texttt{from\_X$_{LT}$\_to\_Y$_{LT}$}. Number of user trips that originate at stop X to end at stop Y, both being optionally restricted to a line and time range. A fundamental difference with the similar definition of \XtoY$_T$ from Section~\ref{sec:ctr:desc} is that we no longer restrict the whole trip to a single time range, but we query for separate time filters for the starting stop $X$ and the ending stop $Y$.
+            \item \startL$_T$. Number of user trips starting at any stop from a given line L, optionally restricting to a time range T.
+            \item \endL$_T$. Number of user trips ending at any stop from a given line L, optionally restricting to a time range T.
+            \item \startT.~Number of user trips starting within a time range T.
+            \item \endT.~Number of user trips ending within a time range T.
         \end{itemize}
     \end{enumerate}
 	
 \section{Structures}
 \label{sec:newctr:str}
-    To the best of our knowledge, there is no indexing structure that would allow to efficiently represent trajectories that could also support all the kinds of queries described in Section~\ref{sec:newctr:desc}. For this reason, we propose a solution that relies on two data structures, \gls{tm}~and~\gls{ttctr}. The former is targeted for queries of type A, solving most aggregation queries in constant time, while the latter can be used for queries of type B. Finally, we introduce a more versatile alternative to \gls{ttctr}~that we call \gls{xctr}.
+    To the best of our knowledge, there is no indexing structure that would allow us to efficiently represent trajectories that could also support all the kinds of queries described in the previous section. For this reason, we propose a new solution that relies on two data structures, \gls{tm}~and~\gls{ttctr}. The former is targeted for queries of type A, solving most aggregation queries in constant time, while the latter can be used for queries of type B. Finally, we introduce a more versatile alternative to \gls{ttctr}~that we call \gls{xctr}.
     
     \subsection{Common Data Structures}
     \label{sec:cs}
-    Considering our network formed by stops $s_i \in S$, lines $l_i \in L$ and journeys $j_i \in J^l$, the following structures represent these elements and all our following representations will rely on them.
+    Considering our network formed by stops $s_i \in S$, lines $l_i \in L$ and journeys $j_i \in J^l$, the following structures represent these elements. All our following representations will rely on them.
     
     \begin{itemize}
-        \item $lineStop_i(j)$ is the $j$-th stop of line $l_i$
-        \item $stopLine_i(j)$ is the $j$-th line that makes a stop at the stop $s_i$
-        \item $avgTime_i(j)$ is the average time in seconds that it takes for a vehicle of line $l_i$ to reach its $j$-th stop from the start of a journey
-        \item $initialTime_i(k)$ is the starting time of the journey $j_k$ for line $l_i$
+        \item $lineStop_i(j)$ is the $j$-th stop of line $l_i$.
+        \item $stopLine_i(j)$ is the $j$-th line that makes a stop at the stop $s_i$.
+        \item $avgTime_i(j)$ is the average time in seconds that it takes for a vehicle of line $l_i$ to reach its $j$-th stop from the start of a journey.
+        \item $initialTime_i(k)$ is the starting time of the journey $j_k$ for line $l_i$.
     \end{itemize}
     
-    With the exception of $initialTime$, all these structures are considered small enough to be represented using plain fixed-length integer arrays. In the case of $initialTime$, its size naturally grows with the amount of trips that are indexed, thus there is a motivation to reduce its size, which can be easily achieved with any technique that works on posting lists or sequences of strictly increasing numbers. In our work we've used a simplified Vbyte+ANS compression described in \cite{moffat2017ans} using the Zstd library.\footnote{https://github.com/facebook/zstd} In order to facilitate searches and random access, we introduced fixed-length samples on configurable intervals.
+    With the exception of $initialTime$, all these structures are considered small enough to be represented using plain fixed-length integer arrays. In the case of $initialTime$, its size naturally grows with the amount of trips that are indexed, thus there is a motivation to reduce its size, which can be easily achieved with any technique that works on posting lists or sequences of strictly increasing numbers, many of which have been discussed and benchmarked in \cite{claude2016universal} and \cite{farina2019reproducibility}. In our work we have used a simplified Vbyte+ANS compression described in \cite{moffat2017ans} using the Zstd library.\footnote{https://github.com/facebook/zstd} In order to facilitate searches and random access, we introduced fixed-length samples on configurable intervals.
     
     Examples of these sequences may be found in Figure~\ref{fig:example_trips_ttctr}, where we indicate the sequence of stops for each line ($lineStop$), the average estimated times ($avgTime$), the initial times of each journey ($initialTime$) and finally the inverted lists of lines per stop ($stopLine$).
     
     \subsection{TTCTR}
     \label{sec:newctr:str:ttctr}
-    \gls{ttctr}~was introduced in \cite{brisaboa2018new}, as a way of representing trips that are sequences of triplets $<s,l,j>$ for every boarded stop $s$, with its line $l$ and journey $j$. Finally, there is also an additional triplet for the last alighted stop, which is considered to be the final destination of the trip. In \gls{ttctr}, the spatial component (the pairs $<s,l>$ for the stops and lines of a trip) is represented with a \gls{csa} where each valid pair $<s,l>$ is encoded as an integer $id$ in the input sequence $T[1..n]$ that is used to build the \gls{csa}.
+    \acrfull{ttctr}~was introduced in \cite{brisaboa2018new}, as a way of representing trips that are sequences of triplets <$s,l,j$> for every boarded stop $s$, with its line $l$ and journey $j$. Finally, there is also an additional triplet for the last alighted stop, which is considered to be the final destination of the trip. In \gls{ttctr}, the spatial component (the pairs <$s,l$> for the stops and lines of a trip) is represented with a \gls{csa} where each valid pair <$s,l$> is encoded as an integer $id$ in the input sequence $T[1..n]$ that is used to build the \gls{csa}.
 
-    In order to build the \gls{ttctr}, all trips must be first sorted. If we consider that a trip is composed by $m$ of the $<s_i,l_i,j_i>,~1\leq i\leq m$ triplets previously described, where the first triplet corresponds to the first boarded stop and the last triplet corresponds to the last alighted stop (final destination), then the collection of trips is sorted by the key $s_1,s_m,l_1,j_1$. That is, trips are initially sorted by the first boarded stop identifier. If these are equal, they are then sorted by their last stop identifier, analogously followed by the line identifier and journey code of the first stop. 
+    In order to build the \gls{ttctr} structure, all trips must be first sorted. If we consider that a trip is composed by $m$ of the <$s_i,l_i,j_i>,~1\leq i\leq m$ triplets previously described, where the first triplet corresponds to the first boarded stop and the last triplet corresponds to the last alighted stop (final destination), then the collection of trips is sorted by the key <$s_1,s_m,l_1,j_1$>. That is, trips are initially sorted by the first boarded stop identifier. If these are equal, they are then sorted by their last stop identifier, analogously followed by the line identifier, and journey code of the first stop. 
     %Figure~\ref{fig:example_trips} displays an example of a correct sorting of trips.
     
+    \medskip
     \begin{example}
-    	By our defined criteria, the correct way of sorting the trips depicted as arrows in Figure~\ref{fig:example_trips_ttctr} is: 
+    	By our defined criteria, the correct way of sorting the trips five depicted as arrows in Figure~\ref{fig:example_trips_ttctr} is: 
     	$t_1 = \langle (1,1,0), (10,2,1), (11,2,1)  \rangle$, 
     	$t_2 = \langle (2,1,1), (7,1,1) \rangle$, 
     	$t_3 = \langle (3,1,1), (10,2,2), (12,2,2) \rangle$, 
     	$t_4 = \langle (6,2,0),(11,2,0) \rangle$, and %finally,
     	$t_5 = \langle (13,2,2), (9,1,2), (14,1,2) \rangle$.  
     	
-    	%Note that, for example, $(13,2,2)$ from $t_5$ indicates that, at stop $13$, the user got on a vehicle from line $2$, that corresponds to the $2$-nd journey. We know it is the 2-nd journey because  $t_5$ started at 06:30h, which is the departure time of journey 2.
+    	Note that, for example, $(13,2,2)$ from $t_5$ indicates that, at stop $13$, the user boarded vehicle from line $2$, that corresponds to the $3$-nd journey (as the first journey-id is zero), which started at 06:30. %We know it is the 2-nd journey because  $t_5$ started at 06:30h, which is the departure time of journey 2.
     	Naturally, the line and journey $ids$ of the last triple of each trip are identical to the ones in the previous triple, as the commuter had to board into that line and journey before alighting from it.
     	\qed	\label{ex:trips}
     \end{example}
     
-    We also need bijective function to encode the pairs $<s,l>$. Consider a vocabulary $V$ such that:
+    \medskip
+    We also need a bijective function to encode the pairs <$s,l$>. Consider a vocabulary $V$ such that:
     \begin{itemize}
     	\item Entry $V[0]$ is reserved for the terminator symbol $\$$.
     	\item Entries $\langle V[1],V[2], \dots V[|S|]\rangle]$ are associated to stops $s_1,s_2,\dots, s_{|S|}$ and are used to represent the final stops of the trips. That is, when a given stop $s_i$ ends a user trip, it is given $id \leftarrow s_i$.
-    	\item The following $|L||S|$ entries are associated to the sequence composed of the pairs $<s,l> \in S L$, sorted first by the stop id $s$ and later by the line id $l$. That is, entry $V[|S|+1]$ is given to $<s_1,l_1>$; $V[|S|+2]$ to $<s_1,l_2>$; $V[|S|+3]$ to $<s_1,l_3>$; $\dots$; $V[|S|+|L|]$ to $<s_1,l_{|L|}>$;  $V[|S|+|L|+1]$ to $<s_2, l_1>$, $V[|S|+|L|+2]$ to $<s_2, l_2>$, and so on. Therefore, it is easy to see that any $<s_i,l_j>$ is going to be associated to the entry $V[|S|+ |L|(i-1) + j]$.
+    	\item The following $|L|\cdot|S|$ entries are associated to the sequence composed of the pairs <$s,l> \in S\times L$, sorted first by the stop id $s$ and later by the line id $l$. That is, entry $V[|S|+1]$ is given to <$s_1,l_1$>; $V[|S|+2]$ to <$s_1,l_2$>; $V[|S|+3]$ to <$s_1,l_3$>; $\dots$; $V[|S|+|L|]$ to <$s_1,l_{|L|}$>;  $V[|S|+|L|+1]$ to <$s_2, l_1$>, $V[|S|+|L|+2]$ to <$s_2, l_2$>, and so on. Therefore, it is easy to see that any <$s_i,l_j$> is going to be associated to the entry $V[|S|+ |L|(i-1) + j]$.
     \end{itemize}
     
-    While this arrangement would theoretically produce many entries in $V$ that are mapped to pairs $<s,l>$ that are unused in $T$, either because the stop is never traversed by that line or because we do not have the record of a user trip containing it, these entries can be skipped with a compact bitvector $B$ with rank and select capabilities, that marks with a one every used entry from $V$. This will enable us to operate with a much smaller vocabulary $V'$ with only the used entries from $V$, such that $V[i] = V'[\rank_1(B,i)]$. Refer to the vocabulary shown Figure~\ref{fig:ttctr}(2) for an example where pairs $s:l$ are encoded to 43 unique identifiers in $V$. After that, $B$ marks which of the entries of $V$ actually appear in the original sequence. Finally $V'$ will contain only 12 entries, for each set bit from $B$. Note that neither $V$ nor $V'$ are explicitly represented in practice, as $\rank_1$ and $\select_1$ operations over $B$ are enough to map and unmap, respectively, vocabulary identifiers.
+    While this arrangement would theoretically produce many entries in $V$ that are mapped to pairs <$s,l$> that are unused in $T$, either because the stop is never traversed by that line or because we do not have the record of a user trip containing it, these entries can be skipped with a compact bitvector $B$ with rank and select capabilities, that marks with a one every used entry from $V$. This will enable us to operate with a much smaller vocabulary $V'$ with only the used entries from $V$, such that $V[i] = V'[\rank_1(B,i)]$. Refer to the vocabulary shown in Figure~\ref{fig:ttctr}(2) for an example where pairs (i.e. <$s,l$>) are encoded to 43 unique identifiers in $V$. After that, $B$ marks which of the entries of $V$ actually appear in the original sequence. Finally. $V'$ will contain only 12 entries, for each bit set to 1 in $B$. Note that neither $V$ nor $V'$ are explicitly represented in practice, as $\rank_1$ and $\select_1$ operations over $B$ are enough to map and unmap, respectively, vocabulary identifiers.
 
     \begin{figure}[ht]
         \includegraphics[width=1.00\textwidth]{figures/ttctr2019.eps}
@@ -136,29 +138,37 @@
     	\label{fig:ttctr}
     \end{figure}
     
-    After this, the sequence $T[1..n]$ is built, with the identifiers obtained from mapping mapping to the vocabulary entries of $V'$, over which a \gls{csa} is built, as seen in Figure~\ref{fig:ttctr}(3). Each encoded trip in $T$ is terminated with with additional $\$$ symbols. Even though in the final \gls{csa} we assign all these $\$$ a lexicographical value of 0 $(V[0])$, we assign them different values during the construction of the suffix array (A) to ensure that the entries for $\$$ in $A$ maintain the same order as in the original text. Finally, we make a modification on $\Psi$ to make the entries of each $\$$ point to the start of its own trip instead of the next one. These two modifications are proven necessary for our implemented queries, at the expense of losing some of the properties of a classic \gls{csa}. For reference, in Figure~\ref{fig:ttctr} we also present $A'$ and $\Psi'$, that show how our modifications compare to the original \gls{csa}.
+    After this, the sequence $T[1..n]$ is built, with the identifiers obtained from mapping the pairs <$s,l$> from the user-trips to the vocabulary entries of $V'$, over which a \gls{csa} is built, as seen in Figure~\ref{fig:ttctr}(3). Each encoded trip in $T$ is terminated with an additional $\$$ symbol. Even though in the final \gls{csa} we assign all these $\$$ a lexicographical value of 0 $(V[0])$, we assign them different values during the construction of the suffix array (A) to ensure that the entries for $\$$ in $A$ maintain the same order as in the original text. Finally, we make a modification on $\Psi$ to make the entries of each $\$$ point to the start of its own trip instead of the next one (cyclical as in \gls{ctr}, see Section~\ref{sec:ctr:str}). These two modifications are proven necessary for our implemented queries, at the expense of losing some of the properties of a classic \gls{csa}. For reference, in Figure~\ref{fig:ttctr} we also present $A'$ and $\Psi'$, that show how our modifications compare to the original \gls{csa}.
 
-    The journey codes ($jcodes$) are encoded in $Jcodes^{\Psi}[1..n]$, as shown in Figure~\ref{fig:ttctr}(4), that is aligned to $\Psi$ instead of $T$. $Jcodes[8]= 1$ corresponds to $Jcodes^{\Psi}[14]=1$, since $A[14]=8$; $Jcodes[9]= 2$ corresponds to $Jcodes^{\Psi}[18]=2$, since $A[18]=9$; and so on. Recall that $jcodes$ are relative to their line identifiers, leading us to skip the $jcodes$ that would be aligned to the entries of $\Psi$ belonging to the final stops (represented as ``$s\!:\!*$" in $V$), as they lack line identifiers, which are in turn needed to identify a journey. Additionally, the first positions of $Jcodes^{\Psi}$, aligned with the $\$$ entries, we duplicate the same $jcodes$ as in the start of each trip.
+    The journey codes ($jcodes$) are encoded in $Jcodes^{\Psi}[1..n]$, as shown in Figure~\ref{fig:ttctr}(4), that is aligned to $\Psi$ instead of $T$. $Jcodes[8]= 1$ corresponds to $Jcodes^{\Psi}[14]=1$, since $A[14]=8$; $Jcodes[9]= 2$ corresponds to $Jcodes^{\Psi}[18]=2$, since $A[18]=9$; and so on. Recall that $jcodes$ are relative to their line identifiers, leading us to skip the $jcodes$ that would be aligned to the entries of $\Psi$ belonging to the final stops (represented as ``$s\!:\!*$'' in $V$), as they lack line identifiers, which are in turn needed to identify a journey. Additionally, for the the first positions of $Jcodes^{\Psi}$, aligned with the $\$$ entries, we duplicate the same $jcodes$ as in the beginning of each trip.
 	
-    Finally, $Jcodes^{\Psi}$ is represented with a \gls{wm}, very much as in the case of the temporal component in \gls{ctr}, although in this case we are encoding jcodes instead of time intervals.
+    Finally, $Jcodes^{\Psi}$ is represented with a \gls{wm}. This is exactly the same strategy as in the case of the temporal component of \gls{ctr}, although in this case we are encoding jcodes instead of time intervals.
     
     \subsection{XCTR}
     \label{sec:newctr:str:xctr}
-    For certain queries, \gls{ttctr} can be quite inefficient, as we discuss later in Section~\ref{sec:newctr:algo}. These use cases motivated us to develop a second version, \gls{xctr}, that instead of encoding the lines into the \gls{csa} vocabulary, uses a second \gls{wm} with the sequence of line identifiers, thus reducing the complexity of the queries that restrict the final line, and delegates line checks on a new WM and allowing for a better space-time trade-off. As in \gls{ttctr}, the input trips need to be sorted by the same criteria, but in \gls{xctr}~we use three complementary structures to represent each component of the sequence, as shown in Figure~\ref{fig:example_xctr}:
+    For certain queries, \gls{ttctr} can be rather inefficient, as we will discuss later in Section~\ref{sec:newctr:algo}. These use cases motivated us to develop a second version, \gls{xctr}, that instead of encoding the lines into the \gls{csa} vocabulary ($V$), uses a second \gls{wm} with the sequence of line identifiers, thus reducing the complexity of the queries that restrict the final line, and delegates line checks on a new \gls{wm}. This yields improved space-time trade-offs. As in \gls{ttctr}, the input trips need to be sorted by the same criteria, but in \gls{xctr}~we use three complementary structures to represent each component of the sequence, as shown in Figure~\ref{fig:example_xctr}:
     \begin{enumerate}[(i)]
         \item An adapted \gls{csa} over the stop identifiers of all trips, concatenated into a string with additional terminator symbols $\$$ appended at the end of each trip. As in the \gls{csa} from \gls{ttctr}, we make these $\$$ symbols maintain the order of the trips and cyclical in $\Psi$. Because this time we do not encode line and stop identifiers together and \gls{csa} only encodes stops, there is no need for a complex vocabulary anymore.
-        \item \texttt{WML}: Aligned to the entries of (i) there is a Wavelet Matrix (WM) for the line identifiers of each stop. Aligned to the $\$$ section we duplicate the starting lines of each trip. As a trivial optimization, we build a separate WM for every stop, allowing us to save space due to the fact that a single stop does not usually belong to many lines, thus the average height of these WM is no larger (and usually smaller) than the height of a single WM.
-        \item \texttt{WMJ}: A WM of jcodes aligned to the leaves of (ii). Note that this makes this structure dependant on (ii), which is coherent with the fact that journey codes themselves are relative to the line identifier. In case (ii) implements the optimization described, the entries of the WM must also be rearranged to match the delimited stops.
+        \item \texttt{WML}: Aligned to the entries of (i) there is a \gls{wm} for the line identifiers of each stop. Aligned to the $\$$ section we duplicate the starting lines of each trip. As a trivial optimization, we build a separate WM for every stop, allowing us to save space due to the fact that a single stop does not usually belong to many lines, thus the average height of these WM is no larger (and usually smaller) than the height of a single \gls{wm}.
+        \item \texttt{WMJ}: A \gls{wm} of jcodes aligned to last level of (ii). Note that this makes this structure dependant on (ii), which is coherent with the fact that journey codes themselves are relative to the line identifier. In case (ii) implements the optimization described, the entries of the \gls{wm} must also be rearranged to match the delimited stops.
     \end{enumerate}
     
     \begin{figure}[ht]
     \begin{center}
-    \includegraphics[width=0.8\textwidth]{figures/example_xctr.eps}
+    \includegraphics[width=1.00\textwidth]{figures/xctr2019.eps}
     \caption{An example of five trips represented on \acrshort{xctr}~with the optimizations for \texttt{WML} and \texttt{WMJ}, and sections for each stop delimited by dotted lines.}
     \label{fig:example_xctr}
     \end{center}
     \end{figure}
     
+    \begin{example}
+    Just as in Example~\ref{ex:trips}, in Figure~\ref{fig:example_xctr} we build \gls{xctr} with five trips over the network shown in Figure~\ref{fig:example_trips_ttctr}. This time, unlike for \gls{ttctr}, our vocabulary $V$ will only contain stop identifiers. These identifiers are used to build the \gls{csa} with our cyclic $\Psi$ variation. Then the sequence of lines is aligned to the entries of $\Psi$, and \texttt{WML} is built. Because the stops 3, 12 and 14 belong to only one line each, we do not even need to keep a \gls{wm} for their sections (which are delimited by $D$), as the value will always be the same. Finally, the sequence of Jcodes is aligned to the leaves of \texttt{WML}, and \texttt{WMJ} is built.
+    
+    For example, <$9,2,1$> from the fourth trip is represented as follows: the stop id $9$ is mapped to $V'[\rank(B,9)-1] = V'[2] = 2$, and it is encoded in the $T$ in the position $13$. It delimits the $10$-th suffix in the sequence, as $A[10] = 13$, therefore its line identifier $2$ also appears in position $10$. Because in this example we have opted for the optimized version of \texttt{WML}, there is a single \gls{wm} dedicated for the entries of stop $9$, which fall in the section of $A[9..11]$, as delimited by $D$, with only one level that contains the bitmap $010$. This means that in the last (conceptual) level of that \gls{wm}, our entry for line $2$ will appear on the third position. As the sequence $Jcodes^{WML}$ is aligned to this last level of \texttt{WML}, the journey code can be found at $Jcodes^{WML}[11] = 1$.
+    \qed \label{ex:xctr}
+    \end{example}
+    
+    \medskip
     In the later Section~\ref{sec:newctr:algo}, we will detail how these structures are interacted in order to solve the queries proposed in Section~\ref{sec:newctr:desc}, and we will also compare the time complexities to \gls{ttctr} for every kind of query.
     
     \subsection{T-Matrices}
@@ -215,11 +225,11 @@
 	
 	\subsection{Solving trip pattern queries}
 	\label{sec:newctr:algo:xy}
-	As with \gls{ctr}, we also obtain a clear separation between the spatial representation of the trips (\gls{csa}) and the temporal representation (\gls{wm} of $Jcodes^{\Psi}$) in \gls{ttctr}. The spatial component can be used to address queries such as ``number of passengers that started their trip from a stop $X\in S$ and a line $l\in L$'' (\texttt{\startX$_{L}$} from Section~\ref{sec:newctr:desc}) with a binary search of the pattern $\$,X_l$, as the pair $<X,l>$ will be mapped to a single symbol $X_l$ in $V$. The temporal component can be used to filter down these results to a time window (\texttt{\startX$_{LT}$}) with a $\cnt_{j_a,j_z}(Jcodes^{\Psi},i,j)$ operation over the \gls{wm}, where $j_a$ and $j_z$ are $jcodes$ obtained from Algorithm~\ref{alg:jcodes} and $i$ and $j$ delimit the range of the results obtained in $\Psi$. Because the $\$$ symbols were made cyclical in $\Psi$, it is also possible to answer \texttt{from\_X\_to\_Y} queries by searching for a pattern $Y,\$,X_l$ instead.
+	As with \gls{ctr}, we also obtain a clear separation between the spatial representation of the trips (\gls{csa}) and the temporal representation (\gls{wm} of $Jcodes^{\Psi}$) in \gls{ttctr}. The spatial component can be used to address queries such as ``number of passengers that started their trip from a stop $X\in S$ and a line $l\in L$'' (\texttt{\startX$_{L}$} from Section~\ref{sec:newctr:desc}) with a binary search of the pattern $\$,X_l$, as the pair <$X,l$> will be mapped to a single symbol $X_l$ in $V$. The temporal component can be used to filter down these results to a time window (\texttt{\startX$_{LT}$}) with a $\cnt_{j_a,j_z}(Jcodes^{\Psi},i,j)$ operation over the \gls{wm}, where $j_a$ and $j_z$ are $jcodes$ obtained from Algorithm~\ref{alg:jcodes} and $i$ and $j$ delimit the range of the results obtained in $\Psi$. Because the $\$$ symbols were made cyclical in $\Psi$, it is also possible to answer \texttt{from\_X\_to\_Y} queries by searching for a pattern $Y,\$,X_l$ instead.
 	
 	A fundamental weakness of \gls{ttctr}~is that it requires several binary search operations over the \gls{csa} in the following cases:
     \begin{itemize}
-        \item We are interested in the number of passengers that started their trip at a stop $X$ and a time window $t_a..t_z$, but from \textbf{any line} (\texttt{\startX$_{T}$}). As $jcodes$ are relative to lines, we must make a separate query for each possible pair $<X, l_i> \forall l_i \in L$.
+        \item We are interested in the number of passengers that started their trip at a stop $X$ and a time window $t_a..t_z$, but from \textbf{any line} (\texttt{\startX$_{T}$}). As $jcodes$ are relative to lines, we must make a separate query for each possible pair <$X, l_i> \forall l_i \in L$.
         \item We need to restrict the line of a final stop, in queries such as \texttt{\endX$_{L}$} or \texttt{from\_X\_to\_Y$_{L}$} (and similar variations). Because the final stops belong to separate entries of the vocabulary that do not encode line identifiers, to restrict a stop $Y\in S$ to a line $l\in L$ we need to search for every possible expanded pattern $W_l,Y...$, for every stop $W$ from the line $l$ that could have been boarded before alighting at $Y$. While it looks tempting to address this issue by modifying the design of \gls{ttctr}~so that final stops also encode line identifiers, this would in turn make queries that do not restrict the line of the final stop inefficient, and we would need to perform a new query for every combination of $(Y, l_i) \forall l_i \in L$, as in the previous case.
     \end{itemize}
 	
@@ -236,7 +246,7 @@
      
      \Fn{\extract{\i}}{
      \KwData{trip number \i}
-     \KwResult{Sequence of tuples $<s,l,j>$ that compose the trip}
+     \KwResult{Sequence of tuples <$s,l,j$> that compose the trip}
      \BlankLine
      \trip $\leftarrow~[]$\;
      \a  $\leftarrow~\GetPsi[\i]$\;
@@ -400,7 +410,7 @@
         \item We parsed the schedules for bus trips.
         \item We generated a month of journeys from the schedules, differentiating days of week. From this we computed $avgTime$ and $initialTime$.
         \item User trips were generated. A trip starts from a random stop, day and journey and simulates boarding that journey and traversing it. After each traversed stop, the user may end the trip with a probability that starts at zero and increases by 1\% for every stop visited. Additionally, there is a fixed probability of attempting to switch lines at the current stop, if there is a journey available at that stop within the allowed waiting time (30 minutes) and from a different line.\footnote{The reverse of the current line is also disallowed.} Switching lines is also attempted when the end of the current line is reached.
-        \item We persisted these generated trips as sequences of stages \\ $<<line,journey,boarding\_stop>, <line,journey,alighting\_stop>>$,\\ where a boarding and alighting stop naturally share the same line and journey within the same stage. This results in the same number of stages as lines have been used. With the parameters used, about 56\% of our trips have one stage, 33\% have two, 9\% have three and 2\% have four.
+        \item We persisted these generated trips as sequences of stages \\ < <$line,journey,boarding\_stop$>, <$line,journey,alighting\_stop$> >,\\ where a boarding and alighting stop naturally share the same line and journey within the same stage. This results in the same number of stages as lines have been used. With the parameters used, about 56\% of our trips have one stage, 33\% have two, 9\% have three and 2\% have four.
     \end{enumerate}
     
     With this approach we have generated a dataset of ten million trips, over a real network consisting of 11021 stops, 1048 lines for a simulated month,\footnote{A period of 31 days, starting with a Monday.} with an average of 1622 journeys per line and a maximum of 9980. We consider that this synthetic dataset is of enough accuracy and size to obtain significant results when studying the compression capabilities and performance of our representations.
@@ -540,7 +550,7 @@
     
     Contrary to the case of \texttt{WMJ} or the \gls{wm} from \gls{ttctr}, we are able to achieve significant compression with \texttt{WML}. When using the baseline bitvector \texttt{RG32}, we are already obtaining a very compact representation, due to the optimization discussed in Section~\ref{sec:newctr:str:xctr}, where we keep a separate \gls{wm} aligned to each stop from the \gls{csa}, resulting in much shorter \gls{wm}s. The further compression achieved with the \texttt{RRR} bitvectors is possible because the stop entries in the \gls{csa} are sorted by either the final stop the user alights to or the next stop to board, making the aligned sequence of lines very predictable. Additionally, as our \gls{csa} maintains the order of trips from the original text in the $\$$ section, leading to the formation of clusters in the first \texttt{WML}.
     
-    In Table~\ref{tab:comp}~we also evaluate the compression of the overall \gls{ttctr}~and \gls{xctr}~representations with respect to a plain representation of the user trips that we use as input, which are the triplets $<s,l,j>$ seen in Section~\ref{sec:newctr:str:ttctr}, where the stop identifiers, line identifiers and journey codes had to be represented with 14, 11 and 14 bit integers, respectively. We only show the compression ratios for the four configurations that will be tested in the following Section~\ref{sec:newctr:exp:time}, combining two $t_{\Psi}$ and two \gls{wm} configurations.\footnote{In case of \gls{xctr}, this refers to bitvectors from both \texttt{WML} and \texttt{WMJ}.} A more realistic baseline would be a relational database representation, where additional fixed-width integers would be needed to maintain foreign key relations, thus requiring much more space than our chosen baseline.
+    In Table~\ref{tab:comp}~we also evaluate the compression of the overall \gls{ttctr}~and \gls{xctr}~representations with respect to a plain representation of the user trips that we use as input, which are the triplets <$s,l,j$> seen in Section~\ref{sec:newctr:str:ttctr}, where the stop identifiers, line identifiers and journey codes had to be represented with 14, 11 and 14 bit integers, respectively. We only show the compression ratios for the four configurations that will be tested in the following Section~\ref{sec:newctr:exp:time}, combining two $t_{\Psi}$ and two \gls{wm} configurations.\footnote{In case of \gls{xctr}, this refers to bitvectors from both \texttt{WML} and \texttt{WMJ}.} A more realistic baseline would be a relational database representation, where additional fixed-width integers would be needed to maintain foreign key relations, thus requiring much more space than our chosen baseline.
     
     \begin{table}[ht]
         \centering
