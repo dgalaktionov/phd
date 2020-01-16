@@ -5,7 +5,7 @@
     
     While there exist several complementary definitions for \gls{gis} in the literature, from the point of view of the current work we will regard a \gls{gis} as an application designed to assist a decision making process related to spatial or geographical information \cite{harmon2003design,longley2015geographic}.
     
-    BRIEF OUTLINE.
+    %BRIEF OUTLINE.
     
     \section{Spatial information features}
     One of the main challenges in \gls{gis} is the treatment of spatial information, which presents some distinctive features that make it more complicated to store, manage and visualize than the kinds managed by traditional information systems (e.g. an accounting database). We consider that the most significative features of spatial information are:
@@ -162,7 +162,7 @@
 	There are GPS coordinates stored for a stop, and it is also possible to define a \textit{LineString} shape for a trip, which will be referenced by a \texttt{shape\_id} from a shapes definition file. The stop times for a trip are usually defined within the calendar dates, allowing this way to specify a schedule based on the day of the week or have a special consideration for selected days. Outside of the calendar definition, it is still possible to specify an expected frequency that a trip must respect.
     
     \section{GIS interfaces}
-	In the previous sections we have discussed how to represent geographical information in conceptual and logical models, as well as what \gls{gis} standards are followed in this work. In this section we will briefly speak about how this geographical information can be presented to the user and visualized in a \gls{gis} interface, as well as introduce a web mapping library called {\em Leaflet} library.\footnote{\url{https://leafletjs.com}}
+	In the previous sections we have discussed how to represent geographical information in conceptual and logical models, as well as what \gls{gis} standards are followed in this work. In this section we will briefly speak about how this geographical information can be presented to the user and visualized in a \gls{gis} interface, as well as introduce a web mapping library called {\em Leaflet}.\footnote{\url{https://leafletjs.com}}
     
     \subsection{Data visualization}
     The visualization of geographical information is often complex due to the special features of spatial information. In the first place, these features require a different abstraction than the ones used by traditional databases. In the second place, this information usually needs to be transformed with a projection to be able to visualize it on a flat surface. It is also necessary to define a \textit{visualization metaphor} for the user interface: the stored geographical information is presented to the user in several layers.
@@ -188,19 +188,19 @@
     Although this library is comparatively lacking in features when compared to other well-known alternatives such as Google Maps\footnote{\url{https://developers.google.com/maps/documentation/}} or {\em OpenLayers},\footnote{\url{https://openlayers.org/}} it is frequently preferred due to its usability and smaller size. Due to its broad adoption, open source plugins exist for all the features offered by the other comparable solutions, including support for other data sources (such as \gls{wfs}), advanced features (such as routing) and also small interface tweaks (such as the integration of a context menu).
     
 
-\chapter{GIS interface for public transportation networks}
+\chapter{A GIS interface for public transportation networks}
 \label{sec:gis}
-	While in the previous part of this work we have presented compact representations that are capable of efficiently handling large collections of trips over both streets and public transportation networks, in order for it to be actually usable by city management and network administrators a front-end interface must be conceived.
+	While in the previous part of this work we have presented compact representations that are capable of efficiently handling large collections of trips over both streets and public transportation networks, in this chapter we present a \mbox{front-end} interface that permits them to be actually usable by city management and network administrators.
 	
-	In order to facilitate this kind of analysis, we have developed a proof-of-concept map-based interface based on \gls{gis} and web technologies called \textbf{Trippy}, that allows to exploit some of the capabilities of \gls{xctr} to visualize and query transport demand information over a real transportation network. This constitutes a tool is designed to aid the decision-making process for a public transportation company, and can be easily adapter for different networks and use cases.
+	We have developed a \mbox{proof-of-concept} \mbox{map-based} interface using \gls{gis} and web technologies called \textbf{Trippy}, that allows to exploit some of the capabilities of \gls{xctr} to visualize and query transport demand information over a real transportation network. This constitutes a tool designed to aid the decision-making process for a public transportation company, and can be easily adapted for different networks and use cases.
 	
-	In this chapter, we will begin by contextualizing the use case in more detail. After that, we provide an overview of our architecture, both from a functional perspective and a technical one. After that, we will present our API for querying the underlying structure, and finally our prototype user interface.
+	In Section~\ref{sec:gis:intro}, we begin by contextualizing the use case in detail. After that, we provide an overview of the architecture of {\em Trippy}, both from a functional perspective and a technical one. After that, we present our API for querying the underlying structure, and finally we show the user interface of our prototype.
 	
-	\section{Motivation}
+	\section{Motivation and overview}
 	\label{sec:gis:intro}
-    Collecting historic locations and movement patterns is currently a hot topic, as more mobile phone corporations, car companies, and other organizations are trying to get advantage on the market through these modern initiatives. While users are tracked and benefit of their services (avoiding traffic congestion, locating restaurants and monuments, etc. on Google Maps; getting the best route on public transport to go somewhere or getting real-time schedule for a bus/train line, etc) those companies are also obtaining valuable data that can be exploited to obtain a profit or to improve the assignment of their resources (e.g., personalized recommendations and advertising, estimating the number of passengers and consequently the number of trains or buses that are required to support all the passengers that will use a line today, etc).
+    %Collecting historic locations and movement patterns is currently a hot topic, as more mobile phone corporations, car companies, and other organizations are trying to get advantage on the market through these modern initiatives. While users are tracked and benefit of their services (avoiding traffic congestion, locating restaurants and monuments, etc. on Google Maps; getting the best route on public transport to go somewhere or getting real-time schedule for a bus/train line, etc) those companies are also obtaining valuable data that can be exploited to obtain a profit or to improve the assignment of their resources (e.g., personalized recommendations and advertising, estimating the number of passengers and consequently the number of trains or buses that are required to support all the passengers that will use a line today, etc).
     
-    If we focus in public transport, such as buses or trains, we find that most transport companies have been focused mainly on providing helpful information to their passengers regarding the existing offer, hence providing non only information related to their transport network (e.g. maps with the lines, their schedule, etc.) but also, in many cases, real-time information with the actual position of a vehicle, remaining time to destination, remaining time until next vehicle arrives, etc. 
+    In public transport, such as buses or trains, we find that most transport companies have been focused mainly on providing helpful information to their passengers regarding the existing offer, hence providing not only information related to their transport network (e.g. maps with the lines, their schedule, etc.) but also, in many cases, real-time information with the actual position of a vehicle, remaining time to destination, remaining time until next vehicle arrives, etc. 
     However, although there is also an increasing interest on gathering actual information regarding what users demand from the public transport and how they use their services, to the best of our knowledge, there are no final end-user tools that have tackled both the problems of: {\em (i)} effectively handling the huge amount of data that arises when we track all the user's trips (e.g. within a large city) and {\em (ii)} efficiently exploiting the underlying information.
     %Obtaining such  data necessarily required using some technology to track user's movements along the transport network. Currently, it is not uncommon to find cities having a smart card system \cite{smartCards00}, where each user has a personal public transport card with which he or she can pay for trips over several means of transport (bus, subway, etc) and also to switch between them. The use of these smart cards lets the transportation system to know where and when an individual started a trip, which provides valuable information for the administrators of the system. Indeed, the ending stop of a trip can be also estimated from boarding records alone \cite{wang2011review, alsger2016validating}.
     %Several works have also been presented regarding how travelers switch lines or where they finish their trips in order to completely track down any traveler \cite{daniil18,MUNIZAGA2012x}.  This new available information has been exploited in several scopes. For example, to gather the preferences of users on the chosen mean of public transportation to travel through a city \cite{publicTrans17}, to monitor urban traffic \cite{trafficMonit17}, or to study the traffic effects of the congestion charges introduced in some urban areas around the world \cite{congestion15}. However, to the best of our knowledge, there are no final end-user tools that have tackled both the problems of: {\em (i)} effectively handling the huge amount of data that arises when we track all the user's trips (e.g. within a large city) and {\em (ii)} efficiently exploiting the underlying information.
@@ -208,13 +208,13 @@
     %\ojo{Meter de alguna forma que tantos viajes, puntos de subida etc etc es big data y no hay ninguna olución final implementada ESCALABLE que permita tratar estos datos EN PROFUNDIDAD (HASTA AHORA que nosotros hemos resuelto el  puzzle)}
     
     
-    Therefore, we are focusing on a solution to query and visualize historical records of aggregated patterns of movement from the travelers of a transportation network. While there exist popular solutions such as Google Maps to accurately calculate optimal multi-modal routes and even monitor the real time condition of the transportation networks, as indicated above, these systems only manage information about the {\em offer} of the network (such as schedules) and sometimes the real-time {\em demand} (current traffic conditions). In contrast, our approach aims at satisfying query needs about the historical demand over a large collection of past trajectories collected from users.
+    Therefore, we are focusing on a solution prototype that allows both to query and visualize historical records of aggregated patterns of movement from the travelers of a transportation network. While there exist popular solutions such as Google Maps to accurately calculate optimal multi-modal routes and even monitor the real time condition of the transportation networks, these systems only manage information about the {\em offer} of the network (such as schedules) and sometimes the real-time {\em demand} (current traffic conditions). In contrast, our approach aims at satisfying query needs about the historical demand over a large collection of past trajectories collected from users.
     
     %As we start handling and storing all those huge amounts of transport information we run into a popular problem nowadays: managing and exploiting big data. This problem has been analyzed  from several perspectives and a significant number of papers about this topic have been presented \cite{bigdataIOT,bigdataBIO}. In the context of public transport the issue is even worse due to the spatio-temporal nature of the knowledge. Spatio-temporal big data is a quite recent research topic that not only needs to deal with how a huge amount of spatial information should be stored and administered \cite{richter12} but also needs to review how this data should be displayed \cite{cortinas18,pelekis11}. Therefore, in this area we have to deal with two important problems: not only processing massive amounts of geographical information efficiently is required, but also developing user-friendly interfaces to access and visualize them are necessary \cite{7363974,LI2016119}.
     
     
     When dealing with vast amounts of historic traveler data, a valid first approach to tackle its analysis is to extend a traditional \gls{dbms} that could both assimilate and handle greater volumes of spatial data. A popular tool that fits in this description would be \textit{postGIS},\footnote{\url{https://postgis.net/}} a spatial extension for the widely adopted relational DBMS \textit{PostgreSQL}. 
-    However, these solutions that include spatial indices are not the most adequate for our information needs, that are many times unrelated to a geographic component, but to the network elements and their relationships (``how many travelers started their trip at a stop X using line L to end it at a stop Y within the time frame T?''), while the large sizes of our data collections would force us to use solutions based on secondary memory, considerably affecting the performance of the system.
+    However, these solutions that include spatial indices are not the most adequate ones for our information needs, that are many times unrelated to a geographic component, but to the network elements and their relationships (``how many travelers started their trip at a stop X using line L to end it at a stop Y within the time frame T?''), while the expected large sizes of our data collections would force us to use solutions based on secondary memory, considerably affecting the performance of the system.
     
     %\ojo{Deberíamos falar de solucions distribuidas, que usen BD NoSQL,... botar un ollo a isto: \cite{XYGL2018}}
     
@@ -228,10 +228,10 @@
     %To the best of our knowledge, it is the first tool that uses a representation of the data based on compact data structures.
     %While there exist other previous works that make use of compact data structures to efficiently index large collections of in-network trajectories \cite{brisaboa2018compact, koide2018cinct,  koide15}, the recent \gls{xctr}\ solution in \cite{daniil18} is novel as it implements a conceptual model that could adapt to any particular transportation system. To decrease the redundancy in the representation of user's trajectories, instead of listing all the stops traversed along a user's trip, \gls{xctr}\ stores only the stops where a user boards a vehicle along a whole trip that chains several lines, and the intermediate stops may be easily deduced from the network representation. 
     
-    Given that we are focusing on a tool specifically for public transportation networks, our interface is built over the \gls{xctr} (introduced in Section~\ref{sec:newctr:str:xctr}), which has allowed us to achieve fast response times in our tested use cases. In any case, our proposed tool is flexible enough to allow data to be represented in a more traditional way, such as with a relational \gls{dbms}.
+    Given that we are focusing on a tool specifically for public transportation networks, our interface is built over the \gls{xctr} (designed in Section~\ref{sec:newctr:str:xctr}), which has allowed us to achieve fast response times in our tested use cases. In any case, the architecture designed for our tool makes it flexible enough to allow data to be represented in a more traditional way, such as with a relational \gls{dbms}.
 	
 	\section{Architecture}
-	In this section we discuss the overall architecture of Trippy, our interface based on \gls{xctr}. We start by describing it from the functional perspective, following the data flow from the data sources until the presentation in the user interface. We complement this description with a technical architecture overview, speaking about how the individual components are integrated together and facilitate an understanding of the decisions behind the technological choices.
+	In this section we discuss the overall architecture of Trippy, our interface based on \gls{xctr}. We start by describing it from a functional perspective, following the data flow from the data sources until the presentation layer in the user interface. We complement this description with a technical architecture overview, speaking about how the individual components are integrated together and facilitate an understanding of the decisions behind our technological choices.
 	
 	\subsection{Functional architecture}
 	We have designed Trippy to be as flexible as possible, ensuring that it can operate with any network and trip descriptions that can be adapted to the model from Figure~\ref{fig:er}, which is elementary enough to apply to most of the current transportation systems. For an overview of this data flow, refer to the diagram in Figure~\ref{fig:arch:functional}.
@@ -244,20 +244,20 @@
 		\label{fig:arch:functional}
 	\end{figure}
 	
-	Although our system is oblivious to the specific data sources, we have successfully experimented adapting information collected from \gls{gtfs} sources, as well as OpenStreetMap, to obtain a description of a public transportation network. Each different source or format would require a custom conversion to adapt it to our model, which is one of the reasons that we had for standing against overcomplicating our model. As for the passenger trips, they must be described in terms of stages (boarding and alighting pairs) that are related to stops and journeys. The amount of preprocessing needed will depend on the source of the data, as most \gls{afc} systems do not directly record the alightings and the specific journey within the day will have to be estimated based on timestamps.
+	Although our system is oblivious to the specific data sources, we have successfully experimented adapting information collected from \gls{gtfs} sources, as well as OpenStreetMap, to obtain a description of a public transportation network. Each different source or format would require a custom conversion to adapt it to our model, which is one of the reasons that we had for standing against overcomplicating our model. As for the passenger trips, they must be described in terms of stages (boarding and alighting pairs) that are related to stops and journeys. The amount of preprocessing needed will depend on the source of the data, as most \acrfull{afc} systems do not directly record the alightings and the specific journey within the day will have to be estimated based on timestamps.
 	
-	We have also opted for different persistence options for the network description and the passenger trips, as we are interested in using our \gls{xctr} for the latter, while the former does not pose any technological challenges that would warrant the use of a compact representation.
+	We have also opted for different persistence options for the network description and the passenger trips, as we are interested in using our \gls{xctr} for the latter, while the former does not pose any technological challenges that would benefit from the use of a compact representation.
 	
 	Finally, these two data repositories are used to feed an API over which requests can be made, which is going to be exploited by the user interface. The specific supported requests are discussed in Section~\ref{sec:api}.
 	
 	\subsection{Technical architecture}
 	We have designed and implemented the infrastructure needed to solve our query needs, which are focused on the usage of network elements, as previously explained in Section~\ref{sec:gis:intro}. 
 	%It is also worth highlighting that apart from that main target of Trippy, the second challenge addressed in our system is to efficiently represent massive datasets of trajectories formed by user's trips along a public transportation network. 
-	To visualize and query on these network elements, we need to work with a representation of the network itself. Specifically, we represent the model for trips over a public transport network shown in Figure~\ref{fig:er}, extended with spatial attributes (gps coordinates) for the stops and lines. Implementing this model for networks does not pose any challenge, as this information is rather static (it is not expected to grow significantly) and only requires a small amount of space in comparison to passenger trips. Therefore, a \gls{rdbms} representation can be used  to represent the elements of the network. On the other hand, we use our compact representation \gls{xctr} for the trips, that we are going to rely on for most of our queries. The reduced size of this autoindexed representation allows us to keep it in primary memory, making it outperform any traditional indexing alternative that is based on secondary memory.
+	To visualize and query on these network elements, we need to work with a representation of the network itself. Specifically, we represent the model for trips over a public transport network shown in Figure~\ref{fig:er}, extended with spatial attributes (gps coordinates) for the stops and lines. Implementing this model for networks does not pose any challenge, as this information is rather static (it is not expected to grow significantly) and only requires a small amount of space in comparison to passenger trips. Therefore, a \gls{rdbms} can be used  to represent the elements of the network. On the other hand, we use our compact representation \gls{xctr} for the trips, that we are going to rely on for most of our queries. The reduced size of this autoindexed representation allows us to keep it in primary memory, making it outperform any traditional indexing alternative that is based on secondary memory.
 
     The overall technical architecture of our proposal is presented in Figure~\ref{fig:arch:real}. In the bottom part, we can find the backend
     %Before we explain each component in detail, we present a diagram for the overall architecture in Figure~\ref{fig:arch}. It is based on 
-    that includes two sources of information: the former one includes the network representation and relies on a small read-only database implemented in SQLite\footnote{\url{https://sqlite.org/index.html}}; the other source includes a \gls{xctr}, for our compact representation of the passenger trips.
+    that includes two sources of information: the former one includes the network representation and relies on a small read-only database implemented in SQLite;\footnote{\url{https://sqlite.org/index.html}} the latter source includes a \gls{xctr}, for our compact representation of the passenger trips.
 	
 	\begin{figure}[ht]
 		\begin{center}
@@ -267,28 +267,31 @@
 		\label{fig:arch:real}
 	\end{figure}
 	
-	The backend is implemented in the Go language, and provides a uniform API to query the information sources. This is accessed by our GIS frontend (top of Figure~\ref{fig:arch:real}), which is in charge of displaying the transport network on a web map and allows the final user to make queries by interacting with the elements of the map and its controls.
+	The backend is implemented in the Go language,\footnote{Since \gls{xctr} is implemented in C++, a \mbox{C} wrapper allows us to call the query functions supported by \gls{xctr} from the Go handler.} and provides a uniform API to query the information sources. This is accessed by our GIS frontend (top of Figure~\ref{fig:arch:real}), which is in charge of displaying the transport network on a web map and allows the final user to make queries by interacting with the elements of the map and its controls.
 
     Further details about the elements included in both the backend and the frontend of Trippy\ are discussed below.
     
-    \subsubsection{\bf Representing the transport network (SQLite).}
-    Since we aim at visualizing the elements of the network over a map, we need information regarding the stops and lines of the transport network, following closely the model from Figure~\ref{fig:er}. For each physical stop, along with the GPS coordinates of its location, we store a unique numeric identifier. Regarding the lines of the transport network, we basically keep the sequence of stops each line traverses. Note that, unlike the abstractions used by most public transportation networks, we consider lines to be one-way (i.e. they have a unique direction), and consequently the reversed/returning path is treated as a different line.
+    \subsubsection{\bf Representing the transport network (SQLite)}
+    Since we aim at visualizing the elements of the network over a map, we need information regarding the stops and lines of the transport network, following closely the model from Figure~\ref{fig:er}. For each physical \textbf{stop}, along with the GPS coordinates of its location, we store a unique numeric identifier. Regarding the \textbf{lines} of the transport network, we basically keep the sequence of stops each line traverses. Note that, unlike the abstractions used by most public transportation networks, we consider lines to be one-way (i.e. they have a unique direction), and consequently the reversed/returning path is considered a different line.
     
+    \medskip
     As indicated above, we have chosen  a SQLite database to represent the network because it is conveniently portable and efficient for such small datasets. While no spatial database technology was required to deal with the GPS coordinates of the  stops, we have opted to integrate the  SpatiaLite extension\footnote{\url{https://www.gaia-gis.it/fossil/libspatialite/index}} to support storing the shapes of our lines.
     
-    \subsubsection{\bf GO handler.}
-    This component has two main parts. On one hand, it implements a {\em REST API} that is used to obtain the collection of stops and lines in GeoJSON format. On the other hand, it also provides a querying interface for \gls{xctr}. While the query functions themselves are implemented in \gls{xctr} using {\em C++}, we have opted for {\em Go} as our main backend language because it is specifically oriented for web services and can be easily integrated with {\em C} code. In our case, we have implemented a thin {\em C wrapper} that interacts with the \gls{xctr} libraries to load \gls{xctr} structures (when the application is launched it loads the \gls{xctr}-based representation of the trips into memory) and handle calls to the query functions.
+    \subsubsection{\bf GO handler}
+    This component is on top of the backend of {\em Trippy} and receives the requests from the \mbox{front-end}. It has two main parts. On one hand, it implements a {\em REST API} that is used to obtain the collection of stops and lines in GeoJSON format. On the other hand, it also provides a querying interface for \gls{xctr}. While the query functions themselves are implemented in \gls{xctr} using {\em C++}, we have opted for {\em Go} as our main backend language because it is specifically oriented for web services and can be easily integrated with {\em C} code. In our case, we have implemented a thin {\em C wrapper} that interacts with the \gls{xctr} libraries to load \gls{xctr} structures (when the application is launched it loads the \gls{xctr}-based representation of the trips into memory) and handle calls to the query functions.
     
-    \subsubsection{\bf Map viewer.}
-    The Map viewer in Trippy makes up the user interface. It is in charge of visualizing the elements of the network, and handles users’ interaction. Apart from typical functions to move around a map (i.e. zoom in/out, span, etc.), the user can interact with the elements within the map (e.g. a stop or a set of stops within a region) and access functions related to them. Those functions are supported by our backend.
+    \subsubsection{\bf Map viewer}
+    The Map viewer in Trippy makes up the frontend and provides the user web interface. It is in charge of visualizing the elements of the network, and handles user interaction. Apart from typical functions to move around a map (i.e. zoom in/out, span, etc.), the user can interact with the elements within the map (e.g. a stop or a set of stops within a region) and access functions related to them. Those functions are supported by our backend.
     
-    The Map viewer was built with a web map using the {\em Leaflet} library. With this library, it is simple to make an interactive map consisting of several interchangeable \gls{tms} and vector layers, and also to efficiently represent thousands of points or other vector-type elements.
-    For additional controls, communication with the backend, state synchronization among our implemented controls and the map, we have used Vue.js\footnote{\url{https://vuejs.org}}, which is a popular web framework based on components.
+    The Map viewer was built with a web map using the {\em Leaflet} library. With this library, it is simple to make an interactive map consisting of several interchangeable image (tiles) and \mbox{vector-based} layers, and also to efficiently represent thousands of points or other vector-type elements.
+    For additional controls, communication with the backend, state synchronization among our implemented controls and the map, we have used Vue.js,\footnote{\url{https://vuejs.org}} which is a popular web framework based on components.
 
 	
-	\section{API}
+	\section{Our API to query transport-related data}
 	\label{sec:api}
-    As previously seen in Section~\ref{sec:newctr:algo:analysis}, by basing our interface on \gls{xctr} we are able to solve a broad range of transport-related queries, including but not limiting to:
+	In this section, we discuss the main query features that were integrated into {\em Trippy} and were defined within our API that is described below.
+	
+    As previously seen in Section~\ref{sec:newctr:algo:analysis}, \gls{xctr} supports a wide set of query functions, which have allowed us to solve a broad range of transport-related queries in {\em Trippy}. Those include, yet are not limited to:
 
     \begin{itemize}
     %\item[\textbf{Transport Load Queries}]
@@ -301,11 +304,11 @@
     \item How many passengers started/ended their trips at a specific stop X?
     \item How many passengers started their trips at stop X and ended them at stop Y during a given time interval?
     \item How many travelers had to switch lines to get to their destination during a given time interval?
-    \item How many times a line is used as a start or end of a trip? Alternatively, how many times is the line used to switch between two other lines, but not as an origin nor final destination?
+    \item How many times a line was used as a start or end of a trip? Alternatively, how many times was the line used to switch between two other lines, even though it was neither the origin nor the final destination?
     %\item Calculate the arithmetic mean \ojo{llenar con algo verídico}
     \end{itemize}
     
-    Along with these basic queries supported originally by \gls{xctr}, in this work, we have extended its functionality to also support a range of more complex queries that were  solved as a combination of the previous ones:
+    Along with these basic queries supported originally by \gls{xctr},\cite{brisaboa2018new} we have extended its functionality to also support a range of more complex queries that were  solved as a combination of the previous ones:
     
     \begin{itemize}
         \item How many passengers traveled from area A to area B during a time interval? 
@@ -314,7 +317,7 @@
         %\item What extent of the city can be reached within one hour from a certain residential area during the morning rush hour?
     \end{itemize}
     
-    To support these queries, we have developed API Endpoints that we are going to discuss in the rest of this section. Note that a single request will frequently be responsible for more than one kind of query, as we it is often more practical and efficient to perform multiple types queries over the same element in \gls{xctr} for one single API request.
+    To support these queries, we have developed API Endpoints that we are going to discuss in the rest of this section. Note that a single request will frequently be responsible for more than one kind of query in the \gls{xctr} backend, as it is often more practical and efficient to perform multiple types of queries over the same element in \gls{xctr} for one single API request.
     
     \subsection{Stops endpoint}
     This endpoint is implemented as an {\em HTTP GET} request with the format \texttt{/stop/X}, where \texttt{X} corresponds to the queried stop identifier. This request returns the following information of the stop \texttt{X}:
@@ -322,14 +325,14 @@
     \begin{itemize}
         %\item The name of the stop.
         %\item The identifiers of the lines this stop belongs to.
-        \item Number of passengers that had boarded.
+        \item Number of passengers that had boarded in that stop.
         \item Number of times the stop was used to start a trip.
         \item Number of times the stop was used to end a trip.
     \end{itemize}
     
     Additionally, this request accepts parameters to restrict the \textit{line identifier}, \textit{lower time limit} and \textit{upper time limit}, which will filter the numerical results mentioned above.
     
-    When this endpoint is queried with no parameters (\texttt{/stop/}), it will return the list of all the stops in the network, which is needed to display them on a map and initialize the interface components. Consequently, the information for each stop returned by this query will consist of the following fields:
+    When this endpoint is queried with no parameters (\texttt{/stop/}), it will return the list of all the stops in the network, which is needed to display them on a map and initialize the user interface components. Consequently, the information for each stop returned by this query will consist of the following fields:
     
     \begin{itemize}
         \item Identifier.
@@ -339,7 +342,7 @@
     \end{itemize}
     
     \subsection{Lines endpoint}
-    As with stops, there also exists a line endpoint that accepts {\em HTTP GET} requests of \texttt{/line/X}, being \texttt{X} the identifier of a line. The information returned is also the equivalent of the one returned by the stop endpoint, but concerning a whole line instead of a single stop:
+    We created a line endpoint that handles {\em HTTP GET} requests in the form of \texttt{/line/X}, being \texttt{X} the identifier of a line. Similarly to the previous endpoint, the information returned is also the equivalent to the one returned for the stops, but concerning a whole line instead of a single stop. Therefore, we can return:
     
     \begin{itemize}
         \item Number of passengers that had boarded (and alighted).
@@ -349,44 +352,45 @@
     
     This endpoint accepts filtering by a time interval with the parameters of \textit{upper and lower time limits}.
     
-    There is also the listing request \texttt{/line/}, to obtain a list of existing lines with the following fields:
+    \medskip
+    There is also a listing request \texttt{/line/}, to obtain a list of existing lines, which includes the following fields:
     
     \begin{itemize}
         \item Identifier.
         \item Name of the line.
         \item Identifiers of the stops this line contains, in order.
-        \item If exists, the path of the line, encoded as a sequence of coordinates.\footnote{This information is optional, without it a line on the map can be displayed by simply connecting points with a straight line (which may not follow any road or track) or using an existing \gls{tms} layer with lines.}
+        \item If exists, the path of the line, encoded as a sequence of coordinates.\footnote{This information is optional, without it a line on the map can be displayed by simply connecting points with a straight line (which may not follow any road or track) or using an existing image tile (\gls{tms}) layer with lines.}
     \end{itemize}
     
     \subsection{Trips endpoint}
-    This endpoint is dedicated to return one single field: the number of trips that have started at any of the stops from \texttt{X$^*$} to finally end at any stop from \texttt{Y$^*$}, where both \texttt{X$^*$} and \texttt{Y$^*$} can be either a single stop or a collection of them. Due to technical reasons\footnote{The requests my contain thousands of stops, surpassing the length limits of {\em GET} requests in many web servers, proxies and even browsers.}, this requests are implemented using the {\em POST} method over the \texttt{/trip} endpoint.
+    This endpoint is dedicated to return one single field: the number of trips that have started at any of the stops from \texttt{X$^*$} and finally end at any stop from \texttt{Y$^*$}, where both \texttt{X$^*$} and \texttt{Y$^*$} can be either a single stop or a collection of them. Due to technical reasons,\footnote{The requests may contain thousands of stops, surpassing the length limits of {\em GET} requests in many web servers, proxies and even modern browsers.} this requests are implemented using the {\em POST} method over the \texttt{/trip} endpoint.
     
     Both \texttt{X$^*$} and \texttt{Y$^*$} can be restricted by a \textit{line} parameter (one line for starting stops and another for ending) and also \textit{lower and upper times} (starting or ending times of the trip contained within the limits). These requests can be noticeably slow when the number of queried stops is very high (in the order of thousands).
     
     \subsection{Histograms endpoints}
-    These are two endpoints that handle {\em HTTP GET} requests about time series of boarding events either for a stop (\texttt{/hstop/X}) or a line (\texttt{/hline/X}). The returned data is a sequence of pairs $<t,n>$, where $t$ is a timestamp and $n$ is the number of boardings for that timestamp.
+    These are two endpoints that handle {\em HTTP GET} requests about time series of boarding events either for a stop (\texttt{/hstop/X}) or a line (\texttt{/hline/X}). The returned data is a sequence of pairs <$t_i,n_i$> , where each $t_i$ is a timestamp and $n_i$ is the number of boardings on $t_i$.
     
-    There request may be bound to a time window (by specifying \textit{lower and upper time limits}, as in the other endpoints) and also accepts an additional parameter of \textit{sampling} that, if present, will group the number boardings by a set number of seconds $s$ into bins, each time $t$ delimiting the start of a new bin that will correspond to the period $[t..t+s)$. A reasonably large sampling parameter may not only save bandwidth as less information needs to be transmitted, but also speed up the request.\footnote{In \gls{xctr}, a large sampling value may translate into more than one journey code for a line, thus making it possible to return a result before reaching the last level of the \texttt{WMJ} in the $\cnt$ operation.}
+    Those requests may be bound to a time window (by specifying \textit{lower and upper time limits}, as in the other endpoints) and also accept an additional parameter of \textit{sampling} that, if present, will lead to grouping the number of boardings by a given number of seconds $s$ into bins. The query then returns a sequence of pairs <$t_i,n_i$>, where each $t_i$ delimits the lower time limit of a bin that corresponds to the period $[t_i..t_i+s)$, and consequently, $t_{i+1} = t_i+s$. The second component of each pair, $n_i$ is the total number of boardings within that delimited time period. A reasonably large sampling parameter may not only save bandwidth as less information needs to be transmitted, but also speed up the request.\footnote{In \gls{xctr}, a large sampling value may translate into more than one journey code for a line, thus making it possible to return a result before reaching the last level of the \texttt{WMJ} in the $\cnt$ operation.}
 	
 	\section{User Interface}
 	\label{sec:ui}
-	Based on the API developed from Section~\ref{sec:api}, we have developed a prototype of an accessible and intuitive user interface, based on web application technologies. In the rest of this section, we are going to demonstrate the elements of this interface in what may be read as a user manual.
+	Based on the API developed from Section~\ref{sec:api}, we have developed a prototype of an accessible and intuitive user interface, based on web application technologies. In the rest of this section, we present a kind of brief user manual that discusses the main elements of such user interface.
 	
-    The interface of Trippy consists of a map as shown in Figure~\ref{fig:ui:overall}, where have set up a study case with the same bus networks from Madrid used in Section~\ref{sec:newctr:exp:data}. Every bus stop is represented by a stop and we are using the underlying Thunderforest\footnote{\url{https://www.thunderforest.com}} \gls{tms} layer to display the bus lines that connect them. Additionally, the interface presents stop selectors \textcircled{1}, line selectors \textcircled{2} and also date \textcircled{3} and time \textcircled{4} filters that allow a user to query the \gls{xctr} for information.
+    The interface of Trippy consists of a map as shown in Figure~\ref{fig:ui:overall}, where have set up a study case with the same bus networks from Madrid used in Section~\ref{sec:newctr:exp:data}. Every bus stop is represented by a stop and we are using an underlying Thunderforest\footnote{\url{https://www.thunderforest.com}} \gls{tms} layer to display the bus lines that connect them. Additionally, the interface presents stop selectors {\large \textcircled{1}}, line selectors {\large \textcircled{2}} and also date {\large \textcircled{3}} and time {\large \textcircled{4}} filters that allow a user to query the \gls{xctr} for information.
     
     \begin{figure}[ht]
 		\begin{center}
 			{\includegraphics[width=0.9\textwidth]{screens/overall.png}}
 		\end{center}
-		\caption{Overall interface of Trippy.}
+		\caption{Main view of the user-interface of {\em Trippy}.}
 		\label{fig:ui:overall}
 	\end{figure}
 	
 	As the interface shown is still in a prototype phase, it does not yet incorporate all the planned features. Concretely, we are not yet displaying the geometries of the lines nor making them interactive, and there is yet no way to make requests over the line or histogram endpoints from the previous Section~\ref{sec:api} using the graphic interface. However, we consider it complete enough to be representative of the utility that such an interface can have when powered by \gls{xctr}.
 	
-	By clicking on a stop, a popup is revealed with the stop name, the lines that the stop belongs to, and also the number of users that used that stop for boarding, starting or ending a trip or as a switch stop,\footnote{The number of boardings must be equal to the number of starts added to the number of switches.} as shown in Figure~\ref{fig:ui:stop} (left). These usage numbers will only be considered within the time window specified by the filter, if any. It is also possible to open a context menu for the stop with a right click, as done in Figure~\ref{fig:ui:stop} (right), and is one of the ways to specify a starting or ending stop for an X to Y query (from the trip endpoint).
+	By clicking on a stop, a popup is shows up with the stop name, the lines the stop belongs to, and also the number of users that used that stop for boarding, starting or ending a trip, or as a switch stop,\footnote{The number of boardings must be equal to the number of starts added to the number of switches.} as shown in Figure~\ref{fig:ui:stop} (left). These usage numbers will only be considered within the time window specified by the filter, if any. It is also possible to open a context menu for the stop with a right click, as done in Figure~\ref{fig:ui:stop} (right). This makes up one of the ways to specify a starting or ending stop for an X to Y query (from the trip endpoint).
 	
-	A future feature is planned to query the line endpoint in a similar way, in order to display usage statistics for a whole line instead of single stops. Since several line paths may overlap each other, the interface must provide a way to disambiguate the selection. The navigation among stops and lines may also be helped by providing links in the corresponding popups.
+	A future feature is planned to query the line endpoint in a similar way, in order to display usage statistics for a whole line instead of for single stops. Since several line paths may overlap, the interface must provide a way to disambiguate the selection. The navigation among stops and lines will also be helped by providing links in the corresponding popups.
 	
 	%In addition, we have spatial/temporal filters allow the user to refine the displayed data, filtering by stops or time and one additional filter enables the user to refine results by line. The {\em filtering-by-stop} area allows to restrict queries to a given starting or ending stop (we can either look for their name in the filtering boxes or select them within the map). Besides, we can also provide a {\em filtering-by-datetime} which restricts also those queries to the specified starting and ending timestamps. For example, in Figure~\ref{fig:trippyIntDesc} we are querying the number of users that ``{\em boarded into a vehicle; switched-line; started a trip; ended a trip}" at the stop named {\em ``Juan de Toledo - Estaci\'on de buses"} from {\em `2019-03-12@16:00h'} to {\em `2019-03-13@16:00h'} searching on any line going through this point.
 	
@@ -399,7 +403,7 @@
 		\label{fig:ui:stop}
 	\end{figure}
 	
-	In the upper part of the screen we include stop and line selectors, which are implemented as custom dropdown components with a search field, as exposed in Figure~\ref{fig:ui:select}, where on the left we are looking for stops containing \textit{Bilbao} in their names, and on the right we are checking lines from \textit{Legan\'es}, from the partial query \textit{legan}.
+	In the upper part of the main screen we include stop and line selectors, which are implemented as custom dropdown components with a search field, as depicted in Figure~\ref{fig:ui:select}.  On the left box we are looking for stops containing \textit{Bilbao} in their names, and on the right one we are checking lines from \textit{Legan\'es}, from the partial query \textit{legan}.
 	
 	\begin{figure}[ht]
 		\begin{center}
@@ -410,26 +414,31 @@
 		\label{fig:ui:select}
 	\end{figure}
 	
-	As in Madrid it is frequent to have several bus stops with the exact same name for different physical stop locations, either because it is used by different lines or by the reversed direction of the same lines (as such, they tend to be located on the opposite direction of the same street), we display the lines that each stop belongs to, in order to help distinguish between these cases. Note that in the displayed version we do not distinguish the direction of the line in the interface, although we do keep track of the directions internally, and consider the reverse direction to be a separate line. These two selectors are also correlated: selecting a stop in the starting (or ending) field will restrict the starting (or ending) line selector to only those lines that the selected stop belongs to, and vice versa.
+	As in Madrid it is frequent to have several bus stops with the exact same name for different physical stop locations, either because it is used by different lines or by the reversed direction of the same lines (as such, they tend to be located on the opposite direction of the same street), we display the lines that each stop belongs to, in order to help a user to distinguish between these cases. Note that in the displayed version we do not distinguish the direction of the line in the interface, although we do keep track of the directions internally, and consider the reverse direction to be a separate line. These two selectors are also correlated: selecting a stop in the starting (or ending) field will restrict the starting (or ending) line selector to only those lines that the selected stop belongs to, and vice versa.
 	
-	The date and time filters affect all the displayed results, and can be edited with their corresponding components from Figure~\ref{fig:ui:date}. We also ensure that the selected starting and ending dates and times do not overlap: in our example only the dates starting from \texttt{2019-03-11} are available, since that is the selected starting date. If a popup is displayed while these filters are changed, the contents of the popup are dynamically updated.
+	The date and time filters affect all the displayed results, and can be edited with their corresponding components as shown in Figure~\ref{fig:ui:date}. We also ensure that the selected starting and ending dates and times do not overlap: in our example only the dates starting from \texttt{2019-03-11} are available, since that is the selected starting date. If a popup is displayed while these filters are changed, the contents of the popup are dynamically updated.
 	
 	\begin{figure}[ht]
 		\begin{center}
 			{\includegraphics[width=0.5\textwidth]{screens/date_cut.png}}
 		\end{center}
+		\vspace{-0.5cm}
 		\caption{The date and time filters.}
 		\label{fig:ui:date}
+		\vspace{-0.5cm}
 	\end{figure}
 	
-	The trip endpoint (which returns number of trips performed starting with a stop X and ending with a stop Y) may be queried by either using the starting and ending stop selectors or the context menu of the stops accessible with the right click, which also fills the selected stop into the corresponding stop selector. A straight arrow will be displayed connecting the starting and the ending stops, as can be seen in Figure~\ref{fig:ui:xy}, and a popup with the total number of trips will be shown over that arrow.
+	\medskip
+	The trip endpoint (which returns the number of trips performed starting with a stop X and ending with a stop Y) may be queried by either using the starting and ending stop selectors or the context menu of the stops accessible with a right click, which also fills the selected stop into the corresponding stop selector. A straight arrow connecting the starting and the ending stops is displayed, as can be seen in Figure~\ref{fig:ui:xy}, and a popup with the total number of trips is also shown over that arrow.
 	
 	\begin{figure}[ht]
 		\begin{center}
 			{\includegraphics[width=0.9\textwidth]{screens/xy.png}}
 		\end{center}
+		\vspace{-0.5cm}
 		\caption{Querying for the number of displacements between a starting and an ending stop.}
 		\label{fig:ui:xy}
+		\vspace{-0.5cm}
 	\end{figure}
 	
 	Additionally, we allow both of these stops be be filtered by line, and the results filtered by a time window. These controls may be interacted with while the popup is open, and the number of results will be updated.
@@ -440,11 +449,22 @@
 		\begin{center}
 			{\includegraphics[width=0.9\textwidth]{screens/xy_area.png}}
 		\end{center}
+		\vspace{-0.5cm}
 		\caption{Querying for the number of displacements between two areas.}
 		\label{fig:ui:xyarea}
+		\vspace{-0.5cm}
 	\end{figure}
 	
-	In order to select the stops within a rectangular area, the user must press the  {\sc shift-key} on the keyboard and select the area of interest, by dragging the cursor. The first selected area will be considered the origin area, while the second are will be the destination. An arrow joining the two areas will appear, and a a pop-up showing the number of trips that fulfill the criteria will be displayed. Once again, this query can be refined with the time filters.
+	\medskip
+	In order to select the stops within a rectangular area, the user must press the  {\sc shift-key} on the keyboard and select the area of interest, by dragging the cursor. The first selected area will be considered the origin area, while the second area will be the destination. An arrow joining both areas will be drawn, and a a pop-up showing the number of trips that fulfill the criteria will also be displayed. Once again, this query can be refined by properly setting the time filters.
 	
-	While in this prototype we require the use of a keyboard to perform this query, an interactive control is planned to be able to select the starting and ending areas, with the goal of improving the accessibility of the interface.
+	Note that, while in this preliminar prototype we require the use of a keyboard to perform this query, an interactive control is planned to be able to select the starting and ending areas, with the goal of improving the accessibility of the user interface.
+	
+	\section{Summary}
+	\label{sec:gis:final}
+	In this chapter we have presented {\em Trippy}, a preliminar prototype that takes advantage of the trip representations developed in this thesis to efficiently support queries related to the demand of a public transportation network.
+	
+	We have proposed an architecture that is flexible enough to extend the current functionality and to include different sources of information in our system, and also presented a web \mbox{user-interface} to allow any user to easily perform queries of interest to analyze the demand of the underlying transportation system.
+	
+	Therefore, our {\em Trippy} prototype permitted us to show that our research on compact data representations to efficiently handle user trips can be interesting for real applications oriented to the support of \mbox{decision-making} processes related to the transportation network administration.
 	
