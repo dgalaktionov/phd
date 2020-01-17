@@ -1,29 +1,31 @@
-\part{GIS interface} \label{part:gis}
-\chapter{Previous concepts}
+\part{Towards a GIS-based application to analyze trips data} \label{part:gis}
+\chapter{Previous concepts on GIS}
 \label{ch:gis:prev}
-    In order to develop a usable interface, we must rely on a map based representation that works with geographic information. Therefore, in this chapter we shall introduce the basic concepts of \gls{gis} in order to provide a context for this part of our contribution.
+    Any application aiming at providing a simple and usable \mbox{user-interface} in the scope of the analysis of data from a transportation scenario should, without any kind of doubt, consider a \mbox{map-based} user interface.
+    %In order to develop a usable interface, we must rely on a map based representation that works with geographic information. 
+    Therefore, in this chapter we shall introduce the basic concepts of \acrfull{gis} in order to provide a context for this part of this thesis.
     
     While there exist several complementary definitions for \gls{gis} in the literature, from the point of view of the current work we will regard a \gls{gis} as an application designed to assist a decision making process related to spatial or geographical information \cite{harmon2003design,longley2015geographic}.
     
-    %BRIEF OUTLINE.
+    In this chapter, we initially discuss the most significative features of spatial data. After that, we focus on conceptual models for geographical data on Section~\ref{gis:concept}, and Section~\ref{sec:gis:logical} is devoted to review logical models. The last two sections present the main \gls{gis} standards we used both to make spatial data accessible for a real \gls{gis} application and also to visualize that data on a \gls{gis} interface.
     
     \section{Spatial information features}
-    One of the main challenges in \gls{gis} is the treatment of spatial information, which presents some distinctive features that make it more complicated to store, manage and visualize than the kinds managed by traditional information systems (e.g. an accounting database). We consider that the most significative features of spatial information are:
+    One of the main challenges in \gls{gis} is the treatment of spatial information, which presents some distinctive features that make it more complicated to store, manage and visualize than the kinds of data managed by traditional information systems (e.g. an accounting database). We consider that the most significative features of spatial information are:
     
     \begin{itemize}
-        \item \textbf{Two alternative conceptual interpretations.} Geographical information may be regarded on a conceptual level from three different perspectives: as geographical objects, as geographical fields or as topological networks. This division on an abstract level will also propagate to the more concrete levels.
+        \item \textbf{Two alternative conceptual interpretations.} Geographical information may be regarded on a conceptual level from three different perspectives: as geographical objects, as geographical fields, or as topological networks. This division on an abstract level will also propagate to the more concrete levels.
         
-        \item \textbf{Multiple possible logical models.} The complexity of geographical information makes it so several possible and valid representations can exist for the same geographical phenomenon, each with its advantages or disadvantages depending on the context.
+        \item \textbf{Multiple possible logical models.} The complexity of geographical information makes it possible to have several possible and valid representations for the same geographical phenomenon. Each one of them with their own advantages and disadvantages depending on the context.
         
-        \item \textbf{Data types and specific operations.} Due to the three possible conceptual interpretations and the multiple possible logical models, there are numerous possible datatype sets. Moreover, many different operations that may be defined over these datatypes, and there is no standard for a minimum amount of operations that may be used to define every other operation.
+        \item \textbf{Data types and specific operations.} Due to the three possible conceptual interpretations and the multiple possible logical models, there are numerous possible datatype sets. Moreover, there also exist many different operations that may be defined over these datatypes, and there is no standard for a minimum amount of operations that may be used to define every other operation.
         
-        \item \textbf{Complex and varied methods of analysis.} Depending on the field of application that the \gls{gis} is used on, there may exist a great variety of techniques to analyze geographical information that are expected to be included in the \gls{gis}.
+        \item \textbf{Complex and varied methods of analysis.} Depending on the field of application where the \gls{gis} is used on, there may exist a great variety of techniques to analyze geographical information that are expected to be included in the \gls{gis}.
         
-        \item \textbf{Large datasets.} Geographical information can be quite voluminous, both in the complexity of every element as in the number of elements that must be stored. As a result, the structures used to store this information have to be specific.
+        \item \textbf{Large datasets.} Geographical information can be quite voluminous, both in the complexity of every element and in the number of elements that must be stored. As a result, the structures used to store this information have to be specific.
         
         \item \textbf{Slow transactions.} The complexity of geographical information can make updating times significantly slow, which in turn can make long locking times on the stored elements. A \gls{gis} must consider updating mechanisms, since its information is naturally dynamic.
         
-        \item \textbf{Spatial indexing}. Due to the large size of the datasets, combined with the spatial features (i.e. number of dimensions, space boundaries, etc\dots), the indexing structures that are used to provide an efficient access method to the stored information are particular to a specific use case.
+        \item \textbf{Spatial indexing}. Due to the large size of the datasets, combined with the spatial features (i.e. number of dimensions, space boundaries, and overlapping), the indexing structures that are used to provide an efficient access method to the stored information are particular to a specific use case.
         
         \item \textbf{Implicit hierarchy.} Unlike traditional information, geographical information is always visualized over a bounded space (the map). Because of this, the visualization scale acquires a main role in the presentation of the information and also determines an implicit hierarchy, as it is not possible to display all the information at the same time.
         
@@ -32,13 +34,15 @@
     
     \section{Conceptual models}
     \label{gis:concept}
-    A first step to define a conceptual model for geographical information is to define the geographic space. To achieve that, we need a mathematical definition of space and to define a \gls{crs}.
+    A first step to define a conceptual model for geographical information is to be able to measure and understand the geographical space. To achieve that, we need a mathematical definition of space and to define a \gls{crs}.
     
     \subsection{Coordinate Reference Systems}
-    In order to represent a spatial element, we need to define a \gls{crs}, will depend on our mathematical definition of space. One common coordinate system is the Cartesian one, based on an Euclidean space, a plane over which bidimensional objects may be represented. This system, however, is insufficient for broad areas of the Earth's surface, where the curvature of the Earth must be taken into account. To address these cases, the geometry of the planet is often approximated with a spheroid or an ellipsoid, over which spherical coordinates (latitude and longitude) are used instead of Cartesian ones. Currently, the most popular coordinate system is based on the \textbf{WGS84} ellipsoid,\footnote{\url{https://epsg.io/4326}} used for the GPS navigation.
+    In order to represent a spatial element, we need to define a \gls{crs}, because such representation will depend on our mathematical definition of space. One common coordinate system is the Cartesian one, based on an Euclidean space, a plane over which bidimensional objects may be represented. However, this system is insufficient for broad areas of the Earth's surface, where the curvature of the Earth must be taken into account. To address these cases, the geometry of the planet is often approximated with a spheroid or an ellipsoid, over which spherical coordinates (latitude and longitude) are used instead of Cartesian ones. Currently, the most popular coordinate system is based on the \textbf{WGS84} ellipsoid,\footnote{\url{https://epsg.io/4326}} used for GPS navigation.
     
-    Once the definition of space has been established, we need to choose a coordinate system and define how it will reference the space (origin of coordinates, orientation and scale). Depending on the application, we can directly use the spherical coordinated defined by the ellipsoid or project these coordinates into an Euclidean space. The most common projection to work with relatively small areas of the Earth's surface is the \gls{utm}, which divides the chosen ellipsoid into 60 zones, each one of them spanning 6 degrees of longitude. Within each zone, it is possible to project the curved surface into a plane with minimal precision loss, thus allowing to reference coordinates in a Cartesian system, with a scale of meters, where the first component is the Easting from the central meridian (plus an offset of 500.000 meters to avoid dealing with negative numbers) and the second component is the Northing from the intersection between the central meridian and the Equator.
+    \medskip
+    Once the definition of space has been established, we need to choose a coordinate system and define how it will reference the space (i.e. origin of coordinates, orientation and scale). Depending on the application, we can directly use the spherical coordinates defined by the ellipsoid or project these coordinates into an Euclidean space. The most common projection to work with relatively small areas of the Earth's surface is the \gls{utm}, which divides the chosen ellipsoid into 60 zones, each one of them spanning 6 degrees of longitude. Within each zone, it is possible to project the curved surface into a plane with minimal precision loss,\cite{karney2011transverse} thus allowing to reference coordinates in a Cartesian system, with a scale of meters, where the first component is the Easting from the central meridian (plus an offset of 500,000 meters to avoid dealing with negative numbers) and the second component is the Northing from the intersection between the central meridian and the Equator.
     
+    \medskip
     \begin{example}
     Using a \gls{crs} defined by the WGS84 ellipsoid, the building of the Faculty of Informatics of the Universidade da Coru\~na is located at the coordinates (43.332709,-8.410517).
     Another possible \gls{crs} can be defined by projecting the WGS84 ellipsoid using \gls{utm}, which would place the longitude of the building (-8.410517) into the zone 29, with the coordinates (547788, 4797931). This projection may also be used with a different ellipsoid, yielding a different \gls{crs} with some other coordinates.
@@ -46,9 +50,9 @@
     \end{example}
     
     \subsection{Abstractions for geographical information}
-    Once the \gls{crs} is defined, we must define the abstractions that will allow us to represent geographical information, which can be considered from three alternative perspectives: as geographical objects, as geographical fields or as topological networks.
+    Once the \gls{crs} is defined, we must define the abstractions that will allow us to represent geographical information, which can be considered from three alternative perspectives: as geographical objects, as geographical fields, or as topological networks.
     
-    Geographical objects are subsets of space that are used to represent the position or extension of spatial entities. The surface of a road or the position of a store are examples of geographical objects. Figure~\ref{fig:gis:concept} (left) shows an example of geographical objects on a map.
+    \textbf{Geographical objects} are subsets of space that are used to represent the position or extension of spatial entities. The surface of a road or the position of a store are examples of geographical objects. Figure~\ref{fig:gis:concept} (left) shows an example of geographical objects on a map.
     
     \begin{figure}[ht]
 		\begin{center}
@@ -61,23 +65,24 @@
     
     Note that there can be several valid representations for a geographical object, regardless of its extension in the real world. For instance, a city may be represented as a single position (point) or as a geometric surface, depending on the ultimate requirements of visualization or exploitation.
     
-    On the other hand, a geographical field is characterized as a function that associates a value for every point of space. The surface temperature or the slope of the terrain may be considered as geographical fields. An example of a geographical field can be found in Figure~\ref{fig:gis:concept} (right), where an elevation map is shown.
+    A \textbf{geographical field} is characterized as a function that associates a value for every point of space. The surface temperature or the slope of the terrain may be considered as geographical fields. An example of a geographical field can be found in Figure~\ref{fig:gis:concept} (right), where an elevation map is shown.
     
-    Both abstractions described above (geographical objects and geographical fields) can be alternatively used to represent information of different nature. Commonly, geographical objects are used to analyze man made structures, such as roads, borders or land registry, while geographical fields are more appropriate for natural information collected by sensors, such as meteorological, geological or satellite information. However, this does not mean that, for example, a building cannot be represented as a geographical field that assigns a value of 1 for a coordinate contained within the building and 0 for every other coordinate, although such conceptual definition may be inadequate for many applications.
+    Both abstractions described above (geographical objects and geographical fields) can be alternatively used to represent information of different nature. Commonly, geographical objects are used to analyze \mbox{man-made} structures, such as roads, borders, or land registry, while geographical fields are more appropriate for natural information collected by sensors, such as meteorological, geological, or satellite information. However, this does not mean that, for example, a building could not be represented as a geographical field that assigns a value of 1 for a coordinate contained within the building and 0 for every other coordinate, although such conceptual definition may be \mbox{ill-fitted} for many applications.
 
-    There are defined standards for modeling geographical objects, such as ISO 19107, based on primitives objects (points, curves, and surfaces) that may be combined to form more complex types. On the other hand, ISO 19123 is a standard used for modeling geographical fields, which may be discrete (only existing a value for some discrete points in space) or continuous, having a value for any point in space.
+    There are defined standards for modeling geographical objects, such as ISO 19107,\footnote{\url{https://www.iso.org/standard/26012.html}} based on primitives objects (points, curves, and surfaces) that may be combined to form more complex types. In addition, ISO 19123\footnote{\url{https://www.iso.org/standard/40121.html}} is a standard used for modeling geographical fields, which may be discrete (existing only a value for some discrete points in space) or continuous, having a value for any point in space.
     
-    As a special case, it is also possible to work with a topological network, where instead of using a coordinate system, we can model our space as a graph. An example of such application may be a road network used for GPS routing, where the movement is restricted by roads instead of a true Euclidean space. While there are also standards for these abstractions, it is more often to use an ad-hoc model based on vertices and edges.
+    As a special case, it is also possible to work with a \mbox{topological network}, where instead of using a coordinate system, we can model our space as a graph. An example of such application may be a road network used for GPS routing, where the movement is restricted by roads instead of by a true Euclidean space. While there are also standards for these abstractions, ad-hoc models based on vertices and edges are more commonly used instead.
     
     \section{Logical models}
+    \label{sec:gis:logical}
     In the previous Section~\ref{gis:concept}, we have defined conceptual models, that work on an abstract level. However, the abstract models do not regard the limitations of a practical implementation. As such, they may assume that both the memory and arithmetic precision are infinite, and consequently a geographical object is an infinite set of points while a geographical field is a defined function for any point in space. These limitations must be addressed in order to implement a \gls{gis}, and for that purpose we must work with a logical model.
     
-    In this section we will present two well known models used to represent geographical information, although we will not cover how the most used operations are implemented using these models or how the precision problems may be addressed. Refer to \cite{xiao2015gis} for a more in-depth coverage on those topics.
+    In this section, we will present two \mbox{well-known} models used to represent geographical information, although we will not cover how the most used operations are implemented using these models or how the precision problems have to be addressed. Refer to \cite{xiao2015gis} for a more in-depth discussion on those topics.
     
     \subsection{Vector model}
-    This model uses numerical data types (such as integers or floating point representations) to deifne a system of coordinates over which the geographical information is represented using geometric constructions (points, segments, polygons, etc\dots). For each primitive data type defined in the geographical object conceptual model, there is a vector representation.
+    This model uses numerical data types (such as integers or floating point representations) to define a system of coordinates over which the geographical information is represented using geometric constructions (points, segments, polygons, etc\dots). For each primitive data type defined in the geographical object conceptual model, there is a vector representation.
     
-    The most extended vector model is the Simple Feature Specification, defined by the Open Geospatial Consortium (OGS), in which data types are defined to represent simple spatial objects defined in the ISO 19107. The simpler data types are composed to represent more complex ones, as shown in Figure~\ref{fig:gis:sfc}, where a \textit{curve} is approximated as a \textit{LineString}, which is defined as a sequence of \textit{points}, while a \textit{surface} can be a \textit{Polygon} defined with \textit{LinearRings}, which are special cases of \textit{LineStrings} where their last \textit{point} is equal to the first one, thus enclosing a space.
+    The most extended vector model is the Simple Feature Specification, defined by the Open Geospatial Consortium (OGS),\footnote{\url{https://www.opengeospatial.org/standards/sfa}} in which data types are defined to represent simple spatial objects defined in the ISO 19107. The simpler data types are composed to represent more complex ones, as shown in Figure~\ref{fig:gis:sfc}, where a \textit{curve} is approximated as a \textit{LineString}, which is defined as a sequence of \textit{points}, while a \textit{surface} can be a \textit{Polygon} defined with \textit{LinearRings}, which are special cases of \textit{LineStrings} where their last \textit{point} is equal to the first one, thus enclosing a space.
     
     \begin{figure}[ht]
 		\begin{center}
@@ -99,14 +104,14 @@
     
     \subsection{Raster model}
     \label{sec:raster}
-    The raster model represents the spatial information using a matrix, where every cell stores a value for a portion of the space. The meaning of each value will depend on the particular case. To cite some examples, the value of the a cell may be temperature, pressure, humidity, wind speed or the color of the surface. In order to translate a cell position to coordinates in a \gls{crs} and vice versa, we need six values: the position of the origin of coordinates and how much the height and width of each pixel contribute to the x and y coordinates in the \gls{crs}. Since the raster may be oriented in any angle, a single dimension in the matrix (such as the width) may contribute to both the x and y components in the \gls{crs}.
+    The raster model represents the spatial information using a matrix, where every cell stores a value for a portion/cell of the space. The meaning of each value will depend on the particular case. To cite some examples, the value of a cell may refer to temperature, pressure, humidity, wind speed, or the color of the surface. In order to translate a cell position to coordinates in a \gls{crs} and vice versa, we need six values: the position of the origin of coordinates and how much the height and width of each pixel contribute to the x and y coordinates in the \gls{crs}. Since the raster may be oriented in any angle, a single dimension in the matrix (such as the width) may contribute to both the x and y components in the \gls{crs}.
     
-    Rasters are frequently stored within an image format with some additional metadata for the \gls{crs} transformation. An extension of the {\em TIFF} format called {\em GeoTIFF}\footnote{\url{https://www.opengeospatial.org/standards/geotiff}} is one of the most common formats for these purposes, as it allows to define a \gls{crs} and the linear transformation parameters for coordinates. Additionally, it is possible to store several images in a single TIFF file, which is often used to store several levels of detail for the raster, allowing to speed up operations that do not require the highest resolutions.
+    Rasters are frequently stored within an image format with some additional metadata for the \gls{crs} transformation. An extension of the {\em TIFF} format called {\em GeoTIFF}\footnote{\url{https://www.opengeospatial.org/standards/geotiff}} is one of the most common formats for these purposes, as it allows to define a \gls{crs} and the linear transformation parameters for coordinates. Additionally, it is possible to store several images in a single TIFF file, which is often used to store several levels of detail for the raster, allowing to speed up operations that do not require the highest resolution.
 
     \subsection{Comparison of vector and raster models}
-    In the previous section we have described two possible logical models to represent geographical information: the vector and raster models. Both models can be used to represent either geographical objects or geographical fields. As previously seen, each model has a different approach to the practical limitations when implementing a conceptual model. In this section we will show how each of the logical models can represent either geographical objects or geographical fields and also make a brief comparison of both models.
+    In the previous section we have described two possible logical models to represent geographical information. Both the vector and raster models can be used to represent either geographical objects or geographical fields. As previously seen, each model has a different approach to the practical limitations when implementing a conceptual model. In this section we will show how each of the logical models can represent either geographical objects or geographical fields and also make a brief comparison of both models.
     
-    In the vector model, geographical objects are represented as a discretization, which may lead to some precission loss in some of the shapes, as seen in Figure~\ref{fig:gis:object} (top). In the other hand, the raster model can represent objects by a process called \textit{rasterization}, where each cell value is assigned to an object identifier, as seen in Figure~\ref{fig:gis:object} (bottom).
+    In the vector model, geographical objects are represented as a \textit{discretization}, which may lead to some precission loss in some of the shapes, as seen in Figure~\ref{fig:gis:object} (top). In the other hand, the raster model can represent objects by a process called \textit{rasterization}, where each cell value is assigned to an object identifier, as seen in Figure~\ref{fig:gis:object} (bottom).
     
     \begin{figure}[ht]
 		\begin{center}
@@ -117,7 +122,7 @@
 		\label{fig:gis:object}
 	\end{figure}
 	
-	Geographical fields are also transformed when they are represented in a logical model. As such, in the vector model, these fields are represented with a polygonization of the function, as shown in Figure~\ref{fig:gis:field} (top), while in the raster model we discretize the function, representing a value only for the cells of the matrix, as done in Figure~\ref{fig:gis:field} (bottom).
+	Geographical fields are also transformed when they are represented in a logical model. As such, in the vector model, these fields are represented with a \textit{polygonization} of the function, as shown in Figure~\ref{fig:gis:field} (top), while in the raster model we discretize the function, representing a unique value only for the cells of the matrix, as done in Figure~\ref{fig:gis:field} (bottom).
     
     \begin{figure}[ht]
 		\begin{center}
@@ -132,22 +137,22 @@
     
     \section{Standards}
     \label{sec:gis:std}
-    Over the years, many \gls{gis} standards have been developed and adopted by the community, making it easier to develop and integrate application using multiple data sources. In this section we are only going to cover the standards used by our developed interface.
+    Over the years, many \gls{gis} standards have been developed and adopted by the community, making it easier to develop and integrate applications using multiple data sources. In this section, we are only going to cover the standards used by the \gls{gis} prototype {\em Trippy} (see Section~\ref{sec:gis}).
     
     \subsection{TMS}
-    The Open Source Geospatial Foundation defines a standard to generate cartographic images (tiles) called \gls{tms},\footnote{\url{http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification}} which aims to simplify and modernize some aspects of an older standard called \gls{wms}.
+    The Open Source Geospatial Foundation defines a standard to generate cartographic images (tiles) called \gls{tms},\footnote{\url{http://wiki.osgeo.org/wiki/Tile_Map_Service_Specification}} which aims to simplify and modernize some aspects of an older standard called \gls{wms}.\footnote{\url{https://www.opengeospatial.org/standards/wms}}
     
-    A \gls{tms} service returns map parts, called \textit{tiles}, at several levels of zoom with {\em HTTP GET} requests, typically in PNG format, although other formats can be supported. With a special metadata request that returns the definition of the \gls{crs} and the parameters to translate pixel coordinates to \gls{crs} coordinates (discussed in Section~\ref{sec:raster}) at all the supported zoom levels, it is possible to develop a web map application, loading tiles interactively as a user spans and zooms over the map.
+    A \gls{tms} service returns map parts, called \textit{tiles}, at several levels of zoom with {\em HTTP GET} requests, typically in PNG format, although other formats can be supported. With a special metadata request that returns the definition of the \gls{crs} and the parameters to translate pixel coordinates to \gls{crs} coordinates (discussed in Section~\ref{sec:raster}) at all the supported zoom levels, it is possible to develop a \mbox{web-based} map application, loading tiles interactively as a user spans and zooms over the map.
     
-    It is also possible to integrate \gls{tms} from several sources, as tiles can have transparent background. This could allow, for example, to paint tiles containing only bus lines over tiles showing the streets of a city. Due to its ease of implementation, both server side and for client libraries, this standard has been widely adopted and made available by operators such as OpenStreetMap, Google, Thunderforest and many others.\footnote{\url{https://wiki.openstreetmap.org/wiki/Tile_servers}}
+    It is also possible to integrate \gls{tms} from several sources, as tiles can have transparent background. This could allow, for example, to paint tiles containing only bus lines over tiles showing the streets of a city. Due to its ease of implementation, both for server side and for client libraries, this standard has been widely adopted and made available by operators such as OpenStreetMap, Google, Thunderforest, and many others.\footnote{\url{https://wiki.openstreetmap.org/wiki/Tile_servers}}
     
     \subsection{GeoJSON}
-    While there is a well known web standard for accessing geographical features defined by the Open Geospatial Consortium called \gls{wfs},\footnote{\url{http://www.opengeospatial.org/standards/wfs}} which allows to obtain, among many other kinds of information, the vector representation of the geometry for these geographical features, this standard is often found too complex for the single purpose of transmitting vector geometries.
+    While there is a \mbox{well-known} web standard for accessing geographical features defined by the Open Geospatial Consortium called \gls{wfs},\footnote{\url{http://www.opengeospatial.org/standards/wfs}} which allows to obtain, among many other kinds of information, the vector representation of the geometry for these geographical features, this standard is often found too complex for the single purpose of transmitting vector geometries.
     
-    For this reason, custom \texttt{REST API}s that encode vector geometries in GeoJSON\footnote{\url{https://geojson.org/}} (RFC 7946) have become the most popular way of transmitting this data. This format makes it possible to encode \textit{Points},  \textit{LineStrings}, \textit{Polygons} and their multipart variants in a compact string, while also allowing to attach any arbitrary information (\textit{properties}) to these features in JSON format.
+    For this reason, custom \texttt{REST API}s that encode vector geometries in GeoJSON\footnote{\url{https://geojson.org/}} (RFC 7946) have become the most popular way of transmitting this type of data. This format makes it possible to encode \textit{Points},  \textit{LineStrings}, \textit{Polygons}, and their multipart variants in a compact string, while also allowing to attach any arbitrary information (\textit{properties}) to these features in JSON format.
     
     \subsection{GTFS}
-    Developed as a standard to represent the schedules of most public transportation systems, \gls{gtfs}\footnote{\url{https://developers.google.com/transit/gtfs/}} was developed by Google and it provides a standard model to specify stops, routers, schedules and other useful information for trip planning that may be associated with a transportation system, as shown in the diagram from Figure~\ref{fig:gis:gtfs}.
+    Developed as a standard to represent the schedules of most public transportation systems, the \acrfull{gtfs}\footnote{\url{https://developers.google.com/transit/gtfs/}} was developed by Google and it provides a standard model to specify stops, routes, schedules, and other useful information for trip planning that may be associated with a transportation system, as shown in the diagram from Figure~\ref{fig:gis:gtfs}.
     
     \begin{figure}[ht]
 		\begin{center}
@@ -157,19 +162,19 @@
 		\label{fig:gis:gtfs}
 	\end{figure}
 	
-	This has some resemblance to the model we have previously proposed in Figure~\ref{fig:er} from Section~\ref{sec:newctr:desc}, where a \texttt{stop} in \gls{gtfs} corresponds to a \texttt{stop\_place} in our model, \texttt{stoptime} to \texttt{stop\_time}, a \texttt{trip} is similar to a \texttt{journey}, while a \texttt{route} is a \texttt{line}. The largest difference, however, is that we consider that a line (route) is formed by fixed sequence of stops, while in \gls{gtfs} no such restriction exists, and every trip can theoretically have a different sequence of stops.
+	This has some resemblance to the model we have previously proposed in Figure~\ref{fig:er} from Section~\ref{sec:newctr:desc}, where a \texttt{stop} in \gls{gtfs} corresponds to a \texttt{stop\_place} in our model, \texttt{stoptime} to \texttt{stop\_time}, a \texttt{trip} is similar to a \texttt{journey}, while a \texttt{route} is a \texttt{line}. The largest difference, however, is that we consider that a line (route) is formed by a fixed sequence of stops, while in \gls{gtfs} no such restriction exists, and every trip can theoretically have a different sequence of stops.
 	
 	There are GPS coordinates stored for a stop, and it is also possible to define a \textit{LineString} shape for a trip, which will be referenced by a \texttt{shape\_id} from a shapes definition file. The stop times for a trip are usually defined within the calendar dates, allowing this way to specify a schedule based on the day of the week or have a special consideration for selected days. Outside of the calendar definition, it is still possible to specify an expected frequency that a trip must respect.
     
     \section{GIS interfaces}
-	In the previous sections we have discussed how to represent geographical information in conceptual and logical models, as well as what \gls{gis} standards are followed in this work. In this section we will briefly speak about how this geographical information can be presented to the user and visualized in a \gls{gis} interface, as well as introduce a web mapping library called {\em Leaflet}.\footnote{\url{https://leafletjs.com}}
+	In the previous sections we have discussed how to represent geographical information in conceptual and logical models, as well as what \gls{gis} standards are followed in this work. In this section, we will briefly speak about how this geographical information can be presented to the user and visualized in a \gls{gis} interface, as well as introduce a web mapping library called {\em Leaflet}.\footnote{\url{https://leafletjs.com}}
     
     \subsection{Data visualization}
-    The visualization of geographical information is often complex due to the special features of spatial information. In the first place, these features require a different abstraction than the ones used by traditional databases. In the second place, this information usually needs to be transformed with a projection to be able to visualize it on a flat surface. It is also necessary to define a \textit{visualization metaphor} for the user interface: the stored geographical information is presented to the user in several layers.
+    The visualization of geographical information is often complex due to the special features of spatial information. In the first place, these features require a different abstraction level than the ones used by traditional databases. In the second place, this information usually needs to be transformed with a projection in order to be able to visualize it on a flat surface. It is also necessary to define a \textit{visualization metaphor} for the user interface: the stored geographical information is presented to the user in several layers.
     
     A layer can be seen as a set of geographical elements that are intended to be visualized with a common style. These layers are later sorted in a stack, to determine which layers are superior or inferior to others. That way, the information of the superior layers is presented over the information of the inferior ones.
     
-    This system of layers allows to display a digital map in a similar fashion to a paper map. However, in a \gls{gis} user interface is fundamentally different from a conventional map, as the information is never static. Hence, the interface needs to support interactive operations that can alter this visualization. Among these operations, we would like to mention the following:
+    This system of layers allows to display a digital map in a similar fashion to that of a paper map. However, a \gls{gis} user interface is fundamentally different from a conventional map, as the information and visualization is no longer static. Hence, the interface needs to support interactive operations that can alter this visualization. Among these operations, we would like to mention the following ones:
     
     \begin{itemize}
         \item Layer management, with the possibility of adding or removing layers, as well as reordering them in the stack.
@@ -178,14 +183,14 @@
         \item Invocation of processing operations over the map. These may include, among others, interactive measurements or queries about the visualized elements.
     \end{itemize}
     
-    Another important element in this visualization is the context information, which must be included in the user interface in order to understand the displayed information. This context information frequently includes a graphic legend, which allows to interpret and categorize every geographical element. Additionally, the interface must have means to inform the user of the current visualization scale and the center coordinates. Other information may be necessary, such as labels that identify geographical objects or present relevant information.
+    Another important element in this visualization is the context information, which must be included within the user interface in order to better understand the displayed information. This context information frequently includes a graphic legend, which allows to interpret and categorize every geographical element. Additionally, the interface must have means to inform the user of the current visualization scale and the center coordinates. Other information may be necessary, such as labels that identify geographical objects or present relevant information.
     
     \subsection{Leaflet}
-    Among the several available alternatives to develop a web based map, in this work we are using {\em Leaflet}, which is an open source \texttt{Javascript} library that can be integrated with different data sources and providers to easily develop interactive maps with the standard web technologies (\texttt{HTML}, \texttt{CSS} and \texttt{Javascript}).
+    Among the several available alternatives to develop a \mbox{web-based} map, in this work we have used {\em Leaflet}, which is an open source \texttt{Javascript} library that can be integrated with different data sources and providers to easily develop interactive maps with standard web technologies (\texttt{HTML}, \texttt{CSS}, and \texttt{Javascript}).
     
     It supports both the \gls{tms} and the {\em GeoJSON} standards described in the previous Section~\ref{sec:gis:std}, among others. This combination is often used to display a base map from a tile provider with vector information layers over it obtained in {\em GeoJSON} format.
     
-    Although this library is comparatively lacking in features when compared to other well-known alternatives such as Google Maps\footnote{\url{https://developers.google.com/maps/documentation/}} or {\em OpenLayers},\footnote{\url{https://openlayers.org/}} it is frequently preferred due to its usability and smaller size. Due to its broad adoption, open source plugins exist for all the features offered by the other comparable solutions, including support for other data sources (such as \gls{wfs}), advanced features (such as routing) and also small interface tweaks (such as the integration of a context menu).
+    Although this library is comparatively lacking in features when compared to other well-known alternatives such as Google Maps\footnote{\url{https://developers.google.com/maps/documentation/}} or {\em OpenLayers},\footnote{\url{https://openlayers.org/}} it is frequently preferred due to its usability and smaller size. Due to its broad adoption, open source plugins exist for all the features offered by the other comparable solutions, including support for other data sources (such as \gls{wfs}), advanced features (such as routing), and also small interface tweaks (such as the integration of a context menu).
     
 
 \chapter{A GIS interface for public transportation networks}
@@ -214,7 +219,7 @@
     
     
     When dealing with vast amounts of historic traveler data, a valid first approach to tackle its analysis is to extend a traditional \gls{dbms} that could both assimilate and handle greater volumes of spatial data. A popular tool that fits in this description would be \textit{postGIS},\footnote{\url{https://postgis.net/}} a spatial extension for the widely adopted relational DBMS \textit{PostgreSQL}. 
-    However, these solutions that include spatial indices are not the most adequate ones for our information needs, that are many times unrelated to a geographic component, but to the network elements and their relationships (``how many travelers started their trip at a stop X using line L to end it at a stop Y within the time frame T?''), while the expected large sizes of our data collections would force us to use solutions based on secondary memory, considerably affecting the performance of the system.
+    However, these solutions that include spatial indices are not the most adequate ones for our information needs, that are many times unrelated to a geographical component, but to the network elements and their relationships (``how many travelers started their trip at a stop X using line L to end it at a stop Y within the time frame T?''), while the expected large sizes of our data collections would force us to use solutions based on secondary memory, considerably affecting the performance of the system.
     
     %\ojo{Deberíamos falar de solucions distribuidas, que usen BD NoSQL,... botar un ollo a isto: \cite{XYGL2018}}
     
