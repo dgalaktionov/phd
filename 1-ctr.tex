@@ -1,17 +1,17 @@
-\chapter{Our representation for trips over urban streets}
+\chapter{Representations for trajectories over urban streets}
 \label{sec:ctr}
 	As explained in Section~\ref{sec:pd}, we have identified two contexts for public transportation systems according to their networks, which can be based on urban streets or public transportation. While the proposed structure in this chapter is capable of operating within both contexts, it does not take public transportation elements (routes and vehicles) into account. This leads to a more redundant representation than the ones later proposed in Chapter~\ref{sec:newctr}, which are more adequate for public transportation networks.
 	
-	The work in this chapter proposes a new structure named \acrfull{ctr} that answers  counting-based queries and uses compact self-indexed data structures to represent the large amount of trips in compact space.
+	The work in this chapter proposes a new structure named \acrfull{ctr} that answers  counting-based queries and uses compact self-indexed data structures to represent the large amount of trajectories in compact space.
 	\gls{ctr} combines two well-known data structures. The first one,
 	initially designed for the representation of strings, is the
 	\gls{csa}. The second
-	one is the \gls{wt}. With these two structures, \gls{ctr} is able to efficiently resolve queries over trip patterns in any dimension (spatial, temporal or, combining both structures, spatio-temporal).
+	one is the \gls{wt}. With these two structures, \gls{ctr} is able to efficiently resolve queries over trajectory patterns in any dimension (spatial, temporal or, combining both structures, spatio-temporal).
 
     In Section \ref{sec:ctr:desc} we present our scenario, and describe the simplified data model used to represent user trajectories. The most interesting queries that are defined for this scenario are also discussed. Then, Section~\ref{sec:ctr:str} describes the internals of \gls{ctr} and Section~\ref{sec:ctr:alg} is devoted to explain how query operations are solved in \gls{ctr}. After that, experiments are included in Section~\ref{sec:ctr:exp}.
 
 	We experimentally tested our proposal using two sets of %synthetic
-	data representing trips over two different real public
+	data representing trajectories over two different real public
 	transportation systems. Our results are promising because the
 	representation uses around  $50$\% of its original size and
 	answers most of our spatial, temporal,  and spatio-temporal queries within $1\!-\!1000$ microseconds. 
@@ -33,32 +33,32 @@
 		\begin{center}
 			{\includegraphics[width=0.6\textwidth]{figures/street_er.png}}
 		\end{center}
-		\caption{An ER diagram representing the model for user trips for \acrshort{ctr}.}
+		\caption{An ER diagram representing the model for user trajectories for \acrshort{ctr}.}
 		\label{fig:street_er}
 	\end{figure}
     
-    Figure~\ref{fig:street_er} contains the entity-relationship diagram of our network model, where nodes and connections define a directed graph, over which user trips can be conformed by sequentially visiting the nodes. The order in which these nodes are visited is implicitly defined by the time, meaning that it is necessary to somehow represent that time for the visited nodes of each trip.
+    Figure~\ref{fig:street_er} contains the entity-relationship diagram of our network model, where nodes and connections define a directed graph, over which user trajectories can be conformed by sequentially visiting the nodes. The order in which these nodes are visited is implicitly defined by the time, meaning that it is necessary to somehow represent that time for the visited nodes of each trajectory.
     %It is easy to see how this model could introduce redundancy in the public transportation context, where several passengers may be sharing the same bus at the same time.
 	
 	To make the
 	use of \gls{csa} possible, we define a trip or trajectory of a moving object
-	over a network as the temporally-ordered sequence of the nodes the trip
-	traverses. An integer $s_i \in S$ is assigned to each node such that a trip is a sequence (string) of consecutively nodes visited by a single user. Note that this representation avoids the cost of storing coordinates to represent the location users pass through during a trip. It is just enough to identify the stops or nodes and when necessary to map these nodes to geographic locations. Moreover, when the underlying network is formed by street segments, we do not specify at which part of the segment did the trip start or finished: we consider such level of detail irrelevant for traffic analysis, as it can be effectively made on a street-segment level.
+	over a network as the temporally-ordered sequence of the nodes the trajectory
+	traverses. An integer $s_i \in S$ is assigned to each node such that a trajectory is a sequence (string) of consecutively nodes visited by a single user. Note that this representation avoids the cost of storing coordinates to represent the location users pass through during a trajectory. It is just enough to identify the stops or nodes and when necessary to map these nodes to geographic locations. Moreover, when the underlying network is formed by street segments, we do not specify at which part of the segment did the trajectory start or finished: we consider such level of detail irrelevant for traffic analysis, as it can be effectively made on a street-segment level.
 	
 	We then build a \gls{csa}, over the concatenation of
-	these strings (trips), with some adaptations for this
+	these strings (trajectories), with some adaptations for this
 	specific application. In addition, we discretize the time in periods of fixed
 	duration (i.e. timeline split into 5-minute intervals) and each time
 	segment is identified by an integer $t_i \in I$. In this way, it is possible
-	to store the times when trips reach each node by associating the
-	corresponding $t_i$ with each node in each trip. The sequence of
-	times for all the nodes within a trip is self-indexed with a \gls{wt}
+	to store the times when trajectories reach each node by associating the
+	corresponding $t_i$ with each node in each trajectory. The sequence of
+	times for all the nodes within a trajectory is self-indexed with a \gls{wt}
 	to efficiently answer temporal and spatio-temporal queries.
 
 	Among other types of queries, in this work we focus on the following counting queries, which to the best of our knowledge have not been  addressed by previous proposals. In general terms, we define two general queries, number-of-trips queries and top-k queries, upon which we apply spatial, temporal, or spatio-temporal constraint when useful.
 
 	\begin{itemize}
-		\item[(a)] {\em Number-of-trips queries.} This is a general type of queries that counts the number of distinct trips. When applying spatial, temporal, or spatio-temporal constraints, it can specialized in the following queries:
+		\item[(a)] {\em Number-of-trips queries.} This is a general type of queries that counts the number of distinct trajectories. When applying spatial, temporal, or spatio-temporal constraints, it can specialized in the following queries:
 		
 		\begin{enumerate}
 			\item Pure spatial queries:
@@ -75,8 +75,8 @@
 				\item[-] {\em Number of trips ending at node $X$ during the time interval $[t_1..t_2]$ (\endX$_T$). }
 				\item[-] {\em Number of trips starting at $X$ and ending at $Y$ occurring during  time interval $[t_1..t_2]$ (\XtoY$_T$).} This type of queries is further classified into: 
 				\begin{itemize}
-				    \item[(i)] \XtoY$_T$ with strong semantics (\XtoY$_{Ts}$), which considers trips that completely occur within interval $[t_1..t_2]$.
-				    \item[(ii)] \XtoY$_T$ with weak semantics (\XtoY$_{Tw}$), which considers trips whose life time overlap $[t_1..t_2]$.
+				    \item[(i)] \XtoY$_T$ with strong semantics (\XtoY$_{Ts}$), which considers trajectories that completely occur within interval $[t_1..t_2]$.
+				    \item[(ii)] \XtoY$_T$ with weak semantics (\XtoY$_{Tw}$), which considers trajectories whose life time overlap $[t_1..t_2]$.
 				\end{itemize}
 				\item[-] {\em Number of trips using node $X$ during the time interval $[t_1..t_2]$. Can also be seen as the average load of the node $X$ within a given time interval. (\loadX$_T$).}
 			\end{itemize}

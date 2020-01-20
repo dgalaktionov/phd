@@ -1,4 +1,4 @@
-\chapter{Our representations for trips over public transportation networks}
+\chapter{Representations for trips over public transportation networks}
 \label{sec:newctr}
 
 	After \gls{ctr} was introduced in Chapter~\ref{sec:ctr} as a representation oriented for trips over urban street networks, in this chapter we introduce two alternative representations, called \acrfull{ttctr} and \acrfull{xctr}. These new techniques are expected to be more adequate for trips over public transportation networks, since they make it possible to query about network concepts such as line and schedules, and also use them in order to reduce the size of our structures.
@@ -84,7 +84,7 @@
 	
 \section{Structures}
 \label{sec:newctr:str}
-    To the best of our knowledge, there is no indexing structure that would allow us to efficiently represent trajectories that could also support all the kinds of queries described in the previous section. For this reason, we propose a new solution that relies on two data structures, \gls{tm}~and~\gls{ttctr}. The former is targeted for queries of type A, solving most aggregation queries in constant time, while the latter can be used for queries of type B. Finally, we introduce a more versatile alternative to \gls{ttctr}~that we call \gls{xctr}.
+    To the best of our knowledge, there is no indexing structure that would allow us to efficiently represent trips that could also support all the kinds of queries described in the previous section. For this reason, we propose a new solution that relies on two data structures, \gls{tm}~and~\gls{ttctr}. The former is targeted for queries of type A, solving most aggregation queries in constant time, while the latter can be used for queries of type B. Finally, we introduce a more versatile alternative to \gls{ttctr}~that we call \gls{xctr}.
     
     \subsection{Common Data Structures}
     \label{sec:cs}
