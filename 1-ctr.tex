@@ -22,8 +22,6 @@
 	domains for the use of well-known compact data structures such as the
 	\gls{csa} and the \gls{wt}, creating a new strategy for
 	exploiting trajectories represented in a self-indexed way.
-	
-	Note that, although this is not the best representation for trips over public transportation networks (see Chapter~\ref{sec:newctr} for our proposed representations for those cases), we have decided to include the experiments over the Madrid dataset anyway. The reason for its presence is twofold: One, to show a realistic use case of this representation built over a public transportation network instead of a context of streets or roads, so the problems discussed in the next chapter could be understood more clearly. Two, because it serves as a better example for \mbox{space-time} \mbox{trade-offs} of our two alternative structures used to represent time intervals: the \gls{htwt} and the \gls{wm}.
 
 \section{Description}
 \label{sec:ctr:desc}
@@ -792,6 +790,8 @@
 	  baseline becomes $114.10$ MiB. However, if we split those $24$ hours into thirty-minute intervals, only $48$ time intervals 
 	  arise. In this case, each time-ID needs only $6$ bits and the total size of the temporal baseline is $76.07$ MiB.
 	\end{itemize}
+	
+	Note that, although this is not the best representation for trips over public transportation networks (see Chapter~\ref{sec:newctr} for our proposed representations for those cases), we have decided to include the experiments over the Madrid dataset anyway. The reason for its presence is twofold: One, to show a realistic use case of this representation built over a public transportation network instead of a context of streets or roads, so the problems discussed in the next chapter could be understood more clearly. Two, because it serves as a better example for \mbox{space-time} \mbox{trade-offs} of our two alternative structures used to represent time intervals: the \gls{htwt} and the \gls{wm}.
 
 
 	\subsection{Space Requirements}
